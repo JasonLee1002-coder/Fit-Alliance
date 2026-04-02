@@ -1,0 +1,66 @@
+import { createServerSupabase } from '@/lib/supabase/server'
+import { redirect } from 'next/navigation'
+import DailyCheckIn from '@/components/dashboard/daily-checkin'
+import type { User, HealthRecord } from '@/types'
+
+export const dynamic = 'force-dynamic'
+
+export default async function HomePage() {
+  const supabase = await createServerSupabase()
+  const { data: { user: authUser } } = await supabase.auth.getUser()
+  if (!authUser) redirect('/login')
+
+  const { data: profile } = await supabase
+    .from('fa_users')
+    .select('*')
+    .eq('id', authUser.id)
+    .single()
+
+  // Get recent health records (last 30)
+  const { data: records } = await supabase
+    .from('fa_health_records')
+    .select('*')
+    .eq('user_id', authUser.id)
+    .order('date', { ascending: false })
+    .limit(30)
+
+  // Get today's record
+  const today = new Date().toISOString().split('T')[0]
+  const todayRecord = records?.find(r => r.date === today)
+
+  // Get today's daily log
+  const { data: dailyLog } = await supabase
+    .from('fa_daily_logs')
+    .select('*')
+    .eq('user_id', authUser.id)
+    .eq('date', today)
+    .single()
+
+  // Calculate streak
+  let streak = 0
+  if (records && records.length > 0) {
+    const sortedDates = [...new Set(records.map(r => r.date))].sort().reverse()
+    const todayStr = today
+    const checkDate = new Date(todayStr)
+
+    for (const dateStr of sortedDates) {
+      const expected = checkDate.toISOString().split('T')[0]
+      if (dateStr === expected) {
+        streak++
+        checkDate.setDate(checkDate.getDate() - 1)
+      } else if (dateStr < expected) {
+        break
+      }
+    }
+  }
+
+  return (
+    <DailyCheckIn
+      user={profile as User}
+      records={(records ?? []) as HealthRecord[]}
+      todayRecord={todayRecord as HealthRecord | undefined}
+      dailyLog={dailyLog}
+      streak={streak}
+    />
+  )
+}

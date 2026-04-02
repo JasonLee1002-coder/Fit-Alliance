@@ -1,0 +1,189 @@
+@import "tailwindcss";
+
+:root {
+  --background: #fafafa;
+  --foreground: #171717;
+  --emerald-glow: rgba(16, 185, 129, 0.4);
+  --orange-glow: rgba(249, 115, 22, 0.4);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+}
+
+/* ============================================
+   Yuzu UI/UX — Animation System
+   ============================================ */
+
+/* Skeleton Loading (replace spinners) */
+.yuzu-skeleton {
+  background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
+  background-size: 200% 100%;
+  animation: yuzu-skeleton-wave 1.8s ease-in-out infinite;
+  border-radius: 0.75rem;
+}
+
+@keyframes yuzu-skeleton-wave {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Card Hover Effects */
+.yuzu-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.yuzu-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px -5px rgba(0,0,0,0.1), 0 4px 10px -6px rgba(0,0,0,0.08);
+}
+.yuzu-card:active {
+  transform: translateY(0) scale(0.98);
+}
+
+.yuzu-health-card {
+  border-radius: 1rem;
+  background: white;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  border: 1px solid #e5e7eb;
+  transition: all 0.2s ease;
+}
+.yuzu-health-card:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  transform: translateY(-1px);
+}
+
+/* Glow Effects */
+@keyframes yuzu-glow-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(16,185,129,0); }
+  50% { box-shadow: 0 0 15px 3px rgba(16,185,129,0.25); }
+}
+.yuzu-glow-pulse {
+  animation: yuzu-glow-pulse 2s ease-in-out infinite;
+}
+
+/* Urgent glow (for active challenges) */
+.yuzu-glow-urgent {
+  position: relative;
+}
+.yuzu-glow-urgent::before {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: 1.5rem;
+  background: linear-gradient(135deg, rgba(251,191,36,0.6) 0%, rgba(249,115,22,0.6) 50%, rgba(251,191,36,0.6) 100%);
+  filter: blur(4px);
+  animation: yuzu-glow-pulse-orange 2s ease-in-out infinite;
+  z-index: -1;
+}
+@keyframes yuzu-glow-pulse-orange {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.8; }
+}
+
+/* Danger pulse (last day countdown) */
+.yuzu-glow-danger {
+  box-shadow: 0 0 12px rgba(239,68,68,0.3);
+  animation: yuzu-danger-pulse 1.5s ease-in-out infinite;
+}
+@keyframes yuzu-danger-pulse {
+  0%, 100% { box-shadow: 0 0 8px rgba(239,68,68,0.2); }
+  50% { box-shadow: 0 0 16px rgba(239,68,68,0.4); }
+}
+
+/* LIVE pill */
+.yuzu-pill-live {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.625rem;
+  font-weight: 700;
+  padding: 0.25rem 0.5rem;
+  border-radius: 9999px;
+  background-color: #ef4444;
+  color: white;
+}
+.yuzu-pill-live::before {
+  content: "";
+  width: 0.375rem;
+  height: 0.375rem;
+  border-radius: 50%;
+  background: white;
+  animation: yuzu-pulsing 1.5s ease-in-out infinite;
+}
+@keyframes yuzu-pulsing {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+/* Float animation (empty states) */
+@keyframes yuzu-float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); }
+}
+.yuzu-float {
+  animation: yuzu-float 3s ease-in-out infinite;
+}
+
+/* Pop-in animation */
+@keyframes yuzu-pop-in {
+  0% { opacity: 0; transform: scale(0.8) translateY(10px); }
+  60% { transform: scale(1.03) translateY(-2px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+.yuzu-pop-in {
+  animation: yuzu-pop-in 0.35s ease-out;
+}
+
+/* Slide up */
+@keyframes yuzu-slide-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.yuzu-slide-up {
+  animation: yuzu-slide-up 0.3s ease-out;
+}
+
+/* Number flash */
+@keyframes yuzu-flash {
+  0%, 100% { color: inherit; }
+  50% { color: #10b981; transform: scale(1.1); }
+}
+.yuzu-flash {
+  animation: yuzu-flash 0.4s ease-out;
+  display: inline-block;
+}
+
+/* Shimmer overlay */
+.yuzu-shimmer {
+  background: linear-gradient(90deg, transparent 25%, rgba(16,185,129,0.06) 50%, transparent 75%);
+  background-size: 200% 100%;
+  animation: yuzu-shimmer 2s ease-in-out infinite;
+}
+@keyframes yuzu-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* Progress bar */
+.yuzu-progress {
+  position: relative;
+  width: 100%;
+  height: 0.5rem;
+  background: #f3f4f6;
+  border-radius: 9999px;
+  overflow: hidden;
+}
+.yuzu-progress-bar {
+  height: 100%;
+  border-radius: 9999px;
+  transition: width 1s ease-out;
+}

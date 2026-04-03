@@ -416,7 +416,7 @@ function ChallengeCard({ challenge, participants, myParticipant, avgProgress, co
             </button>
 
             {/* Messages */}
-            <div className="max-h-80 overflow-y-auto space-y-2">
+            <div className="max-h-80 overflow-y-auto space-y-2" ref={(el) => { if (el) el.scrollTop = el.scrollHeight }}>
               {chatMessages.map(msg => (
                 <div key={msg.id} className={`flex ${msg.user_id === userId && !msg.is_ai ? 'justify-end' : 'justify-start'}`}>
                   {msg.is_ai && (

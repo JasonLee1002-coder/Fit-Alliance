@@ -7,13 +7,13 @@ import { cn } from '@/lib/utils'
 import type { User } from '@/types'
 
 const navItems = [
-  { href: '/', label: '每日打卡', icon: '⚡', description: '體重紀錄' },
-  { href: '/meals', label: '飲食紀錄', icon: '📸', description: '拍照上傳' },
-  { href: '/coach', label: 'AI 教練', icon: '🤖', description: '個人指導' },
-  { href: '/records', label: '健康紀錄', icon: '📊', description: '趨勢圖表' },
-  { href: '/challenge', label: '共同挑戰', icon: '🏆', description: '排行榜' },
-  { href: '/invite', label: '個人邀請朋友', icon: '🤝', description: '分享連結' },
-  { href: '/report', label: '問題回報', icon: '💬', description: '回報問題' },
+  { href: '/', label: '每日打卡', img: '/nav-checkin.png', description: '體重紀錄' },
+  { href: '/meals', label: '飲食紀錄', img: '/nav-meals.png', description: '拍照上傳' },
+  { href: '/coach', label: 'AI 教練', img: '/nav-coach.png', description: '個人指導' },
+  { href: '/records', label: '健康紀錄', img: '/nav-records.png', description: '趨勢圖表' },
+  { href: '/challenge', label: '共同挑戰', img: '/nav-challenge.png', description: '排行榜' },
+  { href: '/invite', label: '個人邀請朋友', img: '/nav-invite.png', description: '分享連結' },
+  { href: '/report', label: '問題回報', img: '/nav-report.png', description: '回報問題' },
 ]
 
 export default function Sidebar({ user }: { user: User | null }) {
@@ -52,9 +52,7 @@ export default function Sidebar({ user }: { user: User | null }) {
         {/* Logo */}
         <div className="p-5 border-b border-gray-50">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center shadow">
-              <span className="text-xl">💪</span>
-            </div>
+            <img src="/icon-192.png" alt="Fit Alliance" className="w-10 h-10 rounded-xl shadow" />
             <div>
               <h1 className="font-bold text-gray-900 text-sm">瘦身減肥聯盟</h1>
               <p className="text-[10px] text-gray-400">Fit Alliance</p>
@@ -78,7 +76,7 @@ export default function Sidebar({ user }: { user: User | null }) {
                     : 'text-gray-600 hover:bg-gray-50'
                 )}
               >
-                <span className="text-lg">{item.icon}</span>
+                <img src={item.img} alt="" className="w-8 h-8 rounded-lg" />
                 <div>
                   <div>{item.label}</div>
                   <div className="text-[10px] text-gray-400">{item.description}</div>

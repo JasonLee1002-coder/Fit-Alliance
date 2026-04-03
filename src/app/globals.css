@@ -70,23 +70,50 @@ body {
   animation: yuzu-glow-pulse 2s ease-in-out infinite;
 }
 
-/* Urgent glow (for active challenges) */
+/* Urgent glow (for active challenges) — 超強特效 */
 .yuzu-glow-urgent {
   position: relative;
 }
 .yuzu-glow-urgent::before {
   content: "";
   position: absolute;
-  inset: -2px;
-  border-radius: 1.5rem;
-  background: linear-gradient(135deg, rgba(251,191,36,0.6) 0%, rgba(249,115,22,0.6) 50%, rgba(251,191,36,0.6) 100%);
-  filter: blur(4px);
-  animation: yuzu-glow-pulse-orange 2s ease-in-out infinite;
+  inset: -4px;
+  border-radius: 1.75rem;
+  background: conic-gradient(
+    from 0deg,
+    rgba(251,191,36,0.8),
+    rgba(249,115,22,0.9),
+    rgba(239,68,68,0.6),
+    rgba(249,115,22,0.9),
+    rgba(251,191,36,0.8)
+  );
+  filter: blur(6px);
+  animation: yuzu-challenge-border-spin 3s linear infinite, yuzu-glow-pulse-orange 2s ease-in-out infinite;
   z-index: -1;
 }
+.yuzu-glow-urgent::after {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: 1.6rem;
+  background: conic-gradient(
+    from 180deg,
+    transparent,
+    rgba(251,191,36,0.5),
+    transparent,
+    rgba(249,115,22,0.5),
+    transparent
+  );
+  filter: blur(2px);
+  animation: yuzu-challenge-border-spin 2s linear infinite reverse;
+  z-index: -1;
+}
+@keyframes yuzu-challenge-border-spin {
+  to { transform: rotate(360deg); }
+}
 @keyframes yuzu-glow-pulse-orange {
-  0%, 100% { opacity: 0.4; }
-  50% { opacity: 0.8; }
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
 }
 
 /* Danger pulse (last day countdown) */

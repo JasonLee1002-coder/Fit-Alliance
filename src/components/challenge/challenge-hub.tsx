@@ -284,7 +284,7 @@ function ChallengeCard({ challenge, participants, myParticipant, avgProgress, co
     : '⏳ 倒數計時'
 
   return (
-    <div className={`rounded-3xl overflow-hidden shadow-xl border ${isActive ? 'yuzu-glow-urgent' : 'border-gray-200'}`}>
+    <div className={`rounded-3xl overflow-hidden shadow-2xl border-2 ${isActive ? 'yuzu-glow-urgent border-amber-400/60' : 'border-gray-200'}`}>
       {/* Hero Banner */}
       <div className="relative bg-gradient-to-br from-emerald-600 via-green-500 to-teal-500 px-5 pt-6 pb-8 text-white overflow-hidden">
         {/* Decorative circles */}

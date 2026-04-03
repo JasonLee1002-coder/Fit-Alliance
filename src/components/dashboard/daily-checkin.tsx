@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { formatDateWithWeekday, calculateBMI, getStandardWeight, getBodyFatRange, getWeightChangeColor } from '@/lib/utils'
@@ -40,10 +40,47 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
   })
 
   const [ocrLoading, setOcrLoading] = useState(false)
+  const [greeting, setGreeting] = useState('')
+  const [greetingLoading, setGreetingLoading] = useState(true)
   const weightInputRef = useRef<HTMLInputElement>(null)
   const submitBtnRef = useRef<HTMLButtonElement>(null)
 
   const lastRecord = records.find(r => r.date !== form.date) ?? records[1]
+
+  // Fetch AI greeting on mount
+  useEffect(() => {
+    async function fetchGreeting() {
+      try {
+        const weekdays = ['日', '一', '二', '三', '四', '五', '六']
+        const recentWeights = records.slice(0, 5).map(r => r.weight).filter(Boolean)
+        const trend = recentWeights.length >= 3
+          ? recentWeights[0]! < recentWeights[2]! ? '持續下降中' : recentWeights[0]! > recentWeights[2]! ? '略有上升' : '持平穩定'
+          : ''
+
+        const res = await fetch('/api/ai/greeting', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userName: user.name,
+            gender: user.gender,
+            latestWeight: records[0]?.weight,
+            previousWeight: records[1]?.weight,
+            targetWeight: user.target_weight,
+            streak,
+            bodyFat: records[0]?.body_fat,
+            recentTrend: trend,
+            dayOfWeek: weekdays[new Date().getDay()],
+          }),
+        })
+        if (res.ok) {
+          const { message } = await res.json()
+          if (message) setGreeting(message)
+        }
+      } catch {}
+      setGreetingLoading(false)
+    }
+    fetchGreeting()
+  }, [])
 
   const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -178,35 +215,54 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-start justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">
-            嗨，{user.name} 👋
-          </h1>
-          <p className="text-gray-500 text-sm mt-1">
-            {formatDateWithWeekday(new Date())}
-            {user.target_weight && (
-              <span className="ml-2">
-                目標 {user.target_weight} kg
-                {records[0]?.weight && (
-                  <span className="text-emerald-600">（還差 {Math.abs(records[0].weight as number - user.target_weight).toFixed(1)} kg）</span>
-                )}
+      <div className="space-y-3">
+        <div className="flex items-start justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">
+              嗨，{user.name} 👋
+            </h1>
+            <p className="text-gray-500 text-sm mt-1">
+              {formatDateWithWeekday(new Date())}
+              {user.target_weight && records[0]?.weight && (
+                <span className="ml-2 text-emerald-600">
+                  目標 {user.target_weight} kg（還差 {Math.abs(records[0].weight as number - user.target_weight).toFixed(1)} kg）
+                </span>
+              )}
+            </p>
+          </div>
+          <div className="flex items-center gap-2 flex-shrink-0">
+            {streak >= 2 && (
+              <span className="bg-orange-100 text-orange-600 px-2.5 py-1 rounded-full text-xs font-bold">
+                🔥 {streak} 天
               </span>
             )}
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          {streak >= 2 && (
-            <span className="bg-orange-100 text-orange-600 px-3 py-1 rounded-full text-sm font-medium">
-              🔥 連續 {streak} 天
+            <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${
+              hasCheckedIn ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-500'
+            }`}>
+              {hasCheckedIn ? '✅ 已打卡' : '尚未打卡'}
             </span>
-          )}
-          <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-            hasCheckedIn ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-500'
-          }`}>
-            {hasCheckedIn ? '✅ 今日已打卡' : '尚未打卡'}
-          </span>
+          </div>
         </div>
+
+        {/* AI Smart Greeting */}
+        {greetingLoading ? (
+          <div className="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-2xl p-4 border border-emerald-100">
+            <div className="flex items-center gap-3">
+              <img src="/mascot-coach-sm.png" alt="" className="w-10 h-10 rounded-full yuzu-glow-pulse" />
+              <div className="flex-1 space-y-2">
+                <div className="yuzu-skeleton h-4 w-3/4 rounded-lg" />
+                <div className="yuzu-skeleton h-3 w-1/2 rounded-lg" />
+              </div>
+            </div>
+          </div>
+        ) : greeting && (
+          <div className="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-2xl p-4 border border-emerald-100 yuzu-pop-in">
+            <div className="flex items-start gap-3">
+              <img src="/mascot-coach-sm.png" alt="" className="w-10 h-10 rounded-full flex-shrink-0" />
+              <p className="text-sm text-gray-700 leading-relaxed">{greeting}</p>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Check-in Card */}

@@ -78,7 +78,9 @@ export default function TrendChart({ records }: { records: HealthRecord[] }) {
               axisLine={{ stroke: '#eee' }}
             />
             <Tooltip
-              contentStyle={{ borderRadius: '12px', border: '1px solid #e5e7eb', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+              position={{ x: 0, y: -10 }}
+              wrapperStyle={{ zIndex: 10 }}
+              contentStyle={{ borderRadius: '12px', border: '1px solid #e5e7eb', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', fontSize: '12px', padding: '6px 10px' }}
               formatter={(value) => [`${value} ${config.unit}`, config.label]}
             />
             <Line

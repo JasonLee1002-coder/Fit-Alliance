@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { calculateProgress } from '@/types'
@@ -485,9 +486,28 @@ function MemberDrawer({ participant: p, rank, userId, relationship, onClose, onR
   const [relLabel, setRelLabel] = useState(relationship || '')
   const [customLabel, setCustomLabel] = useState('')
   const [saving, setSaving] = useState(false)
+  const [records, setRecords] = useState<Array<{ date: string; weight: number | null; body_fat: number | null }>>([])
+  const [recordsLoading, setRecordsLoading] = useState(true)
+  const [trendMetric, setTrendMetric] = useState<'weight' | 'bodyFat'>('weight')
   const isMe = p.user_id === userId
   const style = RANK_STYLES[rank] ?? DEFAULT_RANK
   const pct = Math.min(p.progress, 100)
+
+  // Load member's health records
+  useEffect(() => {
+    async function load() {
+      const supabase = createClient()
+      const { data } = await supabase
+        .from('fa_health_records')
+        .select('date, weight, body_fat')
+        .eq('user_id', p.user_id)
+        .order('date', { ascending: false })
+        .limit(30)
+      setRecords(data ?? [])
+      setRecordsLoading(false)
+    }
+    load()
+  }, [p.user_id])
 
   const handleSaveRelationship = async (label: string) => {
     if (!label.trim()) return
@@ -616,6 +636,85 @@ function MemberDrawer({ participant: p, rank, userId, relationship, onClose, onR
             <div className="bg-amber-50 rounded-2xl p-3 border border-amber-200/60">
               <p className="text-xs text-amber-600 mb-1">🎯 比賽目的</p>
               <p className="text-sm text-amber-900">「{p.personal_goal}」</p>
+            </div>
+          )}
+
+          {/* Trend Charts (readonly) */}
+          <div className="bg-white rounded-2xl border border-gray-100 p-4">
+            <div className="flex items-center justify-between mb-3">
+              <h4 className="text-sm font-bold text-gray-700">📈 趨勢圖</h4>
+              <div className="flex gap-1.5">
+                <button onClick={() => setTrendMetric('weight')}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-medium transition ${trendMetric === 'weight' ? 'bg-emerald-500 text-white' : 'bg-gray-100 text-gray-500'}`}>
+                  ⚖️ 體重
+                </button>
+                {records.some(r => r.body_fat !== null) && (
+                  <button onClick={() => setTrendMetric('bodyFat')}
+                    className={`px-2.5 py-1 rounded-lg text-xs font-medium transition ${trendMetric === 'bodyFat' ? 'bg-amber-500 text-white' : 'bg-gray-100 text-gray-500'}`}>
+                    📊 體脂
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {recordsLoading ? (
+              <div className="h-40 flex items-center justify-center">
+                <div className="flex items-center gap-2 text-sm text-gray-400">
+                  <span className="yuzu-spinner-dark yuzu-spinner" />
+                  載入中
+                </div>
+              </div>
+            ) : (() => {
+              const chartData = [...records].reverse().slice(-10).map(r => ({
+                date: r.date.slice(5),
+                value: trendMetric === 'weight' ? r.weight : r.body_fat,
+              })).filter(d => d.value !== null)
+
+              if (chartData.length < 2) return (
+                <div className="h-40 flex items-center justify-center text-gray-400 text-sm">
+                  {trendMetric === 'bodyFat' ? '體脂數據不足' : '數據不足，至少需要 2 筆'}
+                </div>
+              )
+
+              const values = chartData.map(d => d.value as number)
+              const min = Math.min(...values)
+              const max = Math.max(...values)
+              const pad = (max - min) * 0.15 || 2
+              const color = trendMetric === 'weight' ? '#10b981' : '#f59e0b'
+              const unit = trendMetric === 'weight' ? 'kg' : '%'
+
+              return (
+                <div className="h-40">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={chartData} margin={{ top: 5, right: 5, bottom: 5, left: -15 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                      <XAxis dataKey="date" tick={{ fontSize: 10, fill: '#999' }} />
+                      <YAxis domain={[Math.floor(min - pad), Math.ceil(max + pad)]} tick={{ fontSize: 10, fill: '#999' }} />
+                      <Tooltip contentStyle={{ borderRadius: '12px', border: '1px solid #e5e7eb' }}
+                        formatter={(value) => [`${value} ${unit}`, trendMetric === 'weight' ? '體重' : '體脂率']} />
+                      <Line type="monotone" dataKey="value" stroke={color} strokeWidth={2} dot={{ fill: color, r: 3 }} connectNulls />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              )
+            })()}
+          </div>
+
+          {/* Recent Records */}
+          {records.length > 0 && (
+            <div>
+              <h4 className="text-sm font-bold text-gray-700 mb-2">📋 最近紀錄</h4>
+              <div className="space-y-1.5">
+                {records.slice(0, 5).map((r, i) => (
+                  <div key={i} className="flex items-center justify-between px-3 py-2 bg-gray-50 rounded-xl text-sm">
+                    <span className="text-gray-500">{r.date}</span>
+                    <div className="flex gap-3">
+                      {r.weight && <span className="font-medium text-gray-900">{r.weight} kg</span>}
+                      {r.body_fat && <span className="text-amber-600">{r.body_fat}%</span>}
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
         </div>

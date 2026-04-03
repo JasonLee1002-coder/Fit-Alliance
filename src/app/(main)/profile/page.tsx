@@ -2,12 +2,15 @@
 
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 
 export default function ProfilePage() {
   const router = useRouter()
+  const avatarInputRef = useRef<HTMLInputElement>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
+  const [uploadingAvatar, setUploadingAvatar] = useState(false)
   const [form, setForm] = useState({
     name: '',
     gender: '',
@@ -41,8 +44,36 @@ export default function ProfilePage() {
         target_weight: data.target_weight?.toString() || '',
         target_date: data.target_date || '',
       })
+      setAvatarUrl(data.avatar_url || null)
     }
     setLoading(false)
+  }
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setUploadingAvatar(true)
+    const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return
+
+    const fileName = `avatars/${user.id}/${Date.now()}_${file.name}`
+    const { data: uploadData } = await supabase.storage
+      .from('avatars')
+      .upload(fileName, file, { upsert: true })
+
+    if (uploadData) {
+      const { data: { publicUrl } } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(fileName)
+
+      await supabase.from('fa_users').update({ avatar_url: publicUrl }).eq('id', user.id)
+      setAvatarUrl(publicUrl)
+    }
+
+    setUploadingAvatar(false)
+    e.target.value = ''
   }
 
   const handleSave = async () => {
@@ -70,13 +101,52 @@ export default function ProfilePage() {
     router.push('/login')
   }
 
-  if (loading) return <div className="text-center text-gray-400 py-20">載入中...</div>
+  if (loading) return (
+    <div className="space-y-4">
+      <div className="yuzu-skeleton h-8 w-40" />
+      <div className="bg-white rounded-3xl p-6 space-y-4">
+        <div className="flex justify-center"><div className="yuzu-skeleton w-24 h-24 rounded-full" /></div>
+        {[1,2,3,4].map(i => <div key={i} className="yuzu-skeleton h-12 w-full" />)}
+      </div>
+    </div>
+  )
 
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold text-gray-900">⚙️ 個人設定</h1>
 
       <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 space-y-5">
+        {/* Avatar Upload */}
+        <div className="flex flex-col items-center">
+          <button
+            onClick={() => avatarInputRef.current?.click()}
+            disabled={uploadingAvatar}
+            className="relative group"
+          >
+            <div className={`w-24 h-24 rounded-full overflow-hidden border-4 border-white shadow-lg ${uploadingAvatar ? 'opacity-50' : ''}`}>
+              {avatarUrl ? (
+                <img src={avatarUrl} alt="頭像" className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center">
+                  <span className="text-white text-3xl font-bold">{form.name.charAt(0) || '?'}</span>
+                </div>
+              )}
+            </div>
+            <div className="absolute inset-0 rounded-full bg-black/0 group-hover:bg-black/30 flex items-center justify-center transition">
+              <span className="text-white opacity-0 group-hover:opacity-100 transition text-sm font-medium">
+                {uploadingAvatar ? '上傳中...' : '📷 換照片'}
+              </span>
+            </div>
+            {uploadingAvatar && (
+              <div className="absolute inset-0 rounded-full flex items-center justify-center">
+                <span className="yuzu-spinner-dark yuzu-spinner" />
+              </div>
+            )}
+          </button>
+          <input ref={avatarInputRef} type="file" accept="image/*" onChange={handleAvatarUpload} className="hidden" />
+          <p className="text-xs text-gray-400 mt-2">點擊頭像更換照片</p>
+        </div>
+
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">暱稱</label>
           <input type="text" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} className="w-full rounded-xl border border-gray-200 px-4 py-3 text-gray-900 focus:border-emerald-400 outline-none" />
@@ -117,8 +187,13 @@ export default function ProfilePage() {
         </div>
 
         <button onClick={handleSave} disabled={saving}
-          className="w-full py-4 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-bold rounded-2xl shadow-lg disabled:opacity-50 text-lg active:scale-[0.98] transition">
-          {saving ? '儲存中...' : '💾 儲存設定'}
+          className={`w-full py-4 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-bold rounded-2xl shadow-lg disabled:opacity-50 text-lg active:scale-[0.98] transition ${saving ? 'yuzu-btn-loading' : ''}`}>
+          {saving ? (
+            <span className="flex items-center justify-center gap-2">
+              <span className="yuzu-spinner" />
+              儲存中...
+            </span>
+          ) : '💾 儲存設定'}
         </button>
       </div>
 

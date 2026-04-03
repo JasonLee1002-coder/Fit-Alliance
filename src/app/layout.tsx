@@ -15,7 +15,11 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "瘦身減肥聯盟 | Fit Alliance",
   description: "一起變瘦，一起變強。AI 教練陪你減脂，群體力量讓你堅持。",
-  icons: { icon: "/favicon.ico" },
+  icons: [
+    { rel: "icon", url: "/favicon.png", sizes: "48x48", type: "image/png" },
+    { rel: "apple-touch-icon", url: "/icon-192.png" },
+  ],
+  manifest: "/manifest.json",
 };
 
 export default function RootLayout({

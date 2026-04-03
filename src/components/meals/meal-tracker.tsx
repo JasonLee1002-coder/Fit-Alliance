@@ -5,6 +5,9 @@ import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import type { MealRecord, FoodItem } from '@/types'
 
+const cameraInputId = 'meal-camera-input'
+const galleryInputId = 'meal-gallery-input'
+
 const MEAL_TYPES = [
   { value: 'breakfast', label: '🌅 早餐', color: 'bg-orange-50 border-orange-200' },
   { value: 'lunch', label: '☀️ 午餐', color: 'bg-yellow-50 border-yellow-200' },
@@ -20,7 +23,8 @@ interface Props {
 
 export default function MealTracker({ userId, todayMeals, recentMeals }: Props) {
   const router = useRouter()
-  const fileInputRef = useRef<HTMLInputElement>(null)
+  const cameraInputRef = useRef<HTMLInputElement>(null)
+  const galleryInputRef = useRef<HTMLInputElement>(null)
   const [selectedMealType, setSelectedMealType] = useState<string>('lunch')
   const [uploading, setUploading] = useState(false)
   const [recognizedItems, setRecognizedItems] = useState<FoodItem[]>([])
@@ -156,7 +160,14 @@ export default function MealTracker({ userId, todayMeals, recentMeals }: Props) 
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-gray-900">📸 飲食紀錄</h1>
+      {/* Hero Section */}
+      <div className="bg-gradient-to-br from-violet-50 to-purple-50 rounded-3xl p-5 border border-purple-100 flex items-center gap-4">
+        <img src="/char-food-hero.png" alt="" className="w-20 h-20 drop-shadow-lg yuzu-float" />
+        <div>
+          <h1 className="text-2xl font-black text-gray-900">飲食紀錄</h1>
+          <p className="text-sm text-gray-500 mt-0.5">拍照或上傳，AI 自動辨識營養</p>
+        </div>
+      </div>
 
       {/* Meal Type Selector */}
       <div className="grid grid-cols-4 gap-2">
@@ -183,41 +194,80 @@ export default function MealTracker({ userId, todayMeals, recentMeals }: Props) 
               <img src={photoUrl} alt="食物照片" className="w-full max-h-64 object-cover rounded-2xl" />
             </div>
           ) : (
-            <div className="mb-4 p-8 border-2 border-dashed border-gray-200 rounded-2xl">
-              <span className="text-5xl">📷</span>
-              <p className="text-gray-500 mt-2">拍攝或上傳食物照片</p>
-              <p className="text-gray-400 text-sm">AI 將自動辨識食物並估算營養</p>
+            <div className="mb-4 p-6 border-2 border-dashed border-gray-200 rounded-2xl bg-gray-50/50">
+              <img src="/illust-foods-sm.png" alt="" className="w-20 h-20 mx-auto mb-3 drop-shadow yuzu-float" />
+              <p className="text-gray-600 font-medium">拍攝或上傳食物照片</p>
+              <p className="text-gray-400 text-xs mt-1">AI 自動辨識食物名稱與營養成分</p>
             </div>
           )}
 
+          {/* Separate Camera + Gallery buttons */}
           <div className="flex gap-3 justify-center">
             <button
-              onClick={() => fileInputRef.current?.click()}
+              onClick={() => {
+                if (cameraInputRef.current) {
+                  cameraInputRef.current.setAttribute('capture', 'environment')
+                  cameraInputRef.current.click()
+                }
+              }}
               disabled={uploading}
-              className={`px-6 py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-medium rounded-2xl shadow hover:shadow-md transition active:scale-[0.98] disabled:opacity-50 ${uploading ? 'yuzu-btn-loading' : ''}`}
+              className="flex-1 py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-medium rounded-2xl shadow hover:shadow-md transition active:scale-[0.98] disabled:opacity-50"
             >
-              {uploading ? (
-                <span className="flex items-center gap-2">
-                  <span className="yuzu-spinner" />
-                  AI 辨識中
-                  <span className="yuzu-thinking-dot inline-block w-1 h-1 rounded-full bg-white" />
-                  <span className="yuzu-thinking-dot inline-block w-1 h-1 rounded-full bg-white" />
-                  <span className="yuzu-thinking-dot inline-block w-1 h-1 rounded-full bg-white" />
-                </span>
-              ) : '📸 拍照 / 上傳'}
+              📷 拍照
+            </button>
+            <button
+              onClick={() => {
+                if (galleryInputRef.current) {
+                  galleryInputRef.current.removeAttribute('capture')
+                  galleryInputRef.current.click()
+                }
+              }}
+              disabled={uploading}
+              className="flex-1 py-3 bg-gradient-to-r from-violet-500 to-purple-600 text-white font-medium rounded-2xl shadow hover:shadow-md transition active:scale-[0.98] disabled:opacity-50"
+            >
+              🖼️ 上傳照片
             </button>
           </div>
 
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            capture="environment"
-            onChange={handlePhotoUpload}
-            className="hidden"
-          />
+          {/* Loading state */}
+          {uploading && (
+            <div className="mt-4 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl border border-blue-200/50 relative overflow-hidden">
+              <div className="flex items-center justify-center gap-3">
+                <div className="yuzu-spinner yuzu-spinner-dark" />
+                <span className="text-sm font-medium text-blue-700 yuzu-text-glow">AI 辨識中</span>
+                <span className="flex gap-0.5">
+                  <span className="yuzu-thinking-dot inline-block w-1.5 h-1.5 rounded-full bg-blue-500" />
+                  <span className="yuzu-thinking-dot inline-block w-1.5 h-1.5 rounded-full bg-blue-500" />
+                  <span className="yuzu-thinking-dot inline-block w-1.5 h-1.5 rounded-full bg-blue-500" />
+                </span>
+              </div>
+              <div className="absolute inset-0 yuzu-shimmer pointer-events-none" />
+            </div>
+          )}
+
+          <input ref={cameraInputRef} type="file" accept="image/*" capture="environment" onChange={handlePhotoUpload} className="hidden" />
+          <input ref={galleryInputRef} type="file" accept="image/*" onChange={handlePhotoUpload} className="hidden" />
         </div>
       </div>
+
+      {/* Illustration: calorie guide */}
+      {!showResult && todayMeals.length === 0 && (
+        <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-5">
+          <div className="flex items-center gap-4">
+            <img src="/char-calorie-sm.png" alt="" className="w-16 h-16 drop-shadow" />
+            <div>
+              <h3 className="text-sm font-bold text-gray-800">💡 你知道嗎？</h3>
+              <p className="text-xs text-gray-500 mt-1 leading-relaxed">
+                蛋白質每克 4 大卡，但消化蛋白質就要消耗 30% 能量。
+                多吃蛋白質不但飽足感強，還能加速代謝！
+              </p>
+            </div>
+          </div>
+          <div className="mt-3 flex justify-center">
+            <img src="/illust-transform-sm.png" alt="" className="w-48 h-auto opacity-70 rounded-xl" />
+          </div>
+        </div>
+      )}
 
       {/* AI Recognition Results (editable) */}
       {showResult && (

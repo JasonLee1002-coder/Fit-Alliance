@@ -52,7 +52,7 @@ export default function Sidebar({ user }: { user: User | null }) {
         {/* Logo */}
         <div className="p-5 border-b border-gray-50">
           <div className="flex items-center gap-3">
-            <img src="/icon-192.png" alt="Fit Alliance" className="w-10 h-10 rounded-xl shadow" />
+            <img src="/icon-192.png" alt="Fit Alliance" className="w-12 h-12 rounded-xl shadow" />
             <div>
               <h1 className="font-bold text-gray-900 text-sm">瘦身減肥聯盟</h1>
               <p className="text-[10px] text-gray-400">Fit Alliance</p>
@@ -76,7 +76,7 @@ export default function Sidebar({ user }: { user: User | null }) {
                     : 'text-gray-600 hover:bg-gray-50'
                 )}
               >
-                <img src={item.img} alt="" className="w-8 h-8 rounded-lg" />
+                <img src={item.img} alt="" className="w-11 h-11 drop-shadow" />
                 <div>
                   <div>{item.label}</div>
                   <div className="text-[10px] text-gray-400">{item.description}</div>

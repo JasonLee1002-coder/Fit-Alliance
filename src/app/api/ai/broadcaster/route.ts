@@ -55,6 +55,18 @@ export async function POST(request: Request) {
       .from('fa_member_relationships')
       .select('from_user_id, to_user_id, label')
 
+    // Build relationship map for richer commentary
+    const relMap: Record<string, string[]> = {}
+    rels?.forEach(r => {
+      const fromName = participantData.find((_, i) => participants[i].user_id === r.from_user_id)?.name
+      const toName = participantData.find((_, i) => participants[i].user_id === r.to_user_id)?.name
+      if (fromName && toName) {
+        if (!relMap[fromName]) relMap[fromName] = []
+        relMap[fromName].push(`${toName}是${fromName}的${r.label}`)
+      }
+    })
+    const relationshipContext = Object.values(relMap).flat().join('、') || '尚未設定關係'
+
     const daysLeft = Math.max(0, Math.ceil((new Date(challenge.end_date).getTime() - Date.now()) / 86400000))
 
     const { text } = await generateText({
@@ -75,6 +87,9 @@ export async function POST(request: Request) {
 
 參賽者戰況：
 ${participantData.map((p, i) => `${i + 1}. ${p.name}：進度 ${p.progressPercent}%（起始 ${p.startValue}kg → 目前 ${p.currentValue}kg）${p.personalGoal ? `，動力：「${p.personalGoal}」` : ''}`).join('\n')}
+
+參賽者之間的關係：${relationshipContext}
+（如果有關係設定，用關係稱呼他們，例如叫「老公」而不是「Jason」，讓播報更有溫度）
 
 請生成一段精彩的賽況播報！`,
     })

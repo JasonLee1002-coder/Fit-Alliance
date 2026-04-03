@@ -223,6 +223,7 @@ export default function ChallengeHub({ userId, userName, challenges, allParticip
             onChatInputChange={setChatInput}
             onTriggerAI={() => triggerAIBroadcast(challenge.id)}
             onShare={() => shareChallenge(challenge)}
+            onRelationshipSaved={loadRelationships}
           />
         )
       })}
@@ -245,15 +246,16 @@ export default function ChallengeHub({ userId, userName, challenges, allParticip
 }
 
 // ─── Challenge Card ───
-function ChallengeCard({ challenge, participants, myParticipant, avgProgress, completedCount, userId, relationships, chatOpen, chatMessages, chatInput, onToggleChat, onSendMessage, onChatInputChange, onTriggerAI, onShare }: {
+function ChallengeCard({ challenge, participants, myParticipant, avgProgress, completedCount, userId, relationships, chatOpen, chatMessages, chatInput, onToggleChat, onSendMessage, onChatInputChange, onTriggerAI, onShare, onRelationshipSaved }: {
   challenge: Challenge; participants: ParticipantWithUser[]; myParticipant?: ParticipantWithUser
   avgProgress: number; completedCount: number; userId: string; relationships: Record<string, string>
   chatOpen: boolean; chatMessages: GroupMessage[]; chatInput: string
   onToggleChat: () => void; onSendMessage: () => void; onChatInputChange: (v: string) => void
-  onTriggerAI: () => void; onShare: () => void
+  onTriggerAI: () => void; onShare: () => void; onRelationshipSaved: () => void
 }) {
   const countdown = useCountdown(challenge.end_date)
   const isActive = challenge.status === 'active'
+  const [selectedMember, setSelectedMember] = useState<{ participant: ParticipantWithUser; rank: number } | null>(null)
 
   // Time progress
   const startTime = new Date(challenge.start_date).getTime()
@@ -367,7 +369,8 @@ function ChallengeCard({ challenge, participants, myParticipant, avgProgress, co
           <h3 className="text-sm font-bold text-gray-700 mb-2 px-1">🏆 排行榜</h3>
           <div className="space-y-2">
             {participants.map((p, index) => (
-              <LeaderboardRow key={p.id} participant={p} rank={index} userId={userId} relationship={relationships[p.user_id]} />
+              <LeaderboardRow key={p.id} participant={p} rank={index} userId={userId} relationship={relationships[p.user_id]}
+                onTap={() => setSelectedMember({ participant: p, rank: index })} />
             ))}
           </div>
         </div>
@@ -440,13 +443,175 @@ function ChallengeCard({ challenge, participants, myParticipant, avgProgress, co
           </div>
         )}
       </div>
+
+      {/* Member Detail Drawer */}
+      {selectedMember && (
+        <MemberDrawer
+          participant={selectedMember.participant}
+          rank={selectedMember.rank}
+          userId={userId}
+          relationship={relationships[selectedMember.participant.user_id]}
+          onClose={() => setSelectedMember(null)}
+          onRelationshipSaved={onRelationshipSaved}
+        />
+      )}
     </div>
   )
 }
 
-// ─── Leaderboard Row ───
-function LeaderboardRow({ participant: p, rank, userId, relationship }: {
+// ─── Member Detail Drawer ───
+const PRESET_RELATIONSHIPS = ['老公', '老婆', '女兒', '兒子', '爸爸', '媽媽', '公公', '婆婆', '哥哥', '姐姐', '弟弟', '妹妹', '好友', '同事', '戰友', '閨蜜', '鄰居', '同學']
+
+function MemberDrawer({ participant: p, rank, userId, relationship, onClose, onRelationshipSaved }: {
   participant: ParticipantWithUser; rank: number; userId: string; relationship?: string
+  onClose: () => void; onRelationshipSaved: () => void
+}) {
+  const [editing, setEditing] = useState(false)
+  const [relLabel, setRelLabel] = useState(relationship || '')
+  const [customLabel, setCustomLabel] = useState('')
+  const [saving, setSaving] = useState(false)
+  const isMe = p.user_id === userId
+  const style = RANK_STYLES[rank] ?? DEFAULT_RANK
+  const pct = Math.min(p.progress, 100)
+
+  const handleSaveRelationship = async (label: string) => {
+    if (!label.trim()) return
+    setSaving(true)
+    const supabase = createClient()
+    await supabase.from('fa_member_relationships').upsert({
+      from_user_id: userId,
+      to_user_id: p.user_id,
+      label: label.trim(),
+    }, { onConflict: 'from_user_id,to_user_id' })
+    setRelLabel(label.trim())
+    setEditing(false)
+    setSaving(false)
+    onRelationshipSaved()
+  }
+
+  return (
+    <>
+      {/* Overlay */}
+      <div className="fixed inset-0 bg-black/40 z-50" onClick={onClose} />
+
+      {/* Drawer */}
+      <div className="fixed bottom-0 left-0 right-0 z-50 bg-white rounded-t-3xl shadow-2xl max-h-[85vh] overflow-y-auto yuzu-slide-up">
+        <div className="sticky top-0 bg-white pt-3 pb-2 px-5 border-b border-gray-100 flex justify-between items-center">
+          <span className="text-lg font-bold text-gray-900">成員詳情</span>
+          <button onClick={onClose} className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500">✕</button>
+        </div>
+
+        <div className="p-5 space-y-5">
+          {/* Avatar + Name + Rank */}
+          <div className="flex flex-col items-center">
+            <div className={`w-20 h-20 rounded-full flex items-center justify-center overflow-hidden ${style.avatarRing}`}>
+              {p.user?.avatar_url ? (
+                <img src={p.user.avatar_url} alt="" className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center">
+                  <span className="text-white text-2xl font-bold">{p.user?.name?.charAt(0)}</span>
+                </div>
+              )}
+            </div>
+            <div className="mt-2 flex items-center gap-2">
+              <span className="text-xl">{style.badge || `#${rank + 1}`}</span>
+              <span className="text-lg font-bold text-gray-900">{p.user?.name}{isMe && ' (你)'}</span>
+            </div>
+            {relLabel && <span className="text-sm text-emerald-600 bg-emerald-50 px-3 py-0.5 rounded-full mt-1">{relLabel}</span>}
+          </div>
+
+          {/* Progress Ring */}
+          <div className="flex justify-center">
+            <div className="relative w-32 h-32">
+              <svg className="w-32 h-32 -rotate-90" viewBox="0 0 120 120">
+                <circle cx="60" cy="60" r="50" fill="none" stroke="#e5e7eb" strokeWidth="10" />
+                <circle cx="60" cy="60" r="50" fill="none" stroke={pct >= 100 ? '#10b981' : pct >= 50 ? '#f59e0b' : '#6366f1'}
+                  strokeWidth="10" strokeLinecap="round" strokeDasharray={`${pct * 3.14} ${314 - pct * 3.14}`} />
+              </svg>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <span className="text-2xl font-black text-gray-900">{pct.toFixed(0)}%</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Data Cards */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="bg-gray-50 rounded-2xl p-3 text-center">
+              <div className="text-xs text-gray-400">起始值</div>
+              <div className="text-lg font-bold text-gray-700">{p.start_value || '-'} kg</div>
+            </div>
+            <div className="bg-gray-50 rounded-2xl p-3 text-center">
+              <div className="text-xs text-gray-400">目前值</div>
+              <div className="text-lg font-bold text-gray-900">{p.current_value || '-'} kg</div>
+            </div>
+          </div>
+
+          {/* Change */}
+          {p.start_value && p.current_value && (
+            <div className={`rounded-2xl p-3 text-center ${p.current_value < p.start_value ? 'bg-emerald-50' : 'bg-red-50'}`}>
+              <span className={`text-lg font-bold ${p.current_value < p.start_value ? 'text-emerald-600' : 'text-red-500'}`}>
+                {p.current_value < p.start_value ? '↓' : '↑'} {Math.abs(p.start_value - p.current_value).toFixed(1)} kg
+              </span>
+            </div>
+          )}
+
+          {/* Relationship Editor */}
+          {!isMe && (
+            <div>
+              {editing ? (
+                <div className="space-y-3 p-4 bg-gray-50 rounded-2xl">
+                  <p className="text-sm font-medium text-gray-700">選擇關係：</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {PRESET_RELATIONSHIPS.map(r => (
+                      <button key={r} onClick={() => handleSaveRelationship(r)}
+                        className={`text-xs px-2.5 py-1 rounded-full transition ${relLabel === r ? 'bg-emerald-500 text-white' : 'bg-white border border-gray-200 text-gray-600 hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-300'}`}>
+                        {r}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="flex gap-2 mt-2">
+                    <input type="text" value={customLabel} onChange={e => setCustomLabel(e.target.value)}
+                      placeholder="自訂關係（最多20字）" maxLength={20}
+                      className="flex-1 rounded-xl border border-gray-200 px-3 py-2 text-sm focus:border-emerald-400 outline-none" />
+                    <button onClick={() => customLabel && handleSaveRelationship(customLabel)} disabled={!customLabel || saving}
+                      className="px-4 py-2 bg-emerald-500 text-white rounded-xl text-sm font-medium disabled:opacity-50">
+                      {saving ? '...' : '儲存'}
+                    </button>
+                  </div>
+                  <button onClick={() => setEditing(false)} className="w-full text-center text-sm text-gray-400">取消</button>
+                </div>
+              ) : relLabel ? (
+                <button onClick={() => setEditing(true)}
+                  className="w-full px-4 py-2.5 rounded-2xl font-semibold text-sm text-white shadow-sm text-center"
+                  style={{ background: 'linear-gradient(135deg, #86efac, #4ade80)' }}>
+                  ❤️ {relLabel} · 點此修改
+                </button>
+              ) : (
+                <button onClick={() => setEditing(true)}
+                  className="w-full px-4 py-2.5 rounded-2xl font-semibold text-sm text-center border-2 border-dashed"
+                  style={{ borderColor: '#818cf8', color: '#6366f1', background: 'linear-gradient(135deg, #eef2ff, #e0e7ff)' }}>
+                  👥 設定與我的關係（讓 AI 更親切）
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* Personal Goal */}
+          {p.personal_goal && (
+            <div className="bg-amber-50 rounded-2xl p-3 border border-amber-200/60">
+              <p className="text-xs text-amber-600 mb-1">🎯 比賽目的</p>
+              <p className="text-sm text-amber-900">「{p.personal_goal}」</p>
+            </div>
+          )}
+        </div>
+      </div>
+    </>
+  )
+}
+
+// ─── Leaderboard Row ───
+function LeaderboardRow({ participant: p, rank, userId, relationship, onTap }: {
+  participant: ParticipantWithUser; rank: number; userId: string; relationship?: string; onTap: () => void
 }) {
   const style = RANK_STYLES[rank] ?? DEFAULT_RANK
   const pct = Math.min(p.progress, 100)
@@ -458,7 +623,7 @@ function LeaderboardRow({ participant: p, rank, userId, relationship }: {
   const isMe = p.user_id === userId
 
   return (
-    <div className={`relative rounded-2xl p-3 transition-all ${style.bg} ${style.border} ${style.shadow} ${isMe ? 'ring-2 ring-emerald-400' : ''}`}>
+    <button onClick={onTap} className={`relative rounded-2xl p-3 transition-all w-full text-left ${style.bg} ${style.border} ${style.shadow} ${isMe ? 'ring-2 ring-emerald-400' : ''} hover:shadow-lg active:scale-[0.98]`}>
       {style.crown && <span className="absolute -top-3 left-1/2 -translate-x-1/2 text-xl">👑</span>}
 
       <div className="flex items-center gap-3">
@@ -503,8 +668,11 @@ function LeaderboardRow({ participant: p, rank, userId, relationship }: {
             </span>
           </div>
         </div>
+
+        {/* Chevron */}
+        <span className="text-gray-300 flex-shrink-0">›</span>
       </div>
-    </div>
+    </button>
   )
 }
 

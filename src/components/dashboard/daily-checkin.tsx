@@ -17,11 +17,15 @@ interface Props {
 
 export default function DailyCheckIn({ user, records, todayRecord, dailyLog, streak }: Props) {
   const router = useRouter()
-  const fileInputRef = useRef<HTMLInputElement>(null)
+  const cameraInputRef = useRef<HTMLInputElement>(null)
+  const galleryInputRef = useRef<HTMLInputElement>(null)
   const [loading, setLoading] = useState(false)
   const [showMore, setShowMore] = useState(false)
   const [encouragement, setEncouragement] = useState('')
   const [justCheckedIn, setJustCheckedIn] = useState(false)
+  const [screenshotPreview, setScreenshotPreview] = useState<string | null>(null)
+  const [screenshotFile, setScreenshotFile] = useState<File | null>(null)
+  const [ocrDone, setOcrDone] = useState(false)
 
   const [form, setForm] = useState({
     weight: todayRecord?.weight?.toString() ?? '',
@@ -40,11 +44,19 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
 
   const lastRecord = records.find(r => r.date !== form.date) ?? records[1]
 
-  const handlePhotoCapture = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
 
+    // Show preview
+    setScreenshotPreview(URL.createObjectURL(file))
+    setScreenshotFile(file)
+    setOcrDone(false)
     setOcrLoading(true)
+
+    // Auto-expand more fields since OCR may fill them
+    setShowMore(true)
+
     try {
       const formData = new FormData()
       formData.append('image', file)
@@ -63,12 +75,16 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
         if (data.bmi) setForm(f => ({ ...f, bmi: data.bmi.toString() }))
         if (data.bmr) setForm(f => ({ ...f, bmr: data.bmr.toString() }))
         if (data.bone_mass) setForm(f => ({ ...f, bone_mass: data.bone_mass.toString() }))
+        setOcrDone(true)
       }
     } catch {
       // OCR failed, user can input manually
     } finally {
       setOcrLoading(false)
     }
+
+    // Reset input so same file can be re-selected
+    e.target.value = ''
   }
 
   const handleSubmit = async () => {
@@ -80,6 +96,21 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
       const { data: { user: authUser } } = await supabase.auth.getUser()
       if (!authUser) return
 
+      // Upload screenshot if exists
+      let screenshotUrl: string | null = null
+      if (screenshotFile) {
+        const fileName = `weight-screenshots/${authUser.id}/${Date.now()}_${screenshotFile.name}`
+        const { data: uploadData } = await supabase.storage
+          .from('weight-screenshots')
+          .upload(fileName, screenshotFile)
+        if (uploadData) {
+          const { data: { publicUrl } } = supabase.storage
+            .from('weight-screenshots')
+            .getPublicUrl(fileName)
+          screenshotUrl = publicUrl
+        }
+      }
+
       const record = {
         user_id: authUser.id,
         date: form.date,
@@ -90,6 +121,7 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
         bone_mass: form.bone_mass ? parseFloat(form.bone_mass) : null,
         bmr: form.bmr ? parseFloat(form.bmr) : null,
         bmi: form.bmi ? parseFloat(form.bmi) : null,
+        ...(screenshotUrl ? { screenshot_url: screenshotUrl } : {}),
       }
 
       if (todayRecord) {
@@ -189,26 +221,50 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
           <h2 className="text-lg font-bold text-gray-900">⚡ 今日打卡</h2>
           <div className="flex gap-2">
             <button
-              onClick={() => fileInputRef.current?.click()}
+              onClick={() => {
+                if (galleryInputRef.current) {
+                  galleryInputRef.current.removeAttribute('capture')
+                  galleryInputRef.current.click()
+                }
+              }}
               disabled={ocrLoading}
               className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-600 hover:border-emerald-300 transition active:scale-[0.98]"
             >
-              {ocrLoading ? '辨識中...' : '📷 拍照辨識'}
+              🖼️ 選截圖
             </button>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              capture="environment"
-              onChange={handlePhotoCapture}
-              className="hidden"
-            />
+            <button
+              onClick={() => {
+                if (cameraInputRef.current) {
+                  cameraInputRef.current.setAttribute('capture', 'environment')
+                  cameraInputRef.current.click()
+                }
+              }}
+              disabled={ocrLoading}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-600 hover:border-emerald-300 transition active:scale-[0.98]"
+            >
+              📷 拍照
+            </button>
+            <input ref={cameraInputRef} type="file" accept="image/*" capture="environment" onChange={handleImageSelect} className="hidden" />
+            <input ref={galleryInputRef} type="file" accept="image/*" onChange={handleImageSelect} className="hidden" />
           </div>
         </div>
 
+        {/* Screenshot Preview */}
+        {screenshotPreview && (
+          <div className="mb-4 rounded-2xl overflow-hidden border border-gray-200">
+            <img src={screenshotPreview} alt="截圖預覽" className="w-full max-h-48 object-contain bg-gray-50" />
+          </div>
+        )}
+
+        {/* OCR Status */}
         {ocrLoading && (
-          <div className="mb-4 p-3 bg-blue-50 rounded-xl text-sm text-blue-600">
+          <div className="mb-4 p-3 bg-blue-50 rounded-xl text-sm text-blue-600 yuzu-shimmer">
             🧠 AI 正在辨識圖片中的數值...
+          </div>
+        )}
+        {ocrDone && !ocrLoading && (
+          <div className="mb-4 p-3 bg-emerald-50 rounded-xl text-sm text-emerald-700 border border-emerald-200">
+            ✅ AI 辨識完成，請確認數值（可手動修正）
           </div>
         )}
 
@@ -400,15 +456,15 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
       {/* Quick Links */}
       <div className="grid grid-cols-2 gap-3">
         {[
-          { href: '/challenge', icon: '🏆', label: '共同挑戰', color: 'bg-orange-50 text-orange-700' },
-          { href: '/coach', icon: '🤖', label: 'AI 教練', color: 'bg-purple-50 text-purple-700' },
-          { href: '/invite', icon: '🤝', label: '個人邀請朋友', color: 'bg-blue-50 text-blue-700' },
-          { href: '/meals', icon: '📸', label: '飲食紀錄', color: 'bg-emerald-50 text-emerald-700' },
+          { href: '/challenge', icon: '🏆', label: '共同挑戰', color: 'bg-orange-50 text-orange-700', glow: true },
+          { href: '/coach', icon: '🤖', label: 'AI 教練', color: 'bg-purple-50 text-purple-700', glow: false },
+          { href: '/invite', icon: '🤝', label: '個人邀請朋友', color: 'bg-blue-50 text-blue-700', glow: false },
+          { href: '/meals', icon: '📸', label: '飲食紀錄', color: 'bg-emerald-50 text-emerald-700', glow: false },
         ].map(link => (
           <a
             key={link.href}
             href={link.href}
-            className={`${link.color} rounded-2xl p-4 flex items-center gap-3 hover:shadow-md transition active:scale-[0.98]`}
+            className={`${link.color} rounded-2xl p-4 flex items-center gap-3 hover:shadow-md transition active:scale-[0.98] ${link.glow ? 'yuzu-glow-urgent relative overflow-visible' : ''}`}
           >
             <span className="text-2xl">{link.icon}</span>
             <span className="font-medium">{link.label}</span>

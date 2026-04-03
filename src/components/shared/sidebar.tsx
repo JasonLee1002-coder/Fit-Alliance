@@ -12,7 +12,7 @@ const navItems = [
   { href: '/coach', label: 'AI 教練', icon: '🤖', description: '個人指導' },
   { href: '/records', label: '健康紀錄', icon: '📊', description: '趨勢圖表' },
   { href: '/challenge', label: '共同挑戰', icon: '🏆', description: '排行榜' },
-  { href: '/invite', label: '邀請朋友', icon: '🤝', description: '分享連結' },
+  { href: '/invite', label: '個人邀請朋友', icon: '🤝', description: '分享連結' },
   { href: '/report', label: '問題回報', icon: '💬', description: '回報問題' },
 ]
 

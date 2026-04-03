@@ -84,7 +84,7 @@ export default function InvitePage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-gray-900">🤝 邀請朋友</h1>
+      <h1 className="text-2xl font-bold text-gray-900">🤝 個人邀請朋友</h1>
 
       {group ? (
         <>

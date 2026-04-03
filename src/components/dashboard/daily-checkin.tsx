@@ -402,7 +402,7 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
         {[
           { href: '/challenge', icon: '🏆', label: '共同挑戰', color: 'bg-orange-50 text-orange-700' },
           { href: '/coach', icon: '🤖', label: 'AI 教練', color: 'bg-purple-50 text-purple-700' },
-          { href: '/invite', icon: '🤝', label: '邀請朋友', color: 'bg-blue-50 text-blue-700' },
+          { href: '/invite', icon: '🤝', label: '個人邀請朋友', color: 'bg-blue-50 text-blue-700' },
           { href: '/meals', icon: '📸', label: '飲食紀錄', color: 'bg-emerald-50 text-emerald-700' },
         ].map(link => (
           <a

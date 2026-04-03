@@ -33,6 +33,7 @@ export default function MealTracker({ userId, todayMeals, recentMeals }: Props) 
   const [photoUrl, setPhotoUrl] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const [showResult, setShowResult] = useState(false)
+  const [showHistory, setShowHistory] = useState(false)
 
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -160,15 +161,33 @@ export default function MealTracker({ userId, todayMeals, recentMeals }: Props) 
 
   return (
     <div className="space-y-6">
-      {/* Hero Section */}
-      <div className="bg-gradient-to-br from-violet-50 to-purple-50 rounded-3xl p-5 border border-purple-100 flex items-center gap-4">
-        <img src="/char-food-hero.png" alt="" className="w-20 h-20 drop-shadow-lg yuzu-float" />
-        <div>
-          <h1 className="text-2xl font-black text-gray-900">飲食紀錄</h1>
-          <p className="text-sm text-gray-500 mt-0.5">拍照或上傳，AI 自動辨識營養</p>
+      {/* Header with back button */}
+      <div className="flex items-center gap-3">
+        <a href="/" className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-gray-200 transition active:scale-[0.95]">
+          ←
+        </a>
+        <div className="bg-gradient-to-br from-violet-50 to-purple-50 rounded-2xl p-4 border border-purple-100 flex items-center gap-3 flex-1">
+          <img src="/char-food-hero.png" alt="" className="w-14 h-14 drop-shadow-lg yuzu-float" />
+          <div>
+            <h1 className="text-xl font-black text-gray-900">飲食紀錄</h1>
+            <p className="text-xs text-gray-500">拍照或上傳，AI 自動辨識</p>
+          </div>
         </div>
       </div>
 
+      {/* Tab: 記錄 / 歷史 */}
+      <div className="flex gap-2">
+        <button onClick={() => setShowHistory(false)}
+          className={`px-4 py-2 rounded-xl text-sm font-medium transition ${!showHistory ? 'bg-violet-500 text-white' : 'bg-gray-100 text-gray-600'}`}>
+          📸 記錄飲食
+        </button>
+        <button onClick={() => setShowHistory(true)}
+          className={`px-4 py-2 rounded-xl text-sm font-medium transition ${showHistory ? 'bg-violet-500 text-white' : 'bg-gray-100 text-gray-600'}`}>
+          📋 歷史查詢
+        </button>
+      </div>
+
+      {!showHistory ? (<>
       {/* Meal Type Selector */}
       <div className="grid grid-cols-4 gap-2">
         {MEAL_TYPES.map(type => (
@@ -366,6 +385,8 @@ export default function MealTracker({ userId, todayMeals, recentMeals }: Props) 
         </div>
       )}
 
+      </>) : (<>
+      {/* ═══ History Tab ═══ */}
       {/* Today's Meals */}
       {todayMeals.length > 0 && (
         <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6">
@@ -409,6 +430,46 @@ export default function MealTracker({ userId, todayMeals, recentMeals }: Props) 
           </div>
         </div>
       )}
+
+      {/* Recent History */}
+      {recentMeals.length > 0 && (
+        <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6">
+          <h3 className="text-lg font-bold text-gray-900 mb-4">📅 歷史紀錄</h3>
+          <div className="space-y-2">
+            {recentMeals.filter(m => m.date !== new Date().toISOString().split('T')[0]).slice(0, 20).map(meal => {
+              const items = (meal.user_corrected_items || meal.ai_recognized_items || []) as FoodItem[]
+              return (
+                <div key={meal.id} className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
+                  {meal.photo_url ? (
+                    <img src={meal.photo_url} alt="" className="w-12 h-12 rounded-lg object-cover flex-shrink-0" />
+                  ) : (
+                    <div className="w-12 h-12 rounded-lg bg-purple-100 flex items-center justify-center flex-shrink-0">
+                      <span className="text-lg">{MEAL_TYPES.find(t => t.value === meal.meal_type)?.label.charAt(0) || '🍽️'}</span>
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-xs font-medium text-gray-900">{meal.date}</span>
+                      <span className="text-xs text-gray-400">{MEAL_TYPES.find(t => t.value === meal.meal_type)?.label}</span>
+                    </div>
+                    <div className="text-xs text-gray-500 truncate">{items.map(i => i.name).join('、')}</div>
+                  </div>
+                  <span className="text-sm font-bold text-purple-600">{totalCalories(items)} kcal</span>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
+
+      {todayMeals.length === 0 && recentMeals.length === 0 && (
+        <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-12 text-center">
+          <img src="/illust-foods-sm.png" alt="" className="w-20 h-20 mx-auto mb-3 yuzu-float" />
+          <p className="text-gray-500">還沒有飲食紀錄</p>
+          <button onClick={() => setShowHistory(false)} className="mt-3 text-sm text-violet-600 font-medium">去記錄第一餐 →</button>
+        </div>
+      )}
+      </>)}
     </div>
   )
 }

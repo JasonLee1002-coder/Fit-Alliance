@@ -1,7 +1,7 @@
 import { createServerSupabase } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import DailyCheckIn from '@/components/dashboard/daily-checkin'
-import type { User, HealthRecord } from '@/types'
+import type { User, HealthRecord, MealRecord } from '@/types'
 
 export const dynamic = 'force-dynamic'
 
@@ -16,33 +16,34 @@ export default async function HomePage() {
     .eq('id', authUser.id)
     .single()
 
-  // Get recent health records (last 30)
-  const { data: records } = await supabase
-    .from('fa_health_records')
-    .select('*')
-    .eq('user_id', authUser.id)
-    .order('date', { ascending: false })
-    .limit(30)
-
-  // Get today's record
   const today = new Date().toISOString().split('T')[0]
-  const todayRecord = records?.find(r => r.date === today)
 
-  // Get today's daily log
-  const { data: dailyLog } = await supabase
-    .from('fa_daily_logs')
-    .select('*')
-    .eq('user_id', authUser.id)
-    .eq('date', today)
-    .single()
+  // Fetch in parallel
+  const [
+    { data: records },
+    { data: todayMeals },
+  ] = await Promise.all([
+    supabase
+      .from('fa_health_records')
+      .select('*')
+      .eq('user_id', authUser.id)
+      .order('date', { ascending: false })
+      .limit(30),
+    supabase
+      .from('fa_meal_records')
+      .select('*')
+      .eq('user_id', authUser.id)
+      .eq('date', today)
+      .order('created_at', { ascending: true }),
+  ])
+
+  const todayRecord = records?.find(r => r.date === today)
 
   // Calculate streak
   let streak = 0
   if (records && records.length > 0) {
     const sortedDates = [...new Set(records.map(r => r.date))].sort().reverse()
-    const todayStr = today
-    const checkDate = new Date(todayStr)
-
+    const checkDate = new Date(today)
     for (const dateStr of sortedDates) {
       const expected = checkDate.toISOString().split('T')[0]
       if (dateStr === expected) {
@@ -59,8 +60,9 @@ export default async function HomePage() {
       user={profile as User}
       records={(records ?? []) as HealthRecord[]}
       todayRecord={todayRecord as HealthRecord | undefined}
-      dailyLog={dailyLog}
+      dailyLog={null}
       streak={streak}
+      todayMeals={(todayMeals ?? []) as MealRecord[]}
     />
   )
 }

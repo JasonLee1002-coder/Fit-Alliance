@@ -497,19 +497,19 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
       {/* Quick Links */}
       <div className="grid grid-cols-2 gap-3">
         <a href="/challenge" className="bg-gradient-to-br from-amber-50 to-orange-50 text-orange-700 rounded-2xl p-4 flex items-center gap-3 hover:shadow-lg transition active:scale-[0.98] yuzu-glow-urgent relative overflow-visible border border-orange-100">
-          <img src="/nav3d-challenge-sm.png" alt="" className="w-10 h-10 drop-shadow" />
+          <img src="/nav3d-challenge-sm.png" alt="" className="w-14 h-14 drop-shadow" />
           <span className="font-bold text-sm">共同挑戰</span>
         </a>
         <a href="/coach" className="bg-gradient-to-br from-emerald-50 to-teal-50 text-emerald-700 rounded-2xl p-4 flex items-center gap-3 hover:shadow-lg transition active:scale-[0.98] border border-emerald-100">
-          <img src="/char-coach-sm.png" alt="" className="w-10 h-10 drop-shadow" />
+          <img src="/char-coach-sm.png" alt="" className="w-14 h-14 drop-shadow" />
           <span className="font-bold text-sm">AI 教練</span>
         </a>
         <a href="/invite" className="bg-gradient-to-br from-blue-50 to-indigo-50 text-blue-700 rounded-2xl p-4 flex items-center gap-3 hover:shadow-lg transition active:scale-[0.98] border border-blue-100">
-          <img src="/nav3d-invite-sm.png" alt="" className="w-10 h-10 drop-shadow" />
+          <img src="/nav3d-invite-sm.png" alt="" className="w-14 h-14 drop-shadow" />
           <span className="font-bold text-sm">個人邀請朋友</span>
         </a>
         <a href="/meals" className="bg-gradient-to-br from-violet-50 to-purple-50 text-purple-700 rounded-2xl p-4 flex items-center gap-3 hover:shadow-lg transition active:scale-[0.98] border border-purple-100">
-          <img src="/nav3d-meals-sm.png" alt="" className="w-10 h-10 drop-shadow" />
+          <img src="/nav3d-meals-sm.png" alt="" className="w-14 h-14 drop-shadow" />
           <span className="font-bold text-sm">飲食紀錄</span>
         </a>
       </div>

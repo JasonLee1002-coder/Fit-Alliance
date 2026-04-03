@@ -194,9 +194,17 @@ export default function MealTracker({ userId, todayMeals, recentMeals }: Props) 
             <button
               onClick={() => fileInputRef.current?.click()}
               disabled={uploading}
-              className="px-6 py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-medium rounded-2xl shadow hover:shadow-md transition active:scale-[0.98] disabled:opacity-50"
+              className={`px-6 py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-medium rounded-2xl shadow hover:shadow-md transition active:scale-[0.98] disabled:opacity-50 ${uploading ? 'yuzu-btn-loading' : ''}`}
             >
-              {uploading ? '🧠 AI 辨識中...' : '📸 拍照 / 上傳'}
+              {uploading ? (
+                <span className="flex items-center gap-2">
+                  <span className="yuzu-spinner" />
+                  AI 辨識中
+                  <span className="yuzu-thinking-dot inline-block w-1 h-1 rounded-full bg-white" />
+                  <span className="yuzu-thinking-dot inline-block w-1 h-1 rounded-full bg-white" />
+                  <span className="yuzu-thinking-dot inline-block w-1 h-1 rounded-full bg-white" />
+                </span>
+              ) : '📸 拍照 / 上傳'}
             </button>
           </div>
 
@@ -293,9 +301,17 @@ export default function MealTracker({ userId, todayMeals, recentMeals }: Props) 
           <button
             onClick={handleSave}
             disabled={saving || editingItems.length === 0}
-            className="w-full mt-4 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-bold py-4 rounded-2xl shadow-lg hover:shadow-xl transition-all active:scale-[0.98] disabled:opacity-50 text-lg"
+            className={`w-full mt-4 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-bold py-4 rounded-2xl shadow-lg hover:shadow-xl transition-all active:scale-[0.98] disabled:opacity-50 text-lg ${saving ? 'yuzu-btn-loading' : ''}`}
           >
-            {saving ? '儲存中...' : '💾 儲存飲食紀錄'}
+            {saving ? (
+              <span className="flex items-center justify-center gap-2">
+                <span className="yuzu-spinner" />
+                AI 教練分析中
+                <span className="yuzu-thinking-dot inline-block w-1 h-1 rounded-full bg-white" />
+                <span className="yuzu-thinking-dot inline-block w-1 h-1 rounded-full bg-white" />
+                <span className="yuzu-thinking-dot inline-block w-1 h-1 rounded-full bg-white" />
+              </span>
+            ) : '💾 儲存飲食紀錄'}
           </button>
         </div>
       )}

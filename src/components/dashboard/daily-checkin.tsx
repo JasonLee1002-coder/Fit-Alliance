@@ -36,11 +36,11 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
     bmr: todayRecord?.bmr?.toString() ?? '',
     bmi: todayRecord?.bmi?.toString() ?? '',
     date: new Date().toISOString().split('T')[0],
-    water_ml: dailyLog?.water_ml?.toString() ?? '',
-    bowel_count: dailyLog?.bowel_count?.toString() ?? '0',
   })
 
   const [ocrLoading, setOcrLoading] = useState(false)
+  const weightInputRef = useRef<HTMLInputElement>(null)
+  const submitBtnRef = useRef<HTMLButtonElement>(null)
 
   const lastRecord = records.find(r => r.date !== form.date) ?? records[1]
 
@@ -76,6 +76,13 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
         if (data.bmr) setForm(f => ({ ...f, bmr: data.bmr.toString() }))
         if (data.bone_mass) setForm(f => ({ ...f, bone_mass: data.bone_mass.toString() }))
         setOcrDone(true)
+
+        // Scroll to weight field and flash it
+        setTimeout(() => {
+          weightInputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+          weightInputRef.current?.classList.add('yuzu-flash-border')
+          setTimeout(() => weightInputRef.current?.classList.remove('yuzu-flash-border'), 2000)
+        }, 300)
       }
     } catch {
       // OCR failed, user can input manually
@@ -128,20 +135,6 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
         await supabase.from('fa_health_records').update(record).eq('id', todayRecord.id)
       } else {
         await supabase.from('fa_health_records').insert(record)
-      }
-
-      // Save daily log
-      const logData = {
-        user_id: authUser.id,
-        date: form.date,
-        water_ml: form.water_ml ? parseInt(form.water_ml) : null,
-        bowel_count: form.bowel_count ? parseInt(form.bowel_count) : 0,
-      }
-
-      if (dailyLog) {
-        await supabase.from('fa_daily_logs').update(logData).eq('id', dailyLog.id)
-      } else {
-        await supabase.from('fa_daily_logs').upsert(logData, { onConflict: 'user_id,date' })
       }
 
       // Get AI encouragement
@@ -258,12 +251,24 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
 
         {/* OCR Status */}
         {ocrLoading && (
-          <div className="mb-4 p-3 bg-blue-50 rounded-xl text-sm text-blue-600 yuzu-shimmer">
-            🧠 AI 正在辨識圖片中的數值...
+          <div className="mb-4 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl border border-blue-200/50 relative overflow-hidden">
+            <div className="flex items-center gap-3">
+              <div className="yuzu-spinner-dark yuzu-spinner flex-shrink-0" />
+              <div>
+                <div className="text-sm font-medium text-blue-700 yuzu-text-glow">🧠 AI 正在辨識中</div>
+                <div className="text-xs text-blue-500 mt-0.5 flex items-center gap-1">
+                  分析圖片數值
+                  <span className="yuzu-thinking-dot inline-block w-1 h-1 rounded-full bg-blue-500" />
+                  <span className="yuzu-thinking-dot inline-block w-1 h-1 rounded-full bg-blue-500" />
+                  <span className="yuzu-thinking-dot inline-block w-1 h-1 rounded-full bg-blue-500" />
+                </div>
+              </div>
+            </div>
+            <div className="absolute inset-0 yuzu-shimmer pointer-events-none" />
           </div>
         )}
         {ocrDone && !ocrLoading && (
-          <div className="mb-4 p-3 bg-emerald-50 rounded-xl text-sm text-emerald-700 border border-emerald-200">
+          <div className="mb-4 p-3 bg-emerald-50 rounded-xl text-sm text-emerald-700 border border-emerald-200 yuzu-pop-in">
             ✅ AI 辨識完成，請確認數值（可手動修正）
           </div>
         )}
@@ -272,47 +277,16 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
         <div className="mb-4">
           <label className="block text-sm font-medium text-gray-700 mb-1">體重 (kg)</label>
           <input
+            ref={weightInputRef}
             type="number"
             step="0.1"
             value={form.weight}
             onChange={e => setForm(f => ({ ...f, weight: e.target.value }))}
             placeholder="例：72.5"
-            className="w-full rounded-2xl border border-gray-200 px-4 py-4 text-2xl font-bold text-gray-900 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 outline-none transition"
+            className={`w-full rounded-2xl border-2 px-4 py-4 text-2xl font-bold text-gray-900 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 outline-none transition ${
+              ocrDone && form.weight ? 'border-emerald-400 bg-emerald-50/50 shadow-[0_0_12px_rgba(16,185,129,0.2)]' : 'border-gray-200'
+            }`}
           />
-        </div>
-
-        {/* Daily tracking: water & bowel */}
-        <div className="grid grid-cols-2 gap-3 mb-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">💧 飲水 (ml)</label>
-            <input
-              type="number"
-              step="100"
-              value={form.water_ml}
-              onChange={e => setForm(f => ({ ...f, water_ml: e.target.value }))}
-              placeholder="例：2000"
-              className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-gray-900 focus:border-emerald-400 outline-none transition"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">🚽 排便次數</label>
-            <div className="flex items-center gap-2">
-              {[0, 1, 2, 3].map(n => (
-                <button
-                  key={n}
-                  type="button"
-                  onClick={() => setForm(f => ({ ...f, bowel_count: n.toString() }))}
-                  className={`flex-1 py-2.5 rounded-xl text-sm font-medium transition active:scale-[0.98] ${
-                    form.bowel_count === n.toString()
-                      ? 'bg-emerald-500 text-white'
-                      : 'bg-gray-50 text-gray-600 border border-gray-200'
-                  }`}
-                >
-                  {n}
-                </button>
-              ))}
-            </div>
-          </div>
         </div>
 
         {/* More fields (collapsed) */}
@@ -361,11 +335,20 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
 
         {/* Submit */}
         <button
+          ref={submitBtnRef}
           onClick={handleSubmit}
           disabled={loading || !form.weight}
-          className="w-full bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-bold py-4 rounded-2xl shadow-lg hover:shadow-xl transition-all active:scale-[0.98] disabled:opacity-50 text-lg"
+          className={`w-full bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-bold py-4 rounded-2xl shadow-lg hover:shadow-xl transition-all active:scale-[0.98] disabled:opacity-30 text-lg ${loading ? 'yuzu-btn-loading' : ''} ${form.weight && !loading ? 'yuzu-glow-pulse shadow-emerald-200/50' : ''}`}
         >
-          {loading ? '記錄中...' : '⚡ 立即打卡'}
+          {loading ? (
+            <span className="flex items-center justify-center gap-2">
+              <span className="yuzu-spinner" />
+              記錄中
+              <span className="yuzu-thinking-dot inline-block w-1 h-1 rounded-full bg-white" />
+              <span className="yuzu-thinking-dot inline-block w-1 h-1 rounded-full bg-white" />
+              <span className="yuzu-thinking-dot inline-block w-1 h-1 rounded-full bg-white" />
+            </span>
+          ) : '⚡ 立即打卡'}
         </button>
       </div>
 

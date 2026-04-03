@@ -256,6 +256,13 @@ function ChallengeCard({ challenge, participants, myParticipant, avgProgress, co
   const countdown = useCountdown(challenge.end_date)
   const isActive = challenge.status === 'active'
   const [selectedMember, setSelectedMember] = useState<{ participant: ParticipantWithUser; rank: number } | null>(null)
+  const [aiLoading, setAiLoading] = useState(false)
+
+  const handleTriggerAI = async () => {
+    setAiLoading(true)
+    await onTriggerAI()
+    setAiLoading(false)
+  }
 
   // Time progress
   const startTime = new Date(challenge.start_date).getTime()
@@ -393,9 +400,17 @@ function ChallengeCard({ challenge, participants, myParticipant, avgProgress, co
         {chatOpen && (
           <div className="px-4 pb-4 space-y-3">
             {/* AI Broadcast Button */}
-            <button onClick={onTriggerAI}
-              className="w-full py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs font-bold rounded-full shadow-md hover:shadow-lg transition active:scale-[0.98]">
-              🎤 請 AI 播報員說話
+            <button onClick={handleTriggerAI} disabled={aiLoading}
+              className={`w-full py-2.5 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs font-bold rounded-full shadow-md hover:shadow-lg transition active:scale-[0.98] disabled:opacity-80 ${aiLoading ? 'yuzu-btn-loading' : ''}`}>
+              {aiLoading ? (
+                <span className="flex items-center justify-center gap-1.5">
+                  <span className="yuzu-spinner" style={{ width: '0.875rem', height: '0.875rem' }} />
+                  播報員備稿中
+                  <span className="yuzu-thinking-dot inline-block w-1 h-1 rounded-full bg-white" />
+                  <span className="yuzu-thinking-dot inline-block w-1 h-1 rounded-full bg-white" />
+                  <span className="yuzu-thinking-dot inline-block w-1 h-1 rounded-full bg-white" />
+                </span>
+              ) : '🎤 請 AI 播報員說話'}
             </button>
 
             {/* Messages */}

@@ -187,3 +187,88 @@ body {
   border-radius: 9999px;
   transition: width 1s ease-out;
 }
+
+/* Thinking dots animation */
+@keyframes yuzu-thinking-dot {
+  0%, 80%, 100% { opacity: 0.3; transform: scale(0.8); }
+  40% { opacity: 1; transform: scale(1.2); }
+}
+.yuzu-thinking-dot:nth-child(1) { animation: yuzu-thinking-dot 1.4s ease-in-out infinite 0s; }
+.yuzu-thinking-dot:nth-child(2) { animation: yuzu-thinking-dot 1.4s ease-in-out infinite 0.2s; }
+.yuzu-thinking-dot:nth-child(3) { animation: yuzu-thinking-dot 1.4s ease-in-out infinite 0.4s; }
+
+/* Text glow pulse */
+@keyframes yuzu-text-glow {
+  0%, 100% { text-shadow: 0 0 4px rgba(16,185,129,0.3); }
+  50% { text-shadow: 0 0 12px rgba(16,185,129,0.6), 0 0 20px rgba(16,185,129,0.3); }
+}
+.yuzu-text-glow {
+  animation: yuzu-text-glow 2s ease-in-out infinite;
+}
+
+/* Scanning line effect */
+@keyframes yuzu-scan-line {
+  0% { top: 0; }
+  100% { top: 100%; }
+}
+.yuzu-scan-line::after {
+  content: "";
+  position: absolute;
+  left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #10b981, transparent);
+  animation: yuzu-scan-line 2s ease-in-out infinite;
+}
+
+/* Spinner ring */
+@keyframes yuzu-spin {
+  to { transform: rotate(360deg); }
+}
+.yuzu-spinner {
+  width: 1.25rem; height: 1.25rem;
+  border: 2.5px solid rgba(255,255,255,0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: yuzu-spin 0.7s linear infinite;
+}
+.yuzu-spinner-dark {
+  border-color: rgba(16,185,129,0.2);
+  border-top-color: #10b981;
+}
+
+/* Streaming text cursor */
+@keyframes yuzu-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+.yuzu-cursor::after {
+  content: "▋";
+  animation: yuzu-blink 1s step-end infinite;
+  color: #10b981;
+  margin-left: 2px;
+}
+
+/* Button loading state */
+.yuzu-btn-loading {
+  position: relative;
+  overflow: hidden;
+}
+/* Flash border after OCR fills value */
+@keyframes yuzu-flash-border {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(16,185,129,0); border-color: #10b981; }
+  25% { box-shadow: 0 0 20px rgba(16,185,129,0.4); }
+  50% { box-shadow: 0 0 8px rgba(16,185,129,0.2); }
+  75% { box-shadow: 0 0 20px rgba(16,185,129,0.4); }
+}
+.yuzu-flash-border {
+  animation: yuzu-flash-border 1s ease-in-out 2;
+  border-color: #10b981 !important;
+}
+
+.yuzu-btn-loading::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+  animation: yuzu-shimmer 1.5s ease-in-out infinite;
+}

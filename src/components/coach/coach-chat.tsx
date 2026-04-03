@@ -84,14 +84,15 @@ export default function CoachChat({ userId, userName }: Props) {
 
         {isStreaming && allMessages[allMessages.length - 1]?.role !== 'assistant' && (
           <div className="flex justify-start">
-            <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center mr-2">
+            <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center mr-2 yuzu-glow-pulse">
               <span className="text-sm">🤖</span>
             </div>
-            <div className="bg-white border border-gray-100 px-4 py-3 rounded-2xl rounded-bl-md shadow-sm">
-              <div className="flex gap-1">
-                <div className="w-2 h-2 rounded-full bg-gray-300 animate-bounce" style={{ animationDelay: '0ms' }} />
-                <div className="w-2 h-2 rounded-full bg-gray-300 animate-bounce" style={{ animationDelay: '150ms' }} />
-                <div className="w-2 h-2 rounded-full bg-gray-300 animate-bounce" style={{ animationDelay: '300ms' }} />
+            <div className="bg-white border border-purple-100 px-4 py-3 rounded-2xl rounded-bl-md shadow-sm">
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-purple-500 font-medium yuzu-text-glow">教練思考中</span>
+                <span className="yuzu-thinking-dot inline-block w-1.5 h-1.5 rounded-full bg-purple-400" />
+                <span className="yuzu-thinking-dot inline-block w-1.5 h-1.5 rounded-full bg-purple-400" />
+                <span className="yuzu-thinking-dot inline-block w-1.5 h-1.5 rounded-full bg-purple-400" />
               </div>
             </div>
           </div>

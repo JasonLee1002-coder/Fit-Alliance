@@ -33,8 +33,8 @@ export default function LoginPage() {
       <div className="w-full max-w-md relative z-10">
         {/* Logo & Title */}
         <div className="text-center mb-8 yuzu-slide-up">
-          <div className="mb-5 yuzu-glow-pulse yuzu-float">
-            <img src="/icon-512.png" alt="Fit Alliance" className="w-24 h-24 rounded-3xl shadow-xl shadow-emerald-200/50" />
+          <div className="mb-5 yuzu-float">
+            <img src="/char-coach.png" alt="Fit Alliance" className="w-28 h-28 drop-shadow-2xl" />
           </div>
           <h1 className="text-4xl font-black text-gray-900 mb-2 tracking-tight">
             瘦身減肥聯盟
@@ -77,16 +77,16 @@ export default function LoginPage() {
         {/* Features Preview */}
         <div className="mt-8 grid grid-cols-3 gap-3 text-center">
           {[
-            { icon: '🤖', label: 'AI 教練', delay: '0.1s' },
-            { icon: '📸', label: '食物辨識', delay: '0.2s' },
-            { icon: '🏆', label: '聯盟挑戰', delay: '0.3s' },
+            { img: '/char-coach-sm.png', label: 'AI 教練', delay: '0.1s' },
+            { img: '/nav3d-meals-sm.png', label: '食物辨識', delay: '0.2s' },
+            { img: '/nav3d-challenge-sm.png', label: '聯盟挑戰', delay: '0.3s' },
           ].map(item => (
             <div
               key={item.label}
               className="bg-white/60 backdrop-blur-sm rounded-2xl p-4 border border-white/60 yuzu-health-card yuzu-slide-up"
               style={{ animationDelay: item.delay }}
             >
-              <div className="text-3xl mb-1.5">{item.icon}</div>
+              <img src={item.img} alt="" className="w-10 h-10 mx-auto mb-1.5" />
               <div className="text-xs font-medium text-gray-500">{item.label}</div>
             </div>
           ))}

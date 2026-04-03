@@ -249,7 +249,7 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
         {greetingLoading ? (
           <div className="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-2xl p-4 border border-emerald-100">
             <div className="flex items-center gap-3">
-              <img src="/mascot-coach-sm.png" alt="" className="w-10 h-10 rounded-full yuzu-glow-pulse" />
+              <img src="/char-coach-sm.png" alt="" className="w-10 h-10 rounded-full yuzu-glow-pulse" />
               <div className="flex-1 space-y-2">
                 <div className="yuzu-skeleton h-4 w-3/4 rounded-lg" />
                 <div className="yuzu-skeleton h-3 w-1/2 rounded-lg" />
@@ -259,7 +259,7 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
         ) : greeting && (
           <div className="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-2xl p-4 border border-emerald-100 yuzu-pop-in">
             <div className="flex items-start gap-3">
-              <img src="/mascot-coach-sm.png" alt="" className="w-10 h-10 rounded-full flex-shrink-0" />
+              <img src="/char-coach-sm.png" alt="" className="w-10 h-10 rounded-full flex-shrink-0" />
               <p className="text-sm text-gray-700 leading-relaxed">{greeting}</p>
             </div>
           </div>
@@ -452,7 +452,7 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
       {encouragement && (
         <div className="bg-gradient-to-r from-emerald-50 to-orange-50 rounded-3xl border border-emerald-100 p-5 yuzu-pop-in">
           <div className="flex items-start gap-3">
-            <img src="/mascot-coach-sm.png" alt="AI教練" className="w-11 h-11 rounded-full shadow flex-shrink-0" />
+            <img src="/char-coach-sm.png" alt="AI教練" className="w-11 h-11 rounded-full shadow flex-shrink-0" />
             <div>
               <p className="text-sm font-bold text-emerald-700 mb-1">AI 教練說：</p>
               <p className="text-gray-700 leading-relaxed">{encouragement}</p>
@@ -497,19 +497,19 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
       {/* Quick Links */}
       <div className="grid grid-cols-2 gap-3">
         <a href="/challenge" className="bg-gradient-to-br from-amber-50 to-orange-50 text-orange-700 rounded-2xl p-4 flex items-center gap-3 hover:shadow-lg transition active:scale-[0.98] yuzu-glow-urgent relative overflow-visible border border-orange-100">
-          <span className="text-3xl">🏆</span>
+          <img src="/nav3d-challenge-sm.png" alt="" className="w-10 h-10 drop-shadow" />
           <span className="font-bold text-sm">共同挑戰</span>
         </a>
         <a href="/coach" className="bg-gradient-to-br from-emerald-50 to-teal-50 text-emerald-700 rounded-2xl p-4 flex items-center gap-3 hover:shadow-lg transition active:scale-[0.98] border border-emerald-100">
-          <img src="/mascot-coach-sm.png" alt="" className="w-9 h-9 rounded-full" />
+          <img src="/char-coach-sm.png" alt="" className="w-10 h-10 drop-shadow" />
           <span className="font-bold text-sm">AI 教練</span>
         </a>
         <a href="/invite" className="bg-gradient-to-br from-blue-50 to-indigo-50 text-blue-700 rounded-2xl p-4 flex items-center gap-3 hover:shadow-lg transition active:scale-[0.98] border border-blue-100">
-          <span className="text-3xl">🤝</span>
+          <img src="/nav3d-invite-sm.png" alt="" className="w-10 h-10 drop-shadow" />
           <span className="font-bold text-sm">個人邀請朋友</span>
         </a>
         <a href="/meals" className="bg-gradient-to-br from-violet-50 to-purple-50 text-purple-700 rounded-2xl p-4 flex items-center gap-3 hover:shadow-lg transition active:scale-[0.98] border border-purple-100">
-          <span className="text-3xl">📸</span>
+          <img src="/nav3d-meals-sm.png" alt="" className="w-10 h-10 drop-shadow" />
           <span className="font-bold text-sm">飲食紀錄</span>
         </a>
       </div>

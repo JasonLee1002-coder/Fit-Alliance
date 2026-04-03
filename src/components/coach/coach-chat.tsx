@@ -47,7 +47,7 @@ export default function CoachChat({ userId, userName }: Props) {
     <div className="flex flex-col h-[calc(100vh-6rem)] lg:h-[calc(100vh-3rem)]">
       {/* Header */}
       <div className="flex items-center gap-3 pb-4 border-b border-gray-100">
-        <img src="/mascot-coach-sm.png" alt="AI教練" className="w-11 h-11 rounded-full shadow" />
+        <img src="/char-coach-sm.png" alt="AI教練" className="w-11 h-11 drop-shadow" />
         <div>
           <h1 className="text-lg font-bold text-gray-900">AI 教練 小聯</h1>
           <p className="text-xs text-gray-400">你的專屬減脂顧問</p>
@@ -62,7 +62,7 @@ export default function CoachChat({ userId, userName }: Props) {
             className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
           >
             {message.role === 'assistant' && (
-              <img src="/mascot-coach-sm.png" alt="" className="w-8 h-8 rounded-full shadow-sm mr-1 flex-shrink-0 mt-1" />
+              <img src="/char-coach-sm.png" alt="" className="w-8 h-8 mr-1 flex-shrink-0 mt-1 drop-shadow" />
             )}
             <div
               className={`max-w-[80%] px-4 py-3 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap ${
@@ -81,7 +81,7 @@ export default function CoachChat({ userId, userName }: Props) {
 
         {isStreaming && allMessages[allMessages.length - 1]?.role !== 'assistant' && (
           <div className="flex justify-start">
-            <img src="/mascot-coach-sm.png" alt="" className="w-8 h-8 rounded-full shadow-sm mr-1 yuzu-glow-pulse" />
+            <img src="/char-coach-sm.png" alt="" className="w-8 h-8 mr-1 drop-shadow yuzu-glow-pulse" />
             <div className="bg-white border border-purple-100 px-4 py-3 rounded-2xl rounded-bl-md shadow-sm">
               <div className="flex items-center gap-2">
                 <span className="text-xs text-purple-500 font-medium yuzu-text-glow">教練思考中</span>

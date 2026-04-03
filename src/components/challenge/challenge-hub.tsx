@@ -420,7 +420,7 @@ function ChallengeCard({ challenge, participants, myParticipant, avgProgress, co
               {chatMessages.map(msg => (
                 <div key={msg.id} className={`flex ${msg.user_id === userId && !msg.is_ai ? 'justify-end' : 'justify-start'}`}>
                   {msg.is_ai && (
-                    <img src="/mascot-broadcaster-sm.png" alt="" className="w-7 h-7 rounded-full shadow-sm mr-1 flex-shrink-0 mt-1" />
+                    <img src="/char-broadcaster-sm.png" alt="" className="w-7 h-7 rounded-full shadow-sm mr-1 flex-shrink-0 mt-1" />
                   )}
                   <div className={`max-w-[80%] px-3 py-2 rounded-2xl text-sm ${
                     msg.is_ai ? 'bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-100 text-gray-700'

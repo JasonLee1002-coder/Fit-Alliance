@@ -3,7 +3,7 @@
   "short_name": "Fit Alliance",
   "description": "一起變瘦，一起變強",
   "start_url": "/",
-  "display": "standalone",
+  "display": "browser",
   "background_color": "#f9fafb",
   "theme_color": "#10b981",
   "icons": [

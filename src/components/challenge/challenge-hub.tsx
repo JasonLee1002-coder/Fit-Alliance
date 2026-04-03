@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import { createClient } from '@/lib/supabase/client'
+import { BroadcasterMascot, TrophyMascot } from '@/components/shared/mascots'
 import { useRouter } from 'next/navigation'
 import { calculateProgress } from '@/types'
 import type { Challenge, ChallengeParticipant, GroupMessage, MemberRelationship } from '@/types'
@@ -232,7 +233,7 @@ export default function ChallengeHub({ userId, userName, challenges, allParticip
       {/* Empty */}
       {displayChallenges.length === 0 && !showCreate && (
         <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-12 text-center">
-          <div className="text-6xl yuzu-float mb-4">{tab === 'active' ? '🏆' : '📋'}</div>
+          <div className="flex justify-center mb-4">{tab === 'active' ? <TrophyMascot size={80} /> : <div className="text-6xl yuzu-float">📋</div>}</div>
           <h3 className="text-lg font-bold text-gray-900">{tab === 'active' ? '還沒有進行中的挑戰' : '還沒有已結束的挑戰'}</h3>
           {tab === 'active' && (
             <button onClick={() => setShowCreate(true)}
@@ -419,9 +420,7 @@ function ChallengeCard({ challenge, participants, myParticipant, avgProgress, co
               {chatMessages.map(msg => (
                 <div key={msg.id} className={`flex ${msg.user_id === userId && !msg.is_ai ? 'justify-end' : 'justify-start'}`}>
                   {msg.is_ai && (
-                    <div className="w-7 h-7 rounded-full bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center mr-2 flex-shrink-0 mt-1">
-                      <span className="text-xs">🤖</span>
-                    </div>
+                    <img src="/mascot-broadcaster-sm.png" alt="" className="w-7 h-7 rounded-full shadow-sm mr-1 flex-shrink-0 mt-1" />
                   )}
                   <div className={`max-w-[80%] px-3 py-2 rounded-2xl text-sm ${
                     msg.is_ai ? 'bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-100 text-gray-700'

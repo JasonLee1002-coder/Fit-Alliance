@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { formatDateWithWeekday, calculateBMI, getStandardWeight, getBodyFatRange, getWeightChangeColor } from '@/lib/utils'
 import type { User, HealthRecord, DailyLog } from '@/types'
 import TrendChart from './trend-chart'
+import { ScaleMascot, CoachMascot, TrophyMascot, CameraMascot } from '@/components/shared/mascots'
 
 interface Props {
   user: User
@@ -392,11 +393,11 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
 
       {/* AI Encouragement */}
       {encouragement && (
-        <div className="bg-gradient-to-r from-emerald-50 to-orange-50 rounded-3xl border border-emerald-100 p-6">
+        <div className="bg-gradient-to-r from-emerald-50 to-orange-50 rounded-3xl border border-emerald-100 p-5 yuzu-pop-in">
           <div className="flex items-start gap-3">
-            <span className="text-3xl">🤖</span>
+            <img src="/mascot-coach-sm.png" alt="AI教練" className="w-11 h-11 rounded-full shadow flex-shrink-0" />
             <div>
-              <p className="text-sm font-medium text-emerald-700 mb-1">AI 教練說：</p>
+              <p className="text-sm font-bold text-emerald-700 mb-1">AI 教練說：</p>
               <p className="text-gray-700 leading-relaxed">{encouragement}</p>
             </div>
           </div>
@@ -438,21 +439,22 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
 
       {/* Quick Links */}
       <div className="grid grid-cols-2 gap-3">
-        {[
-          { href: '/challenge', icon: '🏆', label: '共同挑戰', color: 'bg-orange-50 text-orange-700', glow: true },
-          { href: '/coach', icon: '🤖', label: 'AI 教練', color: 'bg-purple-50 text-purple-700', glow: false },
-          { href: '/invite', icon: '🤝', label: '個人邀請朋友', color: 'bg-blue-50 text-blue-700', glow: false },
-          { href: '/meals', icon: '📸', label: '飲食紀錄', color: 'bg-emerald-50 text-emerald-700', glow: false },
-        ].map(link => (
-          <a
-            key={link.href}
-            href={link.href}
-            className={`${link.color} rounded-2xl p-4 flex items-center gap-3 hover:shadow-md transition active:scale-[0.98] ${link.glow ? 'yuzu-glow-urgent relative overflow-visible' : ''}`}
-          >
-            <span className="text-2xl">{link.icon}</span>
-            <span className="font-medium">{link.label}</span>
-          </a>
-        ))}
+        <a href="/challenge" className="bg-gradient-to-br from-amber-50 to-orange-50 text-orange-700 rounded-2xl p-4 flex items-center gap-3 hover:shadow-lg transition active:scale-[0.98] yuzu-glow-urgent relative overflow-visible border border-orange-100">
+          <span className="text-3xl">🏆</span>
+          <span className="font-bold text-sm">共同挑戰</span>
+        </a>
+        <a href="/coach" className="bg-gradient-to-br from-emerald-50 to-teal-50 text-emerald-700 rounded-2xl p-4 flex items-center gap-3 hover:shadow-lg transition active:scale-[0.98] border border-emerald-100">
+          <img src="/mascot-coach-sm.png" alt="" className="w-9 h-9 rounded-full" />
+          <span className="font-bold text-sm">AI 教練</span>
+        </a>
+        <a href="/invite" className="bg-gradient-to-br from-blue-50 to-indigo-50 text-blue-700 rounded-2xl p-4 flex items-center gap-3 hover:shadow-lg transition active:scale-[0.98] border border-blue-100">
+          <span className="text-3xl">🤝</span>
+          <span className="font-bold text-sm">個人邀請朋友</span>
+        </a>
+        <a href="/meals" className="bg-gradient-to-br from-violet-50 to-purple-50 text-purple-700 rounded-2xl p-4 flex items-center gap-3 hover:shadow-lg transition active:scale-[0.98] border border-purple-100">
+          <span className="text-3xl">📸</span>
+          <span className="font-bold text-sm">飲食紀錄</span>
+        </a>
       </div>
     </div>
   )

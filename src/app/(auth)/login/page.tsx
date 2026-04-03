@@ -33,8 +33,8 @@ export default function LoginPage() {
       <div className="w-full max-w-md relative z-10">
         {/* Logo & Title */}
         <div className="text-center mb-8 yuzu-slide-up">
-          <div className="inline-flex items-center justify-center w-24 h-24 rounded-3xl bg-gradient-to-br from-emerald-400 to-emerald-600 shadow-xl shadow-emerald-200/50 mb-5 yuzu-glow-pulse">
-            <span className="text-5xl">💪</span>
+          <div className="mb-5 yuzu-glow-pulse yuzu-float">
+            <img src="/icon-512.png" alt="Fit Alliance" className="w-24 h-24 rounded-3xl shadow-xl shadow-emerald-200/50" />
           </div>
           <h1 className="text-4xl font-black text-gray-900 mb-2 tracking-tight">
             瘦身減肥聯盟

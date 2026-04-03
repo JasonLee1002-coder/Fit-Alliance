@@ -4,10 +4,11 @@ import { NextResponse } from 'next/server'
 export async function POST(request: Request) {
   try {
     const body = await request.json()
-    const { userName, gender, latestWeight, previousWeight, targetWeight, streak, recentTrend, bodyFat, dayOfWeek } = body
+    const { userName, gender, latestWeight, previousWeight, targetWeight, streak, recentTrend, bodyFat, dayOfWeek, hour } = body
 
     const weightChange = latestWeight && previousWeight ? latestWeight - previousWeight : null
     const toGoal = targetWeight && latestWeight ? (latestWeight - targetWeight).toFixed(1) : null
+    const timeGreeting = (hour ?? 12) < 12 ? '早安' : (hour ?? 12) < 18 ? '午安' : '晚安'
 
     const { text } = await generateText({
       model: 'google/gemini-2.5-flash',
@@ -16,7 +17,7 @@ export async function POST(request: Request) {
 風格：像一個幽默又有營養學知識的好朋友，不是醫生也不是教官。
 - 繁體中文，台灣口語
 - 2-4 句話，簡短有溫度
-- 根據時間打招呼（早安/午安/晚安）
+- 用「${timeGreeting}」開頭打招呼（只用這一個，不要列出其他時段的問候）
 - 根據體重趨勢給一個有趣的觀察或營養小知識
 - 如果體重下降：開心鼓勵
 - 如果體重上升：幽默帶過，不批評

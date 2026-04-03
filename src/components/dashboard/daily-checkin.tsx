@@ -63,6 +63,7 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
           body: JSON.stringify({
             userName: user.name,
             gender: user.gender,
+            hour: new Date().getHours(),
             latestWeight: records[0]?.weight,
             previousWeight: records[1]?.weight,
             targetWeight: user.target_weight,

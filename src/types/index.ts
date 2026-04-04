@@ -48,6 +48,7 @@ export interface MealRecord {
   date: string
   meal_type: 'breakfast' | 'lunch' | 'dinner' | 'snack'
   photo_url: string | null
+  photo_urls: string[] | null
   ai_recognized_items: FoodItem[] | null
   user_corrected_items: FoodItem[] | null
   ai_feedback: string | null
@@ -60,7 +61,11 @@ export interface FoodItem {
   protein: number | null
   carbs: number | null
   fat: number | null
+  fiber: number | null
+  sodium: number | null
   confidence: number | null
+  portion: string | null
+  healthTip: string | null
 }
 
 export interface CoachConversation {

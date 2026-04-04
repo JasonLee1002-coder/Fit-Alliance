@@ -539,8 +539,15 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
               const time = new Date(meal.created_at).toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })
               return (
                 <div key={meal.id} className="flex items-center gap-3 p-2.5 bg-gray-50 rounded-xl">
-                  {meal.photo_url ? (
-                    <img src={meal.photo_url} alt="" className="w-12 h-12 rounded-lg object-cover flex-shrink-0" />
+                  {(meal.photo_urls?.length ? meal.photo_urls[0] : meal.photo_url) ? (
+                    <div className="relative flex-shrink-0">
+                      <img src={meal.photo_urls?.length ? meal.photo_urls[0] : meal.photo_url!} alt="" className="w-12 h-12 rounded-lg object-cover" />
+                      {(meal.photo_urls?.length ?? 0) > 1 && (
+                        <span className="absolute -top-1 -right-1 w-4 h-4 bg-violet-500 text-white text-[8px] font-bold rounded-full flex items-center justify-center">
+                          {meal.photo_urls!.length}
+                        </span>
+                      )}
+                    </div>
                   ) : (
                     <div className="w-12 h-12 rounded-lg bg-purple-100 flex items-center justify-center flex-shrink-0">
                       <span className="text-lg">{MEAL_LABELS[meal.meal_type]?.charAt(0) || '🍽️'}</span>

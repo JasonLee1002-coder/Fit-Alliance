@@ -29,37 +29,52 @@ export default function MealTracker({ userId, todayMeals, recentMeals }: Props) 
   const [uploading, setUploading] = useState(false)
   const [recognizedItems, setRecognizedItems] = useState<FoodItem[]>([])
   const [overallAssessment, setOverallAssessment] = useState('')
+  const [dietTips, setDietTips] = useState<string[]>([])
   const [editingItems, setEditingItems] = useState<FoodItem[]>([])
-  const [photoUrl, setPhotoUrl] = useState<string | null>(null)
+  const [photoUrls, setPhotoUrls] = useState<string[]>([])
+  const [pendingFiles, setPendingFiles] = useState<File[]>([])
   const [saving, setSaving] = useState(false)
   const [showResult, setShowResult] = useState(false)
   const [showHistory, setShowHistory] = useState(false)
+  const [expandedPhoto, setExpandedPhoto] = useState<string | null>(null)
 
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
+    const files = Array.from(e.target.files || [])
+    if (files.length === 0) return
+
+    // Add files to pending list (allow accumulating multiple uploads)
+    const newPendingFiles = [...pendingFiles, ...files]
+    setPendingFiles(newPendingFiles)
 
     setUploading(true)
-    setShowResult(false)
 
     try {
-      // Upload to Supabase Storage
       const supabase = createClient()
-      const fileName = `${userId}/${Date.now()}_${file.name}`
-      const { data: uploadData } = await supabase.storage
-        .from('meal-photos')
-        .upload(fileName, file)
+      const newUrls: string[] = []
 
-      if (uploadData) {
-        const { data: { publicUrl } } = supabase.storage
+      // Upload all new files to storage
+      for (const file of files) {
+        const fileName = `${userId}/${Date.now()}_${file.name}`
+        const { data: uploadData } = await supabase.storage
           .from('meal-photos')
-          .getPublicUrl(fileName)
-        setPhotoUrl(publicUrl)
+          .upload(fileName, file)
+
+        if (uploadData) {
+          const { data: { publicUrl } } = supabase.storage
+            .from('meal-photos')
+            .getPublicUrl(fileName)
+          newUrls.push(publicUrl)
+        }
       }
 
-      // AI food recognition
+      const allUrls = [...photoUrls, ...newUrls]
+      setPhotoUrls(allUrls)
+
+      // AI food recognition with ALL images
       const formData = new FormData()
-      formData.append('image', file)
+      for (const file of newPendingFiles) {
+        formData.append('images', file)
+      }
       formData.append('mode', 'food')
 
       const res = await fetch('/api/ai/food-recognize', {
@@ -69,24 +84,44 @@ export default function MealTracker({ userId, todayMeals, recentMeals }: Props) 
 
       if (res.ok) {
         const data = await res.json()
-        const items = data.items || []
+        const items: FoodItem[] = (data.items || []).map((item: Partial<FoodItem>) => ({
+          name: item.name || '',
+          calories: item.calories ?? null,
+          protein: item.protein ?? null,
+          carbs: item.carbs ?? null,
+          fat: item.fat ?? null,
+          fiber: item.fiber ?? null,
+          sodium: item.sodium ?? null,
+          confidence: item.confidence ?? null,
+          portion: item.portion ?? null,
+          healthTip: item.healthTip ?? null,
+        }))
         setRecognizedItems(items)
-        setEditingItems(items.map((item: FoodItem) => ({ ...item })))
+        setEditingItems(items.map(item => ({ ...item })))
         setOverallAssessment(data.overall_assessment || '')
+        setDietTips(data.diet_tips || [])
         setShowResult(true)
       }
     } catch (error) {
       console.error('Upload error:', error)
     } finally {
       setUploading(false)
+      // Reset file inputs
+      if (cameraInputRef.current) cameraInputRef.current.value = ''
+      if (galleryInputRef.current) galleryInputRef.current.value = ''
     }
+  }
+
+  const handleRemovePhoto = (index: number) => {
+    setPhotoUrls(urls => urls.filter((_, i) => i !== index))
+    setPendingFiles(files => files.filter((_, i) => i !== index))
   }
 
   const handleItemChange = (index: number, field: keyof FoodItem, value: string) => {
     setEditingItems(items => {
       const updated = [...items]
-      if (field === 'name') {
-        updated[index] = { ...updated[index], name: value }
+      if (field === 'name' || field === 'portion' || field === 'healthTip') {
+        updated[index] = { ...updated[index], [field]: value }
       } else {
         updated[index] = { ...updated[index], [field]: value ? parseFloat(value) : null }
       }
@@ -105,7 +140,11 @@ export default function MealTracker({ userId, todayMeals, recentMeals }: Props) 
       protein: null,
       carbs: null,
       fat: null,
+      fiber: null,
+      sodium: null,
       confidence: null,
+      portion: null,
+      healthTip: null,
     }])
   }
 
@@ -138,7 +177,8 @@ export default function MealTracker({ userId, todayMeals, recentMeals }: Props) 
         user_id: userId,
         date: new Date().toISOString().split('T')[0],
         meal_type: selectedMealType,
-        photo_url: photoUrl,
+        photo_url: photoUrls[0] || null,
+        photo_urls: photoUrls,
         ai_recognized_items: recognizedItems,
         user_corrected_items: editingItems,
         ai_feedback: aiFeedback,
@@ -147,17 +187,38 @@ export default function MealTracker({ userId, todayMeals, recentMeals }: Props) 
       // Reset
       setRecognizedItems([])
       setEditingItems([])
-      setPhotoUrl(null)
+      setPhotoUrls([])
+      setPendingFiles([])
       setShowResult(false)
       setOverallAssessment('')
+      setDietTips([])
       router.refresh()
     } finally {
       setSaving(false)
     }
   }
 
+  const handleReset = () => {
+    setRecognizedItems([])
+    setEditingItems([])
+    setPhotoUrls([])
+    setPendingFiles([])
+    setShowResult(false)
+    setOverallAssessment('')
+    setDietTips([])
+  }
+
   const totalCalories = (items: FoodItem[]) =>
     items.reduce((sum, i) => sum + (i.calories ?? 0), 0)
+
+  const totalNutrient = (items: FoodItem[], key: 'protein' | 'carbs' | 'fat' | 'fiber') =>
+    items.reduce((sum, i) => sum + ((i[key] as number) ?? 0), 0)
+
+  const getMealPhotos = (meal: MealRecord): string[] => {
+    if (meal.photo_urls && meal.photo_urls.length > 0) return meal.photo_urls
+    if (meal.photo_url) return [meal.photo_url]
+    return []
+  }
 
   return (
     <div className="space-y-6">
@@ -170,7 +231,7 @@ export default function MealTracker({ userId, todayMeals, recentMeals }: Props) 
           <img src="/char-food-hero.png" alt="" className="w-14 h-14 drop-shadow-lg yuzu-float" />
           <div>
             <h1 className="text-xl font-black text-gray-900">飲食紀錄</h1>
-            <p className="text-xs text-gray-500">拍照或上傳，AI 自動辨識</p>
+            <p className="text-xs text-gray-500">拍照或上傳，AI 自動辨識（支援多張照片）</p>
           </div>
         </div>
       </div>
@@ -208,19 +269,43 @@ export default function MealTracker({ userId, todayMeals, recentMeals }: Props) 
       {/* Upload Area */}
       <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6">
         <div className="text-center">
-          {photoUrl ? (
+          {/* Photo preview grid */}
+          {photoUrls.length > 0 ? (
             <div className="mb-4">
-              <img src={photoUrl} alt="食物照片" className="w-full max-h-64 object-cover rounded-2xl" />
+              <div className={`grid gap-2 ${photoUrls.length === 1 ? 'grid-cols-1' : 'grid-cols-2'}`}>
+                {photoUrls.map((url, i) => (
+                  <div key={i} className="relative group">
+                    <img
+                      src={url}
+                      alt={`食物照片 ${i + 1}`}
+                      className="w-full h-40 object-cover rounded-2xl cursor-pointer"
+                      onClick={() => setExpandedPhoto(url)}
+                    />
+                    <button
+                      onClick={() => handleRemovePhoto(i)}
+                      className="absolute top-2 right-2 w-6 h-6 bg-black/50 text-white rounded-full text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition"
+                    >
+                      ✕
+                    </button>
+                    <span className="absolute bottom-2 left-2 text-xs bg-black/50 text-white px-2 py-0.5 rounded-full">
+                      #{i + 1}
+                    </span>
+                  </div>
+                ))}
+              </div>
+              <p className="text-xs text-gray-400 mt-2">
+                已上傳 {photoUrls.length} 張照片，可繼續新增
+              </p>
             </div>
           ) : (
             <div className="mb-4 p-6 border-2 border-dashed border-gray-200 rounded-2xl bg-gray-50/50">
               <img src="/illust-foods-sm.png" alt="" className="w-20 h-20 mx-auto mb-3 drop-shadow yuzu-float" />
               <p className="text-gray-600 font-medium">拍攝或上傳食物照片</p>
-              <p className="text-gray-400 text-xs mt-1">AI 自動辨識食物名稱與營養成分</p>
+              <p className="text-gray-400 text-xs mt-1">支援多張照片，AI 自動辨識所有食物的營養成分</p>
             </div>
           )}
 
-          {/* Separate Camera + Gallery buttons */}
+          {/* Camera + Gallery + Reset buttons */}
           <div className="flex gap-3 justify-center">
             <button
               onClick={() => {
@@ -246,6 +331,15 @@ export default function MealTracker({ userId, todayMeals, recentMeals }: Props) 
             >
               🖼️ 上傳照片
             </button>
+            {photoUrls.length > 0 && (
+              <button
+                onClick={handleReset}
+                disabled={uploading}
+                className="py-3 px-4 bg-gray-100 text-gray-600 font-medium rounded-2xl hover:bg-gray-200 transition active:scale-[0.98] disabled:opacity-50"
+              >
+                🔄
+              </button>
+            )}
           </div>
 
           {/* Loading state */}
@@ -253,7 +347,9 @@ export default function MealTracker({ userId, todayMeals, recentMeals }: Props) 
             <div className="mt-4 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl border border-blue-200/50 relative overflow-hidden">
               <div className="flex items-center justify-center gap-3">
                 <div className="yuzu-spinner yuzu-spinner-dark" />
-                <span className="text-sm font-medium text-blue-700 yuzu-text-glow">AI 辨識中</span>
+                <span className="text-sm font-medium text-blue-700 yuzu-text-glow">
+                  AI 辨識中（{pendingFiles.length} 張照片）
+                </span>
                 <span className="flex gap-0.5">
                   <span className="yuzu-thinking-dot inline-block w-1.5 h-1.5 rounded-full bg-blue-500" />
                   <span className="yuzu-thinking-dot inline-block w-1.5 h-1.5 rounded-full bg-blue-500" />
@@ -265,7 +361,7 @@ export default function MealTracker({ userId, todayMeals, recentMeals }: Props) 
           )}
 
           <input ref={cameraInputRef} type="file" accept="image/*" capture="environment" onChange={handlePhotoUpload} className="hidden" />
-          <input ref={galleryInputRef} type="file" accept="image/*" onChange={handlePhotoUpload} className="hidden" />
+          <input ref={galleryInputRef} type="file" accept="image/*" multiple onChange={handlePhotoUpload} className="hidden" />
         </div>
       </div>
 
@@ -302,6 +398,21 @@ export default function MealTracker({ userId, todayMeals, recentMeals }: Props) 
             </div>
           )}
 
+          {/* Diet tips */}
+          {dietTips.length > 0 && (
+            <div className="mb-4 p-3 bg-amber-50 rounded-xl border border-amber-100">
+              <p className="text-xs font-bold text-amber-700 mb-1.5">🏋️ 瘦身小技巧</p>
+              <ul className="space-y-1">
+                {dietTips.map((tip, i) => (
+                  <li key={i} className="text-xs text-amber-700 flex gap-1.5">
+                    <span className="flex-shrink-0">•</span>
+                    <span>{tip}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
           <div className="space-y-3">
             {editingItems.map((item, index) => (
               <div key={index} className="p-4 bg-gray-50 rounded-2xl">
@@ -320,6 +431,14 @@ export default function MealTracker({ userId, todayMeals, recentMeals }: Props) 
                     ✕
                   </button>
                 </div>
+
+                {/* Portion estimate */}
+                {item.portion && (
+                  <div className="mb-2 text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded-lg inline-block">
+                    📏 估算份量：{item.portion}
+                  </div>
+                )}
+
                 <div className="grid grid-cols-4 gap-2">
                   {[
                     { key: 'calories', label: '熱量', unit: 'kcal' },
@@ -342,6 +461,36 @@ export default function MealTracker({ userId, todayMeals, recentMeals }: Props) 
                     </div>
                   ))}
                 </div>
+
+                {/* Extra nutrients row */}
+                <div className="grid grid-cols-2 gap-2 mt-2">
+                  {[
+                    { key: 'fiber', label: '膳食纖維', unit: 'g' },
+                    { key: 'sodium', label: '鈉', unit: 'mg' },
+                  ].map(field => (
+                    <div key={field.key}>
+                      <label className="block text-[10px] text-gray-400 mb-0.5">{field.label}</label>
+                      <div className="flex items-center gap-1">
+                        <input
+                          type="number"
+                          step="0.1"
+                          value={item[field.key as keyof FoodItem]?.toString() ?? ''}
+                          onChange={e => handleItemChange(index, field.key as keyof FoodItem, e.target.value)}
+                          className="w-full rounded-lg border border-gray-200 px-2 py-1.5 text-sm text-gray-900 focus:border-emerald-400 outline-none"
+                        />
+                        <span className="text-[10px] text-gray-400">{field.unit}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Health tip per item */}
+                {item.healthTip && (
+                  <div className="mt-2 text-xs text-emerald-600 bg-emerald-50 px-2 py-1.5 rounded-lg">
+                    💡 {item.healthTip}
+                  </div>
+                )}
+
                 {item.confidence !== null && item.confidence < 0.7 && (
                   <div className="mt-1 text-[10px] text-orange-500">⚠️ 辨識信心度較低，請確認</div>
                 )}
@@ -358,11 +507,26 @@ export default function MealTracker({ userId, todayMeals, recentMeals }: Props) 
 
           {/* Totals */}
           {editingItems.length > 0 && (
-            <div className="mt-4 p-3 bg-emerald-50 rounded-xl flex items-center justify-between">
-              <span className="text-sm font-medium text-emerald-700">本餐合計</span>
-              <span className="text-lg font-bold text-emerald-700">
-                {totalCalories(editingItems)} kcal
-              </span>
+            <div className="mt-4 p-4 bg-emerald-50 rounded-xl space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-emerald-700">本餐合計</span>
+                <span className="text-lg font-bold text-emerald-700">
+                  {totalCalories(editingItems)} kcal
+                </span>
+              </div>
+              <div className="grid grid-cols-4 gap-2 text-center">
+                {[
+                  { label: '蛋白質', key: 'protein' as const, color: 'text-blue-600' },
+                  { label: '碳水', key: 'carbs' as const, color: 'text-orange-600' },
+                  { label: '脂肪', key: 'fat' as const, color: 'text-red-500' },
+                  { label: '纖維', key: 'fiber' as const, color: 'text-green-600' },
+                ].map(n => (
+                  <div key={n.key}>
+                    <div className={`text-sm font-bold ${n.color}`}>{totalNutrient(editingItems, n.key)}g</div>
+                    <div className="text-[10px] text-gray-400">{n.label}</div>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 
@@ -395,14 +559,19 @@ export default function MealTracker({ userId, todayMeals, recentMeals }: Props) 
             {todayMeals.map(meal => {
               const items = (meal.user_corrected_items || meal.ai_recognized_items || []) as FoodItem[]
               const mealLabel = MEAL_TYPES.find(t => t.value === meal.meal_type)?.label || meal.meal_type
+              const photos = getMealPhotos(meal)
               return (
                 <div key={meal.id} className="p-4 bg-gray-50 rounded-2xl">
                   <div className="flex items-center justify-between mb-2">
                     <span className="font-medium">{mealLabel}</span>
                     <span className="text-sm text-emerald-600 font-bold">{totalCalories(items)} kcal</span>
                   </div>
-                  {meal.photo_url && (
-                    <img src={meal.photo_url} alt="" className="w-full h-32 object-cover rounded-xl mb-2" />
+                  {photos.length > 0 && (
+                    <div className={`grid gap-1.5 mb-2 ${photos.length === 1 ? 'grid-cols-1' : 'grid-cols-2'}`}>
+                      {photos.map((url, i) => (
+                        <img key={i} src={url} alt="" className={`w-full object-cover rounded-xl ${photos.length === 1 ? 'h-32' : 'h-24'}`} />
+                      ))}
+                    </div>
                   )}
                   <div className="flex flex-wrap gap-1.5">
                     {items.map((item, i) => (
@@ -438,10 +607,18 @@ export default function MealTracker({ userId, todayMeals, recentMeals }: Props) 
           <div className="space-y-2">
             {recentMeals.filter(m => m.date !== new Date().toISOString().split('T')[0]).slice(0, 20).map(meal => {
               const items = (meal.user_corrected_items || meal.ai_recognized_items || []) as FoodItem[]
+              const photos = getMealPhotos(meal)
               return (
                 <div key={meal.id} className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
-                  {meal.photo_url ? (
-                    <img src={meal.photo_url} alt="" className="w-12 h-12 rounded-lg object-cover flex-shrink-0" />
+                  {photos.length > 0 ? (
+                    <div className="relative flex-shrink-0">
+                      <img src={photos[0]} alt="" className="w-12 h-12 rounded-lg object-cover" />
+                      {photos.length > 1 && (
+                        <span className="absolute -top-1 -right-1 w-5 h-5 bg-violet-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                          {photos.length}
+                        </span>
+                      )}
+                    </div>
                   ) : (
                     <div className="w-12 h-12 rounded-lg bg-purple-100 flex items-center justify-center flex-shrink-0">
                       <span className="text-lg">{MEAL_TYPES.find(t => t.value === meal.meal_type)?.label.charAt(0) || '🍽️'}</span>
@@ -470,6 +647,16 @@ export default function MealTracker({ userId, todayMeals, recentMeals }: Props) 
         </div>
       )}
       </>)}
+
+      {/* Expanded photo modal */}
+      {expandedPhoto && (
+        <div
+          className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4"
+          onClick={() => setExpandedPhoto(null)}
+        >
+          <img src={expandedPhoto} alt="" className="max-w-full max-h-full rounded-2xl" />
+        </div>
+      )}
     </div>
   )
 }

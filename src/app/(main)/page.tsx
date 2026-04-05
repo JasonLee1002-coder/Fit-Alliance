@@ -1,7 +1,7 @@
 import { createServerSupabase } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import DailyCheckIn from '@/components/dashboard/daily-checkin'
-import type { User, HealthRecord, MealRecord } from '@/types'
+import type { User, HealthRecord } from '@/types'
 
 export const dynamic = 'force-dynamic'
 
@@ -18,24 +18,12 @@ export default async function HomePage() {
 
   const today = new Date().toISOString().split('T')[0]
 
-  // Fetch in parallel
-  const [
-    { data: records },
-    { data: todayMeals },
-  ] = await Promise.all([
-    supabase
-      .from('fa_health_records')
-      .select('*')
-      .eq('user_id', authUser.id)
-      .order('date', { ascending: false })
-      .limit(30),
-    supabase
-      .from('fa_meal_records')
-      .select('*')
-      .eq('user_id', authUser.id)
-      .eq('date', today)
-      .order('created_at', { ascending: true }),
-  ])
+  const { data: records } = await supabase
+    .from('fa_health_records')
+    .select('*')
+    .eq('user_id', authUser.id)
+    .order('date', { ascending: false })
+    .limit(30)
 
   const todayRecord = records?.find(r => r.date === today)
 
@@ -62,7 +50,6 @@ export default async function HomePage() {
       todayRecord={todayRecord as HealthRecord | undefined}
       dailyLog={null}
       streak={streak}
-      todayMeals={(todayMeals ?? []) as MealRecord[]}
     />
   )
 }

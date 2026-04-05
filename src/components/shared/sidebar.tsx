@@ -8,7 +8,6 @@ import type { User } from '@/types'
 
 const navItems = [
   { href: '/', label: '每日打卡', img: '/nav3d-checkin-sm.png', description: '體重紀錄' },
-  { href: '/meals', label: '飲食紀錄', img: '/nav3d-meals-sm.png', description: '拍照上傳' },
   { href: '/coach', label: 'AI 教練', img: '/char-coach-sm.png', description: '個人指導' },
   { href: '/records', label: '健康紀錄', img: '/nav3d-records-sm.png', description: '趨勢圖表' },
   { href: '/challenge', label: '共同挑戰', img: '/nav3d-challenge-sm.png', description: '排行榜' },

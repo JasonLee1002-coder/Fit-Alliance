@@ -4,13 +4,9 @@ import { useState, useRef, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { formatDateWithWeekday, calculateBMI, getStandardWeight, getBodyFatRange, getWeightChangeColor } from '@/lib/utils'
-import type { User, HealthRecord, DailyLog, MealRecord, FoodItem } from '@/types'
+import type { User, HealthRecord, DailyLog } from '@/types'
 import TrendChart from './trend-chart'
 import { ScaleMascot, CoachMascot, TrophyMascot, CameraMascot } from '@/components/shared/mascots'
-
-const MEAL_LABELS: Record<string, string> = {
-  breakfast: '🌅 早餐', lunch: '☀️ 午餐', dinner: '🌙 晚餐', snack: '🍪 點心',
-}
 
 interface Props {
   user: User
@@ -18,10 +14,9 @@ interface Props {
   todayRecord?: HealthRecord
   dailyLog: DailyLog | null
   streak: number
-  todayMeals?: MealRecord[]
 }
 
-export default function DailyCheckIn({ user, records, todayRecord, dailyLog, streak, todayMeals = [] }: Props) {
+export default function DailyCheckIn({ user, records, todayRecord, dailyLog, streak }: Props) {
   const router = useRouter()
   const cameraInputRef = useRef<HTMLInputElement>(null)
   const galleryInputRef = useRef<HTMLInputElement>(null)
@@ -449,6 +444,66 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
                 metric="muscle"
               />
             )}
+            {form.visceral_fat && lastRecord.visceral_fat && (
+              <ComparisonRow
+                label="內臟脂肪"
+                unit=""
+                previous={lastRecord.visceral_fat as number}
+                current={parseFloat(form.visceral_fat)}
+                previousDate={lastRecord.date}
+                metric="weight"
+              />
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Today's Body Data Summary */}
+      {hasCheckedIn && form.weight && (
+        <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6">
+          <h3 className="text-lg font-bold text-gray-900 mb-4">🏋️ 今日基本資料</h3>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="bg-emerald-50 rounded-2xl p-3 text-center">
+              <div className="text-xs text-gray-500 mb-1">體重</div>
+              <div className="text-xl font-bold text-emerald-700">{form.weight} kg</div>
+            </div>
+            <div className="bg-blue-50 rounded-2xl p-3 text-center">
+              <div className="text-xs text-gray-500 mb-1">體脂率</div>
+              <div className="text-xl font-bold text-blue-700">{form.body_fat ? `${form.body_fat}%` : '—'}</div>
+            </div>
+            <div className="bg-purple-50 rounded-2xl p-3 text-center">
+              <div className="text-xs text-gray-500 mb-1">BMI</div>
+              <div className="text-xl font-bold text-purple-700">{form.bmi || '—'}</div>
+            </div>
+            <div className="bg-cyan-50 rounded-2xl p-3 text-center">
+              <div className="text-xs text-gray-500 mb-1">肌肉量</div>
+              <div className="text-xl font-bold text-cyan-700">{form.muscle_mass ? `${form.muscle_mass} kg` : '—'}</div>
+            </div>
+            <div className="bg-rose-50 rounded-2xl p-3 text-center relative">
+              <div className="flex items-center justify-center gap-1 mb-1">
+                <span className="text-xs text-gray-500">內臟脂肪</span>
+                <a
+                  href="/visceral-fat-info"
+                  className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-rose-200 text-rose-600 text-[10px] font-bold hover:bg-rose-300 transition"
+                  title="了解內臟脂肪"
+                >
+                  ?
+                </a>
+              </div>
+              <div className="text-xl font-bold text-rose-700">{form.visceral_fat || '—'}</div>
+            </div>
+            <div className="bg-amber-50 rounded-2xl p-3 text-center">
+              <div className="text-xs text-gray-500 mb-1">基礎代謝率</div>
+              <div className="text-xl font-bold text-amber-700">{form.bmr ? `${form.bmr} kcal` : '—'}</div>
+            </div>
+          </div>
+          <div className="mt-3 flex justify-center">
+            <a
+              href="/visceral-fat-info"
+              className="inline-flex items-center gap-1.5 px-4 py-2 bg-rose-50 border border-rose-200 text-rose-600 rounded-xl text-sm font-medium hover:bg-rose-100 transition"
+            >
+              📖 什麼是內臟脂肪？點我了解
+            </a>
           </div>
         </div>
       )}
@@ -498,80 +553,6 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
           </div>
         </div>
       )}
-
-      {/* ═══ Today's Meals Section ═══ */}
-      <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="flex items-center justify-between px-5 pt-5 pb-3">
-          <div className="flex items-center gap-3">
-            <img src="/char-food-hero-sm.png" alt="" className="w-10 h-10 drop-shadow" />
-            <div>
-              <h3 className="text-lg font-bold text-gray-900">今日飲食</h3>
-              <p className="text-xs text-gray-400">
-                {todayMeals.length > 0
-                  ? `已記錄 ${todayMeals.length} 餐 · ${todayMeals.reduce((sum, m) => {
-                      const items = (m.user_corrected_items || m.ai_recognized_items || []) as FoodItem[]
-                      return sum + items.reduce((s, i) => s + (i.calories ?? 0), 0)
-                    }, 0)} kcal`
-                  : '還沒記錄，開始拍照吧！'}
-              </p>
-            </div>
-          </div>
-          <a href="/meals" className="text-xs text-emerald-600 font-medium px-3 py-1.5 bg-emerald-50 rounded-full hover:bg-emerald-100 transition">
-            查看全部 →
-          </a>
-        </div>
-
-        {/* Quick Record Button */}
-        <div className="px-5 pb-4">
-          <a href="/meals"
-            className="w-full flex items-center justify-center gap-2 py-3.5 bg-gradient-to-r from-violet-500 to-purple-600 text-white font-bold rounded-2xl shadow-lg hover:shadow-xl transition active:scale-[0.98] text-base">
-            <img src="/nav3d-meals-sm.png" alt="" className="w-7 h-7 drop-shadow" />
-            📸 記錄這一餐
-          </a>
-        </div>
-
-        {/* Today's Meal Timeline */}
-        {todayMeals.length > 0 && (
-          <div className="border-t border-gray-50 px-5 py-3 space-y-2">
-            {todayMeals.map(meal => {
-              const items = (meal.user_corrected_items || meal.ai_recognized_items || []) as FoodItem[]
-              const totalCal = items.reduce((s, i) => s + (i.calories ?? 0), 0)
-              const time = new Date(meal.created_at).toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })
-              return (
-                <div key={meal.id} className="flex items-center gap-3 p-2.5 bg-gray-50 rounded-xl">
-                  {meal.photo_url ? (
-                    <img src={meal.photo_url} alt="" className="w-12 h-12 rounded-lg object-cover flex-shrink-0" />
-                  ) : (
-                    <div className="w-12 h-12 rounded-lg bg-purple-100 flex items-center justify-center flex-shrink-0">
-                      <span className="text-lg">{MEAL_LABELS[meal.meal_type]?.charAt(0) || '🍽️'}</span>
-                    </div>
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-xs font-medium text-gray-900">{MEAL_LABELS[meal.meal_type] || meal.meal_type}</span>
-                      <span className="text-[10px] text-gray-400">{time}</span>
-                    </div>
-                    <div className="text-xs text-gray-500 truncate mt-0.5">
-                      {items.map(i => i.name).join('、') || '未辨識'}
-                    </div>
-                  </div>
-                  <span className="text-sm font-bold text-purple-600 flex-shrink-0">{totalCal} kcal</span>
-                </div>
-              )
-            })}
-          </div>
-        )}
-
-        {/* AI Feedback on latest meal */}
-        {todayMeals.length > 0 && todayMeals[todayMeals.length - 1].ai_feedback && (
-          <div className="border-t border-gray-50 px-5 py-3">
-            <div className="flex items-start gap-2 bg-emerald-50 rounded-xl p-3">
-              <img src="/char-coach-sm.png" alt="" className="w-7 h-7 flex-shrink-0" />
-              <p className="text-xs text-emerald-700 leading-relaxed">{todayMeals[todayMeals.length - 1].ai_feedback}</p>
-            </div>
-          </div>
-        )}
-      </div>
 
       {/* Quick Links */}
       <div className="grid grid-cols-2 gap-3">

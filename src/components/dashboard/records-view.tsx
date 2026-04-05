@@ -88,6 +88,7 @@ export default function RecordsView({ records }: { records: HealthRecord[] }) {
                   <div className="text-xs text-gray-400 mt-0.5">
                     {record.body_fat && `體脂 ${record.body_fat}%`}
                     {record.muscle_mass && ` · 肌肉 ${record.muscle_mass}kg`}
+                    {record.visceral_fat && ` · 內臟脂肪 ${record.visceral_fat}`}
                   </div>
                 </div>
                 <div className="text-right">

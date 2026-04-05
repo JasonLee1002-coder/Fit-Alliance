@@ -43,18 +43,14 @@ export default function MealTracker({ userId, todayMeals, recentMeals }: Props) 
     setShowResult(false)
 
     try {
-      // Upload to Supabase Storage
-      const supabase = createClient()
-      const fileName = `${userId}/${Date.now()}_${file.name}`
-      const { data: uploadData } = await supabase.storage
-        .from('meal-photos')
-        .upload(fileName, file)
-
-      if (uploadData) {
-        const { data: { publicUrl } } = supabase.storage
-          .from('meal-photos')
-          .getPublicUrl(fileName)
-        setPhotoUrl(publicUrl)
+      // Upload via server API (bypasses storage RLS)
+      const uploadForm = new FormData()
+      uploadForm.append('file', file)
+      uploadForm.append('bucket', 'meal-photos')
+      const uploadRes = await fetch('/api/upload', { method: 'POST', body: uploadForm })
+      if (uploadRes.ok) {
+        const { url } = await uploadRes.json()
+        setPhotoUrl(url)
       }
 
       // AI food recognition

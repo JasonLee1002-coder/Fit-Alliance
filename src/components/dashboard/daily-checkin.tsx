@@ -142,18 +142,16 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
       const { data: { user: authUser } } = await supabase.auth.getUser()
       if (!authUser) return
 
-      // Upload screenshot if exists
+      // Upload screenshot via server API (bypasses storage RLS)
       let screenshotUrl: string | null = null
       if (screenshotFile) {
-        const fileName = `weight-screenshots/${authUser.id}/${Date.now()}_${screenshotFile.name}`
-        const { data: uploadData } = await supabase.storage
-          .from('weight-screenshots')
-          .upload(fileName, screenshotFile)
-        if (uploadData) {
-          const { data: { publicUrl } } = supabase.storage
-            .from('weight-screenshots')
-            .getPublicUrl(fileName)
-          screenshotUrl = publicUrl
+        const uploadForm = new FormData()
+        uploadForm.append('file', screenshotFile)
+        uploadForm.append('bucket', 'weight-screenshots')
+        const uploadRes = await fetch('/api/upload', { method: 'POST', body: uploadForm })
+        if (uploadRes.ok) {
+          const { url } = await uploadRes.json()
+          screenshotUrl = url
         }
       }
 

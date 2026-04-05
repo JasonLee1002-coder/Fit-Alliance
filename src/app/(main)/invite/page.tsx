@@ -46,23 +46,41 @@ export default function InvitePage() {
     if (!groupName.trim()) return
     setCreating(true)
 
-    const supabase = createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return
+    try {
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        alert('請先登入')
+        setCreating(false)
+        return
+      }
 
-    const { data } = await supabase
-      .from('fa_groups')
-      .insert({ name: groupName, creator_id: user.id })
-      .select()
-      .single()
+      const { data, error } = await supabase
+        .from('fa_groups')
+        .insert({ name: groupName, creator_id: user.id })
+        .select()
+        .single()
 
-    if (data) {
-      // Creator joins own group
-      await supabase.from('fa_group_members').insert({ group_id: data.id, user_id: user.id })
-      setGroup(data)
+      if (error) {
+        console.error('[Group] Create failed:', error)
+        alert('建立群組失敗：' + (error.message || '未知錯誤'))
+        setCreating(false)
+        return
+      }
+
+      if (data) {
+        // Creator joins own group
+        const { error: joinError } = await supabase.from('fa_group_members').insert({ group_id: data.id, user_id: user.id })
+        if (joinError) console.error('[Group] Join failed:', joinError)
+        setGroup(data)
+        loadGroup()
+      }
+    } catch (err) {
+      console.error('[Group] Unexpected error:', err)
+      alert('建立群組發生錯誤，請重試')
+    } finally {
+      setCreating(false)
     }
-
-    setCreating(false)
   }
 
   const handleShare = async () => {

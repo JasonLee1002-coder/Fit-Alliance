@@ -453,9 +453,10 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
             {/* Data Rows */}
             <div className="space-y-2">
               {rows.map(row => {
-                const diff = (row.curr as number) - (row.prev as number)
-                const isDown = diff < 0
-                const isUp = diff > 0
+                const rawDiff = (row.curr as number) - (row.prev as number)
+                const absDiff = Math.round(Math.abs(rawDiff) * 100) / 100
+                const isDown = rawDiff < -0.001
+                const isUp = rawDiff > 0.001
                 const isLowerBetter = row.label !== '肌肉量' && row.label !== '骨質量' && row.label !== '基礎代謝率'
                 const isGood = isLowerBetter ? isDown : isUp
 
@@ -468,15 +469,15 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
                     </div>
                     <div className="flex-shrink-0 text-center px-2 min-w-[80px]">
                       <div className={`text-xs font-bold ${row.color}`}>{row.label}</div>
-                      {diff !== 0 && (
+                      {(isUp || isDown) && (
                         <div className={`text-[10px] font-medium mt-0.5 ${isGood ? 'text-emerald-400' : 'text-red-400'}`}>
-                          {isGood ? '▼' : '▲'} {Math.abs(diff).toFixed(1)}{row.unit}
+                          {isUp ? '▲' : '▼'} {absDiff}{row.unit}
                         </div>
                       )}
                     </div>
                     <div className="flex-1 text-center">
                       <span className={`inline-block px-2.5 py-1 rounded-lg text-sm font-bold border ${
-                        isGood ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' : diff === 0 ? row.badgeColor : 'bg-red-500/20 text-red-300 border-red-500/30'
+                        isGood ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' : (!isUp && !isDown) ? row.badgeColor : 'bg-red-500/20 text-red-300 border-red-500/30'
                       }`}>
                         {row.curr}{row.unit && ` ${row.unit}`}
                       </span>

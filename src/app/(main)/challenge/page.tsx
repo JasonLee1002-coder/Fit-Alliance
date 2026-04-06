@@ -39,6 +39,36 @@ export default async function ChallengePage() {
         .in('challenge_id', challengeIds)
     : { data: [] }
 
+  // Sync each participant's current_value with their latest health record
+  if (allParticipants && allParticipants.length > 0) {
+    const userIds = [...new Set(allParticipants.map(p => p.user_id))]
+    for (const uid of userIds) {
+      const { data: latestRecord } = await supabase
+        .from('fa_health_records')
+        .select('weight')
+        .eq('user_id', uid)
+        .order('date', { ascending: false })
+        .limit(1)
+        .single()
+
+      if (latestRecord?.weight != null) {
+        // Update in DB
+        await supabase
+          .from('fa_challenge_participants')
+          .update({ current_value: latestRecord.weight })
+          .eq('user_id', uid)
+          .in('challenge_id', challengeIds)
+
+        // Update in-memory for immediate display
+        for (const p of allParticipants) {
+          if (p.user_id === uid) {
+            p.current_value = latestRecord.weight
+          }
+        }
+      }
+    }
+  }
+
   return (
     <ChallengeHub
       userId={user.id}

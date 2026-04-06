@@ -174,6 +174,13 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
         await supabase.from('fa_health_records').insert(record)
       }
 
+      // Update current_value in all active challenge participations
+      await supabase
+        .from('fa_challenge_participants')
+        .update({ current_value: parseFloat(form.weight) })
+        .eq('user_id', authUser.id)
+
+
       // Get AI encouragement
       try {
         const aiRes = await fetch('/api/ai/encourage', {

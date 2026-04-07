@@ -30,7 +30,15 @@ export default function ChallengeLoading() {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3 }}
         >
-          準備進入挑戰場...
+          🏟️ 準備進入挑戰場...
+        </motion.p>
+        <motion.p
+          className="text-xs text-orange-400 mt-1"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: [0, 1, 1, 0] }}
+          transition={{ delay: 0.8, duration: 4, repeat: Infinity }}
+        >
+          正在統計所有選手的最新戰績
         </motion.p>
         <motion.div
           className="flex items-center justify-center gap-1.5 mt-2"

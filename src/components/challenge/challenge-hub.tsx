@@ -485,7 +485,7 @@ function MemberDrawer({ participant: p, rank, userId, relationship, onClose, onR
   const [relLabel, setRelLabel] = useState(relationship || '')
   const [customLabel, setCustomLabel] = useState('')
   const [saving, setSaving] = useState(false)
-  const [records, setRecords] = useState<Array<{ date: string; weight: number | null; body_fat: number | null }>>([])
+  const [records, setRecords] = useState<Array<{ date: string; weight: number | null; body_fat: number | null; screenshot_url: string | null }>>([])
   const [recordsLoading, setRecordsLoading] = useState(true)
   const [trendMetric, setTrendMetric] = useState<'weight' | 'bodyFat'>('weight')
   const isMe = p.user_id === userId
@@ -498,7 +498,7 @@ function MemberDrawer({ participant: p, rank, userId, relationship, onClose, onR
       const supabase = createClient()
       const { data } = await supabase
         .from('fa_health_records')
-        .select('date, weight, body_fat')
+        .select('date, weight, body_fat, screenshot_url')
         .eq('user_id', p.user_id)
         .order('date', { ascending: false })
         .limit(30)
@@ -710,6 +710,23 @@ function MemberDrawer({ participant: p, rank, userId, relationship, onClose, onR
                     <div className="flex gap-3">
                       {r.weight && <span className="font-medium text-gray-900">{r.weight} kg</span>}
                       {r.body_fat && <span className="text-amber-600">{r.body_fat}%</span>}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Weight Scale Photos */}
+          {records.some(r => r.screenshot_url) && (
+            <div>
+              <h4 className="text-sm font-bold text-gray-700 mb-2">📸 體重秤截圖</h4>
+              <div className="grid grid-cols-3 gap-2">
+                {records.filter(r => r.screenshot_url).slice(0, 6).map((r, i) => (
+                  <div key={i} className="relative rounded-xl overflow-hidden border border-gray-200 bg-gray-50 aspect-square">
+                    <img src={r.screenshot_url!} alt={`${r.date} 體重秤`} className="w-full h-full object-cover" />
+                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent px-1.5 py-1">
+                      <span className="text-[10px] text-white font-medium">{r.date.slice(5)}</span>
                     </div>
                   </div>
                 ))}

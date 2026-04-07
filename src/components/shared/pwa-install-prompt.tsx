@@ -166,22 +166,31 @@ export default function PwaInstallPrompt() {
                       只要 {platform === 'ios' ? '3' : '2'} 步，超簡單！
                     </p>
 
+                    {platform === 'ios' && (
+                      <div className="mb-4 p-3 bg-amber-50 rounded-xl border border-amber-200">
+                        <p className="text-xs text-amber-700 font-medium">
+                          ⚠️ 請先確認：必須使用 <strong>Safari 瀏覽器</strong>（iPhone 預設瀏覽器）開啟本頁面。如果你是用 LINE 或其他 App 內開啟，請先複製網址，再用 Safari 打開。
+                        </p>
+                      </div>
+                    )}
+
                     <div className="space-y-4 mb-6">
                       {platform === 'ios' ? (
                         <>
                           <StepCard n={1} color={accentColor} delay={0.1}
                             icon={<Share className="w-5 h-5" style={{ color: accentColor }} />}
-                            title="點底部分享按鈕" desc="Safari 底部中間的 ⬆️ 按鈕">
+                            title="用 Safari 打開後，點底部「分享」按鈕" desc="畫面最下方中間的 ⬆️ 方形箭頭按鈕（不是右上角）">
                             <div className="mt-2 flex justify-center">
                               <motion.div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center border border-blue-100"
                                 animate={{ y: [0, -5, 0] }} transition={{ duration: 1.2, repeat: Infinity }}>
                                 <Share className="w-5 h-5 text-blue-500" />
                               </motion.div>
                             </div>
+                            <p className="mt-1.5 text-[10px] text-gray-400 text-center">如果看不到底部按鈕，輕點一下畫面最上方或最下方讓它出現</p>
                           </StepCard>
                           <StepCard n={2} color={accentColor} delay={0.2}
                             icon={<Plus className="w-5 h-5" style={{ color: accentColor }} />}
-                            title='往下滑找「加入主畫面」' desc="點選有 ＋ 號的那一項">
+                            title='往下滑，找到「加入主畫面」' desc="會看到一個 ＋ 號圖示的選項，點它">
                             <div className="mt-2 flex justify-center">
                               <div className="px-3 py-1.5 rounded-lg bg-gray-50 border border-gray-200 flex items-center gap-2">
                                 <Plus className="w-4 h-4 text-gray-600" />
@@ -191,7 +200,7 @@ export default function PwaInstallPrompt() {
                           </StepCard>
                           <StepCard n={3} color={accentColor} delay={0.3}
                             icon={<Download className="w-5 h-5" style={{ color: accentColor }} />}
-                            title='按右上角「新增」' desc="完成！桌面就會出現圖示">
+                            title='按右上角「新增」完成！' desc="桌面就會出現 App 圖示，以後直接點開">
                             <div className="mt-2 flex justify-center">
                               <motion.span className="text-2xl" animate={{ scale: [1, 1.15, 1] }}
                                 transition={{ duration: 1.5, repeat: Infinity }}>🎉</motion.span>
@@ -202,7 +211,7 @@ export default function PwaInstallPrompt() {
                         <>
                           <StepCard n={1} color={accentColor} delay={0.1}
                             icon={<MoreVertical className="w-5 h-5" style={{ color: accentColor }} />}
-                            title='點右上角「⋮」選單' desc="Chrome 右上角三個點">
+                            title='用 Chrome 打開後，點右上角「⋮」' desc="Chrome 瀏覽器右上角的三個點選單">
                             <div className="mt-2 flex justify-center">
                               <motion.div className="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center border border-gray-200"
                                 animate={{ y: [0, -5, 0] }} transition={{ duration: 1.2, repeat: Infinity }}>
@@ -212,7 +221,7 @@ export default function PwaInstallPrompt() {
                           </StepCard>
                           <StepCard n={2} color={accentColor} delay={0.2}
                             icon={<Smartphone className="w-5 h-5" style={{ color: accentColor }} />}
-                            title='選「加到主畫面」' desc="點選安裝或加到主畫面">
+                            title='選「加到主畫面」或「安裝應用程式」' desc="點選後桌面就會出現捷徑圖示">
                             <div className="mt-2 flex justify-center gap-2">
                               <div className="px-3 py-1.5 rounded-lg bg-gray-50 border border-gray-200 flex items-center gap-2">
                                 <Download className="w-4 h-4 text-gray-600" />

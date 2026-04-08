@@ -29,16 +29,32 @@ export async function POST(request: NextRequest) {
   }
 
   // Upload with service role (bypasses storage RLS)
-  const adminSupabase = await createServiceRoleSupabase()
-  const fileName = `${user.id}/${Date.now()}_${file.name}`
+  let adminSupabase
+  try {
+    adminSupabase = await createServiceRoleSupabase()
+  } catch (e) {
+    console.error('[Upload] Service role client failed:', e)
+    return Response.json({ error: '伺服器設定錯誤，請聯絡管理員' }, { status: 500 })
+  }
+
+  // Sanitize filename to avoid special chars
+  const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_')
+  const fileName = `${user.id}/${Date.now()}_${safeName}`
+
+  // Convert File to ArrayBuffer for upload
+  const arrayBuffer = await file.arrayBuffer()
+  const buffer = new Uint8Array(arrayBuffer)
 
   const { data: uploadData, error } = await adminSupabase.storage
     .from(bucket)
-    .upload(fileName, file)
+    .upload(fileName, buffer, {
+      contentType: file.type || 'image/jpeg',
+      upsert: true,
+    })
 
   if (error || !uploadData) {
-    console.error('[Upload] Failed:', error)
-    return Response.json({ error: '上傳失敗' }, { status: 500 })
+    console.error('[Upload] Failed:', error?.message, error)
+    return Response.json({ error: `上傳失敗：${error?.message || '未知錯誤'}` }, { status: 500 })
   }
 
   const { data: { publicUrl } } = adminSupabase.storage

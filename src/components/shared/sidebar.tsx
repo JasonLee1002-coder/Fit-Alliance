@@ -7,8 +7,7 @@ import { cn } from '@/lib/utils'
 import type { User } from '@/types'
 
 const navItems = [
-  { href: '/', label: '每日打卡', img: '/nav3d-checkin-sm.png', description: '體重紀錄' },
-  { href: '/coach', label: 'AI 教練', img: '/char-coach-sm.png', description: '個人指導' },
+  { href: '/', label: '每日打卡首頁', img: '/nav3d-checkin-sm.png', description: '體重紀錄' },
   { href: '/records', label: '健康紀錄', img: '/nav3d-records-sm.png', description: '趨勢圖表' },
   { href: '/challenge', label: '共同挑戰', img: '/nav3d-challenge-sm.png', description: '排行榜' },
   { href: '/invite', label: '個人邀請朋友', img: '/nav3d-invite-sm.png', description: '分享連結' },

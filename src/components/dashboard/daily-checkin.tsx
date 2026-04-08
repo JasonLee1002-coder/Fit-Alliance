@@ -21,7 +21,7 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
   const cameraInputRef = useRef<HTMLInputElement>(null)
   const galleryInputRef = useRef<HTMLInputElement>(null)
   const [loading, setLoading] = useState(false)
-  const [showMore, setShowMore] = useState(false)
+  const [showMore, setShowMore] = useState(!!(todayRecord?.body_fat || todayRecord?.muscle_mass || todayRecord?.visceral_fat))
   const [encouragement, setEncouragement] = useState('')
   const [justCheckedIn, setJustCheckedIn] = useState(false)
   const [screenshotPreview, setScreenshotPreview] = useState<string | null>(null)
@@ -40,48 +40,43 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
   })
 
   const [ocrLoading, setOcrLoading] = useState(false)
-  const [greeting, setGreeting] = useState('')
-  const [greetingLoading, setGreetingLoading] = useState(true)
+  const [compareRange, setCompareRange] = useState<'prev' | 'week' | 'month' | 'quarter' | 'year' | '3year'>('prev')
   const weightInputRef = useRef<HTMLInputElement>(null)
   const submitBtnRef = useRef<HTMLButtonElement>(null)
 
-  const lastRecord = records.find(r => r.date !== form.date) ?? records[1]
-
-  // Fetch AI greeting on mount
-  useEffect(() => {
-    async function fetchGreeting() {
-      try {
-        const weekdays = ['日', '一', '二', '三', '四', '五', '六']
-        const recentWeights = records.slice(0, 5).map(r => r.weight).filter(Boolean)
-        const trend = recentWeights.length >= 3
-          ? recentWeights[0]! < recentWeights[2]! ? '持續下降中' : recentWeights[0]! > recentWeights[2]! ? '略有上升' : '持平穩定'
-          : ''
-
-        const res = await fetch('/api/ai/greeting', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            userName: user.name,
-            gender: user.gender,
-            hour: new Date().getHours(),
-            latestWeight: records[0]?.weight,
-            previousWeight: records[1]?.weight,
-            targetWeight: user.target_weight,
-            streak,
-            bodyFat: records[0]?.body_fat,
-            recentTrend: trend,
-            dayOfWeek: weekdays[new Date().getDay()],
-          }),
-        })
-        if (res.ok) {
-          const { message } = await res.json()
-          if (message) setGreeting(message)
-        }
-      } catch {}
-      setGreetingLoading(false)
+  // Get comparison record based on selected range
+  const getCompareRecord = () => {
+    const today = new Date(form.date)
+    if (compareRange === 'prev') return records.find(r => r.date !== form.date) ?? records[1]
+    const offsets: Record<string, number> = { week: 7, month: 30, quarter: 90, year: 365, '3year': 1095 }
+    const targetDate = new Date(today)
+    targetDate.setDate(targetDate.getDate() - (offsets[compareRange] || 1))
+    // Find closest record to target date
+    let closest: HealthRecord | undefined
+    let closestDiff = Infinity
+    for (const r of records) {
+      const diff = Math.abs(new Date(r.date).getTime() - targetDate.getTime())
+      if (diff < closestDiff) { closestDiff = diff; closest = r }
     }
-    fetchGreeting()
-  }, [])
+    return closest?.date !== form.date ? closest : undefined
+  }
+  const lastRecord = getCompareRecord()
+
+  // If todayRecord exists but form was reset, sync back
+  useEffect(() => {
+    if (todayRecord && !form.weight) {
+      setForm({
+        weight: todayRecord.weight?.toString() ?? '',
+        body_fat: todayRecord.body_fat?.toString() ?? '',
+        muscle_mass: todayRecord.muscle_mass?.toString() ?? '',
+        visceral_fat: todayRecord.visceral_fat?.toString() ?? '',
+        bone_mass: todayRecord.bone_mass?.toString() ?? '',
+        bmr: todayRecord.bmr?.toString() ?? '',
+        bmi: todayRecord.bmi?.toString() ?? '',
+        date: new Date().toISOString().split('T')[0],
+      })
+    }
+  }, [todayRecord])
 
   const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -250,25 +245,6 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
           </div>
         </div>
 
-        {/* AI Smart Greeting */}
-        {greetingLoading ? (
-          <div className="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-2xl p-4 border border-emerald-100">
-            <div className="flex items-center gap-3">
-              <img src="/char-coach-sm.png" alt="" className="w-10 h-10 rounded-full yuzu-glow-pulse" />
-              <div className="flex-1 space-y-2">
-                <div className="yuzu-skeleton h-4 w-3/4 rounded-lg" />
-                <div className="yuzu-skeleton h-3 w-1/2 rounded-lg" />
-              </div>
-            </div>
-          </div>
-        ) : greeting && (
-          <div className="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-2xl p-4 border border-emerald-100 yuzu-pop-in">
-            <div className="flex items-start gap-3">
-              <img src="/char-coach-sm.png" alt="" className="w-10 h-10 rounded-full flex-shrink-0" />
-              <p className="text-sm text-gray-700 leading-relaxed">{greeting}</p>
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Check-in Card */}
@@ -364,7 +340,7 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
           <div className="grid grid-cols-2 gap-3 mb-4 p-4 bg-gray-50 rounded-2xl">
             {[
               { key: 'body_fat', label: '體脂率 (%)', placeholder: '例：25.0', color: 'text-orange-600', infoLink: '/body-fat-info' },
-              { key: 'bmi', label: 'BMI', placeholder: '例：24.5', color: 'text-blue-600' },
+              { key: 'bmi', label: 'BMI', placeholder: '例：24.5', color: 'text-blue-600', infoLink: '/bmi-info' },
               { key: 'muscle_mass', label: '肌肉量 (kg)', placeholder: '例：45.0', color: 'text-cyan-600' },
               { key: 'visceral_fat', label: '內臟脂肪', placeholder: '例：8', color: 'text-rose-600', infoLink: '/visceral-fat-info' },
               { key: 'bone_mass', label: '骨質量 (kg)', placeholder: '例：3.0', color: 'text-violet-600' },
@@ -434,11 +410,30 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
           { label: 'BMI', prev: lastRecord.bmi as number | null, curr: form.bmi ? parseFloat(form.bmi) : null, unit: '', color: 'text-blue-400', badgeColor: 'bg-blue-500/20 text-blue-300 border-blue-500/30' },
           { label: '骨質量', prev: lastRecord.bone_mass as number | null, curr: form.bone_mass ? parseFloat(form.bone_mass) : null, unit: 'kg', color: 'text-cyan-400', badgeColor: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30' },
           { label: '基礎代謝率', prev: lastRecord.bmr as number | null, curr: form.bmr ? parseFloat(form.bmr) : null, unit: 'kcal', color: 'text-amber-400', badgeColor: 'bg-amber-500/20 text-amber-300 border-amber-500/30' },
-        ].filter(r => r.prev != null && r.curr != null)
+        ]
 
         return (
           <div className="bg-gradient-to-b from-slate-800 to-slate-900 rounded-3xl shadow-lg p-5 overflow-hidden">
-            <h3 className="text-lg font-bold text-emerald-400 mb-4">📊 核心數據比較</h3>
+            <h3 className="text-lg font-bold text-emerald-400 mb-3">📊 核心數據比較</h3>
+
+            {/* Time Range Selector */}
+            <div className="flex gap-1.5 mb-4 overflow-x-auto pb-1">
+              {([
+                { key: 'prev' as const, label: '前次' },
+                { key: 'week' as const, label: '週' },
+                { key: 'month' as const, label: '月' },
+                { key: 'quarter' as const, label: '季' },
+                { key: 'year' as const, label: '年' },
+                { key: '3year' as const, label: '三年' },
+              ]).map(t => (
+                <button key={t.key} onClick={() => setCompareRange(t.key)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition whitespace-nowrap ${
+                    compareRange === t.key ? 'bg-emerald-500 text-white' : 'bg-slate-700/50 text-slate-400 hover:text-slate-200'
+                  }`}>
+                  {t.label}
+                </button>
+              ))}
+            </div>
 
             {/* Date Header */}
             <div className="flex items-center justify-between mb-4 bg-slate-700/50 rounded-xl p-3">
@@ -458,18 +453,19 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
             {/* Data Rows */}
             <div className="space-y-2">
               {rows.map(row => {
-                const rawDiff = (row.curr as number) - (row.prev as number)
+                const hasBoth = row.prev != null && row.curr != null
+                const rawDiff = hasBoth ? (row.curr as number) - (row.prev as number) : 0
                 const absDiff = Math.round(Math.abs(rawDiff) * 100) / 100
-                const isDown = rawDiff < -0.001
-                const isUp = rawDiff > 0.001
+                const isDown = hasBoth && rawDiff < -0.001
+                const isUp = hasBoth && rawDiff > 0.001
                 const isLowerBetter = row.label !== '肌肉量' && row.label !== '骨質量' && row.label !== '基礎代謝率'
                 const isGood = isLowerBetter ? isDown : isUp
 
                 return (
                   <div key={row.label} className="flex items-center justify-between py-2.5 border-b border-slate-700/50 last:border-0">
                     <div className="flex-1 text-center">
-                      <span className={`inline-block px-2.5 py-1 rounded-lg text-sm font-bold border ${row.badgeColor}`}>
-                        {row.prev}{row.unit && ` ${row.unit}`}
+                      <span className={`inline-block px-2.5 py-1 rounded-lg text-sm font-bold border ${row.prev != null ? row.badgeColor : 'bg-slate-700/30 text-slate-500 border-slate-600/30'}`}>
+                        {row.prev != null ? `${row.prev}${row.unit ? ` ${row.unit}` : ''}` : '—'}
                       </span>
                     </div>
                     <div className="flex-shrink-0 text-center px-2 min-w-[80px]">
@@ -482,9 +478,9 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
                     </div>
                     <div className="flex-1 text-center">
                       <span className={`inline-block px-2.5 py-1 rounded-lg text-sm font-bold border ${
-                        isGood ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' : (!isUp && !isDown) ? row.badgeColor : 'bg-red-500/20 text-red-300 border-red-500/30'
+                        row.curr == null ? 'bg-slate-700/30 text-slate-500 border-slate-600/30' : isGood ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' : (!isUp && !isDown) ? row.badgeColor : 'bg-red-500/20 text-red-300 border-red-500/30'
                       }`}>
-                        {row.curr}{row.unit && ` ${row.unit}`}
+                        {row.curr != null ? `${row.curr}${row.unit ? ` ${row.unit}` : ''}` : '—'}
                       </span>
                     </div>
                   </div>
@@ -502,8 +498,8 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
           <div className="grid grid-cols-2 gap-3">
             {[
               { label: '體重', value: form.weight ? `${form.weight} kg` : null, color: 'from-red-500/20 to-red-600/10', borderColor: 'border-red-500/30', textColor: 'text-red-300', labelColor: 'text-red-400' },
-              { label: '體脂率', value: form.body_fat ? `${form.body_fat}%` : null, color: 'from-rose-500/20 to-rose-600/10', borderColor: 'border-rose-500/30', textColor: 'text-rose-300', labelColor: 'text-rose-400' },
-              { label: 'BMI', value: form.bmi || null, color: 'from-blue-500/20 to-blue-600/10', borderColor: 'border-blue-500/30', textColor: 'text-blue-300', labelColor: 'text-blue-400' },
+              { label: '體脂率', value: form.body_fat ? `${form.body_fat}%` : null, color: 'from-rose-500/20 to-rose-600/10', borderColor: 'border-rose-500/30', textColor: 'text-rose-300', labelColor: 'text-rose-400', hasInfo: true, infoLink: '/body-fat-info', infoBg: 'bg-rose-500/30 text-rose-300' },
+              { label: 'BMI', value: form.bmi || null, color: 'from-blue-500/20 to-blue-600/10', borderColor: 'border-blue-500/30', textColor: 'text-blue-300', labelColor: 'text-blue-400', hasInfo: true, infoLink: '/bmi-info', infoBg: 'bg-blue-500/30 text-blue-300' },
               { label: '肌肉量', value: form.muscle_mass ? `${form.muscle_mass} kg` : null, color: 'from-green-500/20 to-green-600/10', borderColor: 'border-green-500/30', textColor: 'text-green-300', labelColor: 'text-green-400' },
               { label: '內臟脂肪', value: form.visceral_fat || null, color: 'from-yellow-500/20 to-yellow-600/10', borderColor: 'border-yellow-500/30', textColor: 'text-yellow-300', labelColor: 'text-yellow-400', hasInfo: true },
               { label: '基礎代謝率', value: form.bmr ? `${form.bmr} kcal` : null, color: 'from-amber-500/20 to-amber-600/10', borderColor: 'border-amber-500/30', textColor: 'text-amber-300', labelColor: 'text-amber-400' },
@@ -512,8 +508,8 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
               <div key={item.label} className={`bg-gradient-to-br ${item.color} rounded-2xl p-3.5 text-center border ${item.borderColor}`}>
                 <div className={`text-xs font-bold ${item.labelColor} mb-1.5 flex items-center justify-center gap-1`}>
                   {item.label}
-                  {item.hasInfo && (
-                    <a href="/visceral-fat-info" className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-yellow-500/30 text-yellow-300 text-[10px] font-bold hover:bg-yellow-500/50 transition">?</a>
+                  {(item as any).hasInfo && (
+                    <a href={(item as any).infoLink || '/visceral-fat-info'} className={`inline-flex items-center justify-center w-4 h-4 rounded-full text-[10px] font-bold hover:opacity-80 transition ${(item as any).infoBg || 'bg-yellow-500/30 text-yellow-300'}`}>?</a>
                   )}
                 </div>
                 <div className={`text-xl font-bold ${item.value ? item.textColor : 'text-slate-500'}`}>

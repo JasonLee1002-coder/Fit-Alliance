@@ -1,11 +1,12 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { formatDateWithWeekday, calculateBMI, getStandardWeight, getBodyFatRange } from '@/lib/utils'
 import type { User, HealthRecord, DailyLog } from '@/types'
 import TrendChart from './trend-chart'
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import { ScaleMascot, CoachMascot, TrophyMascot, CameraMascot } from '@/components/shared/mascots'
 
 interface Props {
@@ -22,7 +23,18 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
   const galleryInputRef = useRef<HTMLInputElement>(null)
   const [loading, setLoading] = useState(false)
   const [showMore, setShowMore] = useState(!!(todayRecord?.body_fat || todayRecord?.muscle_mass || todayRecord?.visceral_fat))
-  const [encouragement, setEncouragement] = useState('')
+  const [encouragement, setEncouragement] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const cached = localStorage.getItem('fa_coach_msg')
+      if (cached) {
+        try {
+          const { date, message } = JSON.parse(cached)
+          if (date === new Date().toISOString().split('T')[0]) return message
+        } catch { /* ignore */ }
+      }
+    }
+    return ''
+  })
   const [justCheckedIn, setJustCheckedIn] = useState(false)
   const [screenshotPreview, setScreenshotPreview] = useState<string | null>(null)
   const [screenshotFile, setScreenshotFile] = useState<File | null>(null)
@@ -61,6 +73,51 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
     return closest?.date !== form.date ? closest : undefined
   }
   const lastRecord = getCompareRecord()
+
+  // Persist coach message to localStorage
+  useEffect(() => {
+    if (encouragement) {
+      localStorage.setItem('fa_coach_msg', JSON.stringify({
+        date: new Date().toISOString().split('T')[0],
+        message: encouragement,
+      }))
+    }
+  }, [encouragement])
+
+  // Auto-fetch daily greeting if no coach message exists
+  useEffect(() => {
+    if (encouragement) return
+    const fetchGreeting = async () => {
+      try {
+        const now = new Date()
+        const recentWeights = records.slice(0, 5).map(r => r.weight).filter(Boolean) as number[]
+        const trend = recentWeights.length >= 3
+          ? recentWeights[0] < recentWeights[recentWeights.length - 1] ? '下降中' : '上升中'
+          : undefined
+        const res = await fetch('/api/ai/greeting', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userName: user.name,
+            gender: user.gender,
+            latestWeight: records[0]?.weight,
+            previousWeight: records[1]?.weight,
+            targetWeight: user.target_weight,
+            streak,
+            recentTrend: trend,
+            bodyFat: records[0]?.body_fat,
+            dayOfWeek: ['日', '一', '二', '三', '四', '五', '六'][now.getDay()],
+            hour: now.getHours(),
+          }),
+        })
+        if (res.ok) {
+          const { message } = await res.json()
+          if (message) setEncouragement(message)
+        }
+      } catch { /* greeting is nice-to-have */ }
+    }
+    fetchGreeting()
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   // If todayRecord exists but form was reset, sync back
   useEffect(() => {
@@ -194,7 +251,7 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
         })
         if (aiRes.ok) {
           const { message } = await aiRes.json()
-          setEncouragement(message)
+          if (message) setEncouragement(message)
         }
       } catch {
         // AI encouragement is nice-to-have
@@ -396,6 +453,19 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
         </button>
       </div>
 
+      {/* AI Coach - always visible */}
+      {encouragement && (
+        <div className="bg-gradient-to-r from-emerald-50 to-orange-50 rounded-3xl border border-emerald-100 p-5 yuzu-pop-in">
+          <div className="flex items-start gap-3">
+            <img src="/char-coach-sm.png" alt="AI教練" className="w-11 h-11 rounded-full shadow flex-shrink-0" />
+            <div>
+              <p className="text-sm font-bold text-emerald-700 mb-1">AI 教練說：</p>
+              <p className="text-gray-700 leading-relaxed">{encouragement}</p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Comparison Card (show after check-in or if today has record) */}
       {hasCheckedIn && form.weight && lastRecord && (() => {
         const today = form.date
@@ -487,6 +557,98 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
                 )
               })}
             </div>
+
+            {/* Integrated Trend Chart */}
+            {(() => {
+              const rangeOffsets: Record<string, number> = { prev: 7, week: 7, month: 30, quarter: 90, year: 365, '3year': 1095 }
+              const cutoffDate = new Date()
+              cutoffDate.setDate(cutoffDate.getDate() - (rangeOffsets[compareRange] || 7))
+              const chartRecords = records
+                .filter(r => new Date(r.date) >= cutoffDate)
+                .slice()
+                .sort((a, b) => a.date.localeCompare(b.date))
+              const chartData = chartRecords.map(r => ({
+                date: r.date.slice(5),
+                weight: r.weight,
+                bodyFat: r.body_fat,
+              }))
+              const hasBodyFat = chartData.some(d => d.bodyFat != null)
+              const weights = chartData.map(d => d.weight).filter((v): v is number => v != null)
+              const fats = chartData.map(d => d.bodyFat).filter((v): v is number => v != null)
+
+              if (chartData.length < 2) return null
+
+              const wMin = Math.min(...weights)
+              const wMax = Math.max(...weights)
+              const wPad = (wMax - wMin) * 0.15 || 2
+
+              return (
+                <div className="mt-5 pt-4 border-t border-slate-700/50">
+                  <div className="text-xs text-slate-400 mb-2">
+                    {chartRecords[0]?.date} ~ {chartRecords[chartRecords.length - 1]?.date}
+                  </div>
+                  <div className="h-48">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={chartData} margin={{ top: 5, right: hasBodyFat ? 35 : 5, bottom: 5, left: -15 }}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
+                        <XAxis dataKey="date" tick={{ fontSize: 10, fill: '#94a3b8' }} axisLine={{ stroke: '#334155' }} />
+                        <YAxis
+                          yAxisId="weight"
+                          domain={[Math.floor(wMin - wPad), Math.ceil(wMax + wPad)]}
+                          tick={{ fontSize: 10, fill: '#34d399' }}
+                          axisLine={{ stroke: '#334155' }}
+                        />
+                        {hasBodyFat && fats.length >= 2 && (
+                          <YAxis
+                            yAxisId="fat"
+                            orientation="right"
+                            domain={[Math.floor(Math.min(...fats) - 1), Math.ceil(Math.max(...fats) + 1)]}
+                            tick={{ fontSize: 10, fill: '#fbbf24' }}
+                            axisLine={{ stroke: '#334155' }}
+                          />
+                        )}
+                        <Tooltip
+                          contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '12px', fontSize: '12px', color: '#e2e8f0' }}
+                          formatter={(value, name) => {
+                            if (name === 'weight') return [`${value} kg`, '體重']
+                            return [`${value}%`, '體脂率']
+                          }}
+                        />
+                        <Line
+                          yAxisId="weight"
+                          type="monotone"
+                          dataKey="weight"
+                          stroke="#10b981"
+                          strokeWidth={2.5}
+                          dot={{ fill: '#10b981', strokeWidth: 0, r: 3 }}
+                          connectNulls
+                          name="weight"
+                        />
+                        {hasBodyFat && fats.length >= 2 && (
+                          <Line
+                            yAxisId="fat"
+                            type="monotone"
+                            dataKey="bodyFat"
+                            stroke="#f59e0b"
+                            strokeWidth={2}
+                            dot={{ fill: '#f59e0b', strokeWidth: 0, r: 3 }}
+                            strokeDasharray="5 3"
+                            connectNulls
+                            name="bodyFat"
+                          />
+                        )}
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                  <div className="flex items-center justify-center gap-4 mt-2 text-[11px]">
+                    <span className="flex items-center gap-1"><span className="w-3 h-0.5 bg-emerald-500 inline-block rounded" /> <span className="text-emerald-400">體重</span></span>
+                    {hasBodyFat && fats.length >= 2 && (
+                      <span className="flex items-center gap-1"><span className="w-3 h-0.5 bg-amber-500 inline-block rounded border-dashed" /> <span className="text-amber-400">體脂率</span></span>
+                    )}
+                  </div>
+                </div>
+              )
+            })()}
           </div>
         )
       })()}
@@ -529,21 +691,8 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
         </div>
       )}
 
-      {/* AI Encouragement */}
-      {encouragement && (
-        <div className="bg-gradient-to-r from-emerald-50 to-orange-50 rounded-3xl border border-emerald-100 p-5 yuzu-pop-in">
-          <div className="flex items-start gap-3">
-            <img src="/char-coach-sm.png" alt="AI教練" className="w-11 h-11 rounded-full shadow flex-shrink-0" />
-            <div>
-              <p className="text-sm font-bold text-emerald-700 mb-1">AI 教練說：</p>
-              <p className="text-gray-700 leading-relaxed">{encouragement}</p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Trend Chart */}
-      {records.length >= 2 && (
+      {/* Trend Chart (when not checked in yet, show standalone) */}
+      {!hasCheckedIn && records.length >= 2 && (
         <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6">
           <h3 className="text-lg font-bold text-gray-900 mb-4">📈 近期趨勢</h3>
           <TrendChart records={records.slice(0, 7).reverse()} />

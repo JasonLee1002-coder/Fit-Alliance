@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import CoachAvatar from './coach-avatar'
 
 export default function SplashScreen({ onDone }: { onDone: () => void }) {
   const [phase, setPhase] = useState<'enter' | 'ready' | 'exit'>('enter')
@@ -32,14 +33,9 @@ export default function SplashScreen({ onDone }: { onDone: () => void }) {
         <div className="absolute top-[40%] right-[5%] w-16 h-16 rounded-full bg-white/5 animate-pulse" style={{ animationDelay: '1s' }} />
       </div>
 
-      {/* Coach mascot — 3D version */}
+      {/* Coach mascot — SVG 新教練 */}
       <div className={`transition-all duration-700 ${phase === 'enter' ? 'scale-0 opacity-0' : 'scale-100 opacity-100'}`}>
-        <img
-          src="/char-coach.png"
-          alt="AI 教練"
-          className="w-40 h-40 drop-shadow-2xl"
-          style={{ animation: 'splash-bounce 1s ease-in-out infinite alternate' }}
-        />
+        <CoachAvatar size={140} animate={true} />
       </div>
 
       {/* App name */}

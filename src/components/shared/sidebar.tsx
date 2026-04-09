@@ -6,13 +6,14 @@ import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { cn } from '@/lib/utils'
 import type { User } from '@/types'
+import { CheckinIcon, RecordsIcon, ChallengeIcon, InviteIcon, ReportIcon } from './nav-icons'
 
 const navItems = [
-  { href: '/', label: '每日打卡首頁', img: '/nav3d-checkin-sm.png', description: '體重紀錄' },
-  { href: '/records', label: '健康紀錄', img: '/nav3d-records-sm.png', description: '趨勢圖表' },
-  { href: '/challenge', label: '共同挑戰', img: '/nav3d-challenge-sm.png', description: '排行榜' },
-  { href: '/invite', label: '個人邀請朋友', img: '/nav3d-invite-sm.png', description: '分享連結' },
-  { href: '/report', label: '問題回報', img: '/nav3d-report-sm.png', description: '回報問題' },
+  { href: '/', label: '每日打卡首頁', Icon: CheckinIcon, description: '體重紀錄' },
+  { href: '/records', label: '健康紀錄', Icon: RecordsIcon, description: '趨勢圖表' },
+  { href: '/challenge', label: '共同挑戰', Icon: ChallengeIcon, description: '排行榜' },
+  { href: '/invite', label: '個人邀請朋友', Icon: InviteIcon, description: '分享連結' },
+  { href: '/report', label: '問題回報', Icon: ReportIcon, description: '回報問題' },
 ]
 
 export default function Sidebar({ user }: { user: User | null }) {
@@ -92,7 +93,9 @@ export default function Sidebar({ user }: { user: User | null }) {
                       : 'text-emerald-700 hover:bg-white/5 hover:text-emerald-400'
                   )}
                 >
-                  <img src={item.img} alt="" className="w-11 h-11 drop-shadow-lg group-hover:scale-105 transition-transform duration-200" />
+                  <div className="group-hover:scale-110 transition-transform duration-200 drop-shadow-lg">
+                    <item.Icon size={44} />
+                  </div>
                   <div>
                     <div className={cn(isActive ? 'text-emerald-300 font-medium' : 'text-emerald-500')}>{item.label}</div>
                     <div className="text-[10px] text-emerald-800">{item.description}</div>

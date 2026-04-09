@@ -11,6 +11,8 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { ScaleMascot, CoachMascot, TrophyMascot, CameraMascot } from '@/components/shared/mascots'
 import { NumberTicker } from '@/components/ui/number-ticker'
 import { AnimatedGradientText } from '@/components/ui/animated-gradient-text'
+import CoachAvatar from '@/components/shared/coach-avatar'
+import HeroIllustration from '@/components/shared/hero-illustration'
 
 interface Props {
   user: User
@@ -275,6 +277,18 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
 
   return (
     <div className="space-y-6">
+      {/* Hero 插圖 (未打卡時顯示) */}
+      {!hasCheckedIn && (
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="rounded-3xl overflow-hidden border border-emerald-500/15 bg-black/20 px-2 pt-2 pb-0"
+        >
+          <HeroIllustration />
+        </motion.div>
+      )}
+
       {/* Header */}
       <motion.div
         className="space-y-3"
@@ -725,7 +739,7 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
           className="bg-gradient-to-r from-emerald-900/50 to-teal-900/40 rounded-3xl border border-emerald-500/25 p-5 shadow-[0_0_20px_rgba(16,185,129,0.1)]"
         >
           <div className="flex items-start gap-3">
-            <img src="/char-coach-sm.png" alt="AI教練" className="w-11 h-11 rounded-full shadow-lg flex-shrink-0 ring-2 ring-emerald-500/30" />
+            <CoachAvatar size={44} animate={false} className="flex-shrink-0 rounded-full ring-2 ring-emerald-500/30 overflow-hidden" />
             <div>
               <p className="text-sm font-bold text-emerald-400 mb-1">AI 教練說：</p>
               <p className="text-emerald-100 leading-relaxed">{encouragement}</p>

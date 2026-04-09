@@ -89,7 +89,15 @@ export default function InvitePage() {
     const text = `加入「${group.name}」瘦身聯盟！一起變瘦 💪`
 
     if (navigator.share) {
-      await navigator.share({ title: group.name, text, url })
+      try {
+        await navigator.share({ title: group.name, text, url })
+      } catch (err) {
+        // User cancelled share or share failed — fall back to clipboard
+        if ((err as Error)?.name !== 'AbortError') {
+          await navigator.clipboard.writeText(url)
+          alert('邀請連結已複製！')
+        }
+      }
     } else {
       await navigator.clipboard.writeText(url)
       alert('邀請連結已複製！')
@@ -149,7 +157,7 @@ export default function InvitePage() {
                     {m.avatar_url ? (
                       <img src={m.avatar_url} alt="" className="w-full h-full object-cover" />
                     ) : (
-                      <span className="text-emerald-600 font-bold">{m.name.charAt(0)}</span>
+                      <span className="text-emerald-600 font-bold">{(m.name || '?').charAt(0)}</span>
                     )}
                   </div>
                   <div>

@@ -63,7 +63,7 @@ export default async function ChallengePage() {
       if (rec?.weight != null) weightMap.set(rec.user_id, rec.weight)
     }
 
-    // Update DB in parallel
+    // Update DB in parallel — errors are non-fatal, page still renders with in-memory values
     await Promise.all(
       Array.from(weightMap.entries()).map(([uid, weight]) =>
         supabase
@@ -71,6 +71,7 @@ export default async function ChallengePage() {
           .update({ current_value: weight })
           .eq('user_id', uid)
           .in('challenge_id', challengeIds)
+          .then(({ error }) => { if (error) console.error('[Challenge] Weight sync failed:', uid, error) })
       )
     )
 

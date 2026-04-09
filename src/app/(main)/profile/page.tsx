@@ -56,7 +56,7 @@ export default function ProfilePage() {
     setUploadingAvatar(true)
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return
+    if (!user) { setUploadingAvatar(false); return }
 
     const fileName = `avatars/${user.id}/${Date.now()}_${file.name}`
     const { data: uploadData } = await supabase.storage
@@ -80,7 +80,7 @@ export default function ProfilePage() {
     setSaving(true)
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return
+    if (!user) { setSaving(false); return }
 
     await supabase.from('fa_users').update({
       name: form.name,

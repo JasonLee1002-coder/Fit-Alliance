@@ -38,7 +38,8 @@ export async function POST(request: Request) {
       const startValue = p.start_value || 0
       const currentValue = p.current_value || startValue
       const change = startValue - currentValue
-      const pct = startValue ? (change / startValue * 100 / p.target_value * 100) : 0
+      const targetValue = p.target_value || 0
+      const pct = targetValue > 0 ? (change / targetValue) * 100 : 0
 
       return {
         name: (p.user as { name: string })?.name || 'Unknown',

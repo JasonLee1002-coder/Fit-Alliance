@@ -56,6 +56,7 @@ export async function POST(request: Request) {
         const result = JSON.parse(cleaned)
         return NextResponse.json(result)
       } catch {
+        console.warn('[Food-recognize] JSON parse failed, raw text:', text?.slice(0, 200))
         return NextResponse.json({ items: [], overall_assessment: '無法辨識食物' })
       }
     }

@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { motion } from 'framer-motion'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { formatDateWithWeekday, calculateBMI, getStandardWeight, getBodyFatRange } from '@/lib/utils'
@@ -9,11 +8,6 @@ import type { User, HealthRecord, DailyLog } from '@/types'
 import TrendChart from './trend-chart'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import { ScaleMascot, CoachMascot, TrophyMascot, CameraMascot } from '@/components/shared/mascots'
-import { NumberTicker } from '@/components/ui/number-ticker'
-import { AnimatedGradientText } from '@/components/ui/animated-gradient-text'
-import CoachAvatar from '@/components/shared/coach-avatar'
-import HeroIllustration from '@/components/shared/hero-illustration'
-import { CheckinIcon, RecordsIcon, ChallengeIcon, InviteIcon } from '@/components/shared/nav-icons'
 
 interface Props {
   user: User
@@ -278,54 +272,27 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
 
   return (
     <div className="space-y-6">
-      {/* Hero 插圖 (未打卡時顯示) */}
-      {!hasCheckedIn && (
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="rounded-3xl overflow-hidden border border-emerald-500/15 bg-black/20 px-2 pt-2 pb-0"
-        >
-          <HeroIllustration />
-        </motion.div>
-      )}
-
       {/* Header */}
-      <motion.div
-        className="space-y-3"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, ease: 'easeOut' }}
-      >
+      <div className="space-y-3">
         <div className="flex items-start justify-between">
           <div>
-            <h1 className="text-2xl font-bold">
-              嗨，<AnimatedGradientText>{user.name}</AnimatedGradientText> 👋
+            <h1 className="text-2xl font-bold text-gray-900">
+              嗨，{user.name} 👋
             </h1>
             <p className="text-gray-500 text-sm mt-1">
               {formatDateWithWeekday(new Date())}
               {user.target_weight && records[0]?.weight && (
                 <span className="ml-2 text-emerald-600">
-                  目標 {user.target_weight} kg（還差{' '}
-                  <NumberTicker
-                    value={Math.abs(records[0].weight as number - user.target_weight)}
-                    decimalPlaces={1}
-                    className="text-emerald-500"
-                  />{' '}kg）
+                  目標 {user.target_weight} kg（還差 {Math.abs(records[0].weight as number - user.target_weight).toFixed(1)} kg）
                 </span>
               )}
             </p>
           </div>
           <div className="flex items-center gap-2 flex-shrink-0">
             {streak >= 2 && (
-              <motion.span
-                initial={{ scale: 0.7, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
-                className="bg-orange-100 text-orange-600 px-2.5 py-1 rounded-full text-xs font-bold flex items-center gap-1"
-              >
-                🔥 <NumberTicker value={streak} className="font-bold" /> 天
-              </motion.span>
+              <span className="bg-orange-100 text-orange-600 px-2.5 py-1 rounded-full text-xs font-bold">
+                🔥 {streak} 天
+              </span>
             )}
             <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${
               hasCheckedIn ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-500'
@@ -335,7 +302,7 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
           </div>
         </div>
 
-      </motion.div>
+      </div>
 
       {/* Check-in Card */}
       <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6">
@@ -488,14 +455,12 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
 
       {/* AI Coach - always visible */}
       {encouragement && (
-        <div className="bg-gradient-to-r from-emerald-900/60 to-teal-900/60 rounded-3xl border border-emerald-500/30 p-5 yuzu-pop-in backdrop-blur-sm shadow-lg shadow-emerald-900/30">
+        <div className="bg-gradient-to-r from-emerald-50 to-orange-50 rounded-3xl border border-emerald-100 p-5 yuzu-pop-in">
           <div className="flex items-start gap-3">
-            <div className="flex-shrink-0">
-              <CoachAvatar size={48} animate={false} />
-            </div>
+            <img src="/char-coach-sm.png" alt="AI教練" className="w-11 h-11 rounded-full shadow flex-shrink-0" />
             <div>
-              <p className="text-sm font-bold text-emerald-400 mb-1">AI 教練說：</p>
-              <p className="text-emerald-100 leading-relaxed text-sm">{encouragement}</p>
+              <p className="text-sm font-bold text-emerald-700 mb-1">AI 教練說：</p>
+              <p className="text-gray-700 leading-relaxed">{encouragement}</p>
             </div>
           </div>
         </div>
@@ -693,34 +658,26 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
         <div className="bg-gradient-to-b from-slate-800 to-slate-900 rounded-3xl shadow-lg p-5">
           <h3 className="text-lg font-bold text-emerald-400 mb-4">🏋️ 今日基本資料</h3>
           <div className="grid grid-cols-2 gap-3">
-            {([
-              { label: '體重', raw: form.weight ? parseFloat(form.weight) : null, unit: 'kg', dp: 1, color: 'from-red-500/20 to-red-600/10', borderColor: 'border-red-500/30', textColor: 'text-red-300', labelColor: 'text-red-400' },
-              { label: '體脂率', raw: form.body_fat ? parseFloat(form.body_fat) : null, unit: '%', dp: 1, color: 'from-rose-500/20 to-rose-600/10', borderColor: 'border-rose-500/30', textColor: 'text-rose-300', labelColor: 'text-rose-400', hasInfo: true, infoLink: '/body-fat-info', infoBg: 'bg-rose-500/30 text-rose-300' },
-              { label: 'BMI', raw: form.bmi ? parseFloat(form.bmi) : null, unit: '', dp: 1, color: 'from-blue-500/20 to-blue-600/10', borderColor: 'border-blue-500/30', textColor: 'text-blue-300', labelColor: 'text-blue-400', hasInfo: true, infoLink: '/bmi-info', infoBg: 'bg-blue-500/30 text-blue-300' },
-              { label: '肌肉量', raw: form.muscle_mass ? parseFloat(form.muscle_mass) : null, unit: 'kg', dp: 1, color: 'from-green-500/20 to-green-600/10', borderColor: 'border-green-500/30', textColor: 'text-green-300', labelColor: 'text-green-400' },
-              { label: '內臟脂肪', raw: form.visceral_fat ? parseFloat(form.visceral_fat) : null, unit: '', dp: 0, color: 'from-yellow-500/20 to-yellow-600/10', borderColor: 'border-yellow-500/30', textColor: 'text-yellow-300', labelColor: 'text-yellow-400', hasInfo: true },
-              { label: '基礎代謝率', raw: form.bmr ? parseFloat(form.bmr) : null, unit: 'kcal', dp: 0, color: 'from-amber-500/20 to-amber-600/10', borderColor: 'border-amber-500/30', textColor: 'text-amber-300', labelColor: 'text-amber-400' },
-              { label: '骨質量', raw: form.bone_mass ? parseFloat(form.bone_mass) : null, unit: 'kg', dp: 1, color: 'from-cyan-500/20 to-cyan-600/10', borderColor: 'border-cyan-500/30', textColor: 'text-cyan-300', labelColor: 'text-cyan-400' },
-            ] as const).map((item, i) => (
-              <motion.div
-                key={item.label}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: i * 0.05, duration: 0.3 }}
-                className={`bg-gradient-to-br ${item.color} rounded-2xl p-3.5 text-center border ${item.borderColor}`}
-              >
+            {[
+              { label: '體重', value: form.weight ? `${form.weight} kg` : null, color: 'from-red-500/20 to-red-600/10', borderColor: 'border-red-500/30', textColor: 'text-red-300', labelColor: 'text-red-400' },
+              { label: '體脂率', value: form.body_fat ? `${form.body_fat}%` : null, color: 'from-rose-500/20 to-rose-600/10', borderColor: 'border-rose-500/30', textColor: 'text-rose-300', labelColor: 'text-rose-400', hasInfo: true, infoLink: '/body-fat-info', infoBg: 'bg-rose-500/30 text-rose-300' },
+              { label: 'BMI', value: form.bmi || null, color: 'from-blue-500/20 to-blue-600/10', borderColor: 'border-blue-500/30', textColor: 'text-blue-300', labelColor: 'text-blue-400', hasInfo: true, infoLink: '/bmi-info', infoBg: 'bg-blue-500/30 text-blue-300' },
+              { label: '肌肉量', value: form.muscle_mass ? `${form.muscle_mass} kg` : null, color: 'from-green-500/20 to-green-600/10', borderColor: 'border-green-500/30', textColor: 'text-green-300', labelColor: 'text-green-400' },
+              { label: '內臟脂肪', value: form.visceral_fat || null, color: 'from-yellow-500/20 to-yellow-600/10', borderColor: 'border-yellow-500/30', textColor: 'text-yellow-300', labelColor: 'text-yellow-400', hasInfo: true },
+              { label: '基礎代謝率', value: form.bmr ? `${form.bmr} kcal` : null, color: 'from-amber-500/20 to-amber-600/10', borderColor: 'border-amber-500/30', textColor: 'text-amber-300', labelColor: 'text-amber-400' },
+              { label: '骨質量', value: form.bone_mass ? `${form.bone_mass} kg` : null, color: 'from-cyan-500/20 to-cyan-600/10', borderColor: 'border-cyan-500/30', textColor: 'text-cyan-300', labelColor: 'text-cyan-400' },
+            ].map(item => (
+              <div key={item.label} className={`bg-gradient-to-br ${item.color} rounded-2xl p-3.5 text-center border ${item.borderColor}`}>
                 <div className={`text-xs font-bold ${item.labelColor} mb-1.5 flex items-center justify-center gap-1`}>
                   {item.label}
-                  {(item as { hasInfo?: boolean; infoLink?: string; infoBg?: string }).hasInfo && (
-                    <a href={(item as { infoLink?: string }).infoLink || '/visceral-fat-info'} className={`inline-flex items-center justify-center w-4 h-4 rounded-full text-[10px] font-bold hover:opacity-80 transition ${(item as { infoBg?: string }).infoBg || 'bg-yellow-500/30 text-yellow-300'}`}>?</a>
+                  {(item as any).hasInfo && (
+                    <a href={(item as any).infoLink || '/visceral-fat-info'} className={`inline-flex items-center justify-center w-4 h-4 rounded-full text-[10px] font-bold hover:opacity-80 transition ${(item as any).infoBg || 'bg-yellow-500/30 text-yellow-300'}`}>?</a>
                   )}
                 </div>
-                <div className={`text-xl font-bold ${item.raw != null ? item.textColor : 'text-slate-500'}`}>
-                  {item.raw != null ? (
-                    <NumberTicker value={item.raw} decimalPlaces={item.dp} suffix={item.unit ? ` ${item.unit}` : ''} className={item.textColor} />
-                  ) : '—'}
+                <div className={`text-xl font-bold ${item.value ? item.textColor : 'text-slate-500'}`}>
+                  {item.value || '—'}
                 </div>
-              </motion.div>
+              </div>
             ))}
           </div>
           <div className="mt-4 flex justify-center">
@@ -732,23 +689,6 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
             </a>
           </div>
         </div>
-      )}
-
-      {/* AI Encouragement */}
-      {encouragement && (
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-gradient-to-r from-emerald-900/50 to-teal-900/40 rounded-3xl border border-emerald-500/25 p-5 shadow-[0_0_20px_rgba(16,185,129,0.1)]"
-        >
-          <div className="flex items-start gap-3">
-            <CoachAvatar size={44} animate={false} className="flex-shrink-0 rounded-full ring-2 ring-emerald-500/30 overflow-hidden" />
-            <div>
-              <p className="text-sm font-bold text-emerald-400 mb-1">AI 教練說：</p>
-              <p className="text-emerald-100 leading-relaxed">{encouragement}</p>
-            </div>
-          </div>
-        </motion.div>
       )}
 
       {/* Trend Chart (when not checked in yet, show standalone) */}
@@ -841,21 +781,21 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
 
       {/* Quick Links */}
       <div className="grid grid-cols-2 gap-3">
-        <a href="/challenge" className="bg-gradient-to-br from-amber-900/40 to-orange-900/40 text-amber-300 rounded-2xl p-4 flex items-center gap-3 hover:shadow-lg hover:shadow-amber-900/30 transition active:scale-[0.98] yuzu-glow-urgent relative overflow-visible border border-amber-500/20 backdrop-blur-sm">
-          <ChallengeIcon size={52} />
+        <a href="/challenge" className="bg-gradient-to-br from-amber-50 to-orange-50 text-orange-700 rounded-2xl p-4 flex items-center gap-3 hover:shadow-lg transition active:scale-[0.98] yuzu-glow-urgent relative overflow-visible border border-orange-100">
+          <img src="/nav3d-challenge-sm.png" alt="" className="w-14 h-14 drop-shadow" />
           <span className="font-bold text-sm">共同挑戰</span>
         </a>
-        <a href="/records" className="bg-gradient-to-br from-blue-900/40 to-indigo-900/40 text-blue-300 rounded-2xl p-4 flex items-center gap-3 hover:shadow-lg hover:shadow-blue-900/30 transition active:scale-[0.98] border border-blue-500/20 backdrop-blur-sm">
-          <RecordsIcon size={52} />
-          <span className="font-bold text-sm">健康紀錄</span>
+        <a href="/coach" className="bg-gradient-to-br from-emerald-50 to-teal-50 text-emerald-700 rounded-2xl p-4 flex items-center gap-3 hover:shadow-lg transition active:scale-[0.98] border border-emerald-100">
+          <img src="/char-coach-sm.png" alt="" className="w-14 h-14 drop-shadow" />
+          <span className="font-bold text-sm">AI 教練</span>
         </a>
-        <a href="/invite" className="bg-gradient-to-br from-purple-900/40 to-violet-900/40 text-purple-300 rounded-2xl p-4 flex items-center gap-3 hover:shadow-lg hover:shadow-purple-900/30 transition active:scale-[0.98] border border-purple-500/20 backdrop-blur-sm">
-          <InviteIcon size={52} />
+        <a href="/invite" className="bg-gradient-to-br from-blue-50 to-indigo-50 text-blue-700 rounded-2xl p-4 flex items-center gap-3 hover:shadow-lg transition active:scale-[0.98] border border-blue-100">
+          <img src="/nav3d-invite-sm.png" alt="" className="w-14 h-14 drop-shadow" />
           <span className="font-bold text-sm">個人邀請朋友</span>
         </a>
-        <a href="/" className="bg-gradient-to-br from-emerald-900/40 to-teal-900/40 text-emerald-300 rounded-2xl p-4 flex items-center gap-3 hover:shadow-lg hover:shadow-emerald-900/30 transition active:scale-[0.98] border border-emerald-500/20 backdrop-blur-sm">
-          <CoachAvatar size={52} animate={false} />
-          <span className="font-bold text-sm">每日打卡</span>
+        <a href="/records" className="bg-gradient-to-br from-cyan-50 to-blue-50 text-blue-700 rounded-2xl p-4 flex items-center gap-3 hover:shadow-lg transition active:scale-[0.98] border border-blue-100">
+          <img src="/nav3d-records-sm.png" alt="" className="w-14 h-14 drop-shadow" />
+          <span className="font-bold text-sm">健康紀錄</span>
         </a>
       </div>
     </div>

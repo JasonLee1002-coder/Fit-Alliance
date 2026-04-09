@@ -13,6 +13,7 @@ import { NumberTicker } from '@/components/ui/number-ticker'
 import { AnimatedGradientText } from '@/components/ui/animated-gradient-text'
 import CoachAvatar from '@/components/shared/coach-avatar'
 import HeroIllustration from '@/components/shared/hero-illustration'
+import { CheckinIcon, RecordsIcon, ChallengeIcon, InviteIcon } from '@/components/shared/nav-icons'
 
 interface Props {
   user: User
@@ -487,12 +488,14 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
 
       {/* AI Coach - always visible */}
       {encouragement && (
-        <div className="bg-gradient-to-r from-emerald-50 to-orange-50 rounded-3xl border border-emerald-100 p-5 yuzu-pop-in">
+        <div className="bg-gradient-to-r from-emerald-900/60 to-teal-900/60 rounded-3xl border border-emerald-500/30 p-5 yuzu-pop-in backdrop-blur-sm shadow-lg shadow-emerald-900/30">
           <div className="flex items-start gap-3">
-            <img src="/char-coach-sm.png" alt="AI教練" className="w-11 h-11 rounded-full shadow flex-shrink-0" />
+            <div className="flex-shrink-0">
+              <CoachAvatar size={48} animate={false} />
+            </div>
             <div>
-              <p className="text-sm font-bold text-emerald-700 mb-1">AI 教練說：</p>
-              <p className="text-gray-700 leading-relaxed">{encouragement}</p>
+              <p className="text-sm font-bold text-emerald-400 mb-1">AI 教練說：</p>
+              <p className="text-emerald-100 leading-relaxed text-sm">{encouragement}</p>
             </div>
           </div>
         </div>
@@ -838,21 +841,21 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
 
       {/* Quick Links */}
       <div className="grid grid-cols-2 gap-3">
-        <a href="/challenge" className="bg-gradient-to-br from-amber-50 to-orange-50 text-orange-700 rounded-2xl p-4 flex items-center gap-3 hover:shadow-lg transition active:scale-[0.98] yuzu-glow-urgent relative overflow-visible border border-orange-100">
-          <img src="/nav3d-challenge-sm.png" alt="" className="w-14 h-14 drop-shadow" />
+        <a href="/challenge" className="bg-gradient-to-br from-amber-900/40 to-orange-900/40 text-amber-300 rounded-2xl p-4 flex items-center gap-3 hover:shadow-lg hover:shadow-amber-900/30 transition active:scale-[0.98] yuzu-glow-urgent relative overflow-visible border border-amber-500/20 backdrop-blur-sm">
+          <ChallengeIcon size={52} />
           <span className="font-bold text-sm">共同挑戰</span>
         </a>
-        <a href="/coach" className="bg-gradient-to-br from-emerald-50 to-teal-50 text-emerald-700 rounded-2xl p-4 flex items-center gap-3 hover:shadow-lg transition active:scale-[0.98] border border-emerald-100">
-          <img src="/char-coach-sm.png" alt="" className="w-14 h-14 drop-shadow" />
-          <span className="font-bold text-sm">AI 教練</span>
+        <a href="/records" className="bg-gradient-to-br from-blue-900/40 to-indigo-900/40 text-blue-300 rounded-2xl p-4 flex items-center gap-3 hover:shadow-lg hover:shadow-blue-900/30 transition active:scale-[0.98] border border-blue-500/20 backdrop-blur-sm">
+          <RecordsIcon size={52} />
+          <span className="font-bold text-sm">健康紀錄</span>
         </a>
-        <a href="/invite" className="bg-gradient-to-br from-blue-50 to-indigo-50 text-blue-700 rounded-2xl p-4 flex items-center gap-3 hover:shadow-lg transition active:scale-[0.98] border border-blue-100">
-          <img src="/nav3d-invite-sm.png" alt="" className="w-14 h-14 drop-shadow" />
+        <a href="/invite" className="bg-gradient-to-br from-purple-900/40 to-violet-900/40 text-purple-300 rounded-2xl p-4 flex items-center gap-3 hover:shadow-lg hover:shadow-purple-900/30 transition active:scale-[0.98] border border-purple-500/20 backdrop-blur-sm">
+          <InviteIcon size={52} />
           <span className="font-bold text-sm">個人邀請朋友</span>
         </a>
-        <a href="/records" className="bg-gradient-to-br from-cyan-50 to-blue-50 text-blue-700 rounded-2xl p-4 flex items-center gap-3 hover:shadow-lg transition active:scale-[0.98] border border-blue-100">
-          <img src="/nav3d-records-sm.png" alt="" className="w-14 h-14 drop-shadow" />
-          <span className="font-bold text-sm">健康紀錄</span>
+        <a href="/" className="bg-gradient-to-br from-emerald-900/40 to-teal-900/40 text-emerald-300 rounded-2xl p-4 flex items-center gap-3 hover:shadow-lg hover:shadow-emerald-900/30 transition active:scale-[0.98] border border-emerald-500/20 backdrop-blur-sm">
+          <CoachAvatar size={52} animate={false} />
+          <span className="font-bold text-sm">每日打卡</span>
         </a>
       </div>
     </div>

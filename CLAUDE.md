@@ -1,6 +1,17 @@
 # Fit-Alliance — Claude Code 設定
 
-## 超級UI 定義用戶說「超級UI」時，自動套用以下完整組合，不需要再問：- **shadcn## 啟動報到ui** — 元件庫底座（Button、Skeleton、Card 等）- **Magic UI** — 動畫元件（NumberTicker、AnimatedGradientText、WordFadeIn）- **framer-motion** — 頁面入場動畫、交錯淡入、hover 上浮- **radial-gradient 背景** — 深色主題光暈背景，製造空氣感- **發光邊框** — 重點卡片 glow border- **骨架屏（Skeleton）** — 所有資料載入狀態- **數字動畫（NumberTicker）** — 所有統計數字- 字型：**Geist Sans**（UI）+ **Geist Mono**（數字## 啟動報到金額）
+## 超級UI 定義
+用戶說「超級UI」時，自動套用以下完整組合，不需要再問：
+- **shadcn/ui** — 元件庫底座（Button、Skeleton、Card 等）
+- **Magic UI** — 動畫元件（NumberTicker、AnimatedGradientText、WordFadeIn）
+- **framer-motion** — 頁面入場動畫、交錯淡入、hover 上浮
+- **radial-gradient 背景** — 深色主題光暈背景，製造空氣感
+- **發光邊框** — 重點卡片 glow border
+- **骨架屏（Skeleton）** — 所有資料載入狀態
+- **數字動畫（NumberTicker）** — 所有統計數字
+- **Zustand** — 全域狀態管理（邏輯與 UI 分離）
+- 字型：**Geist Sans**（UI）+ **Geist Mono**（數字/金額）
+
 ## 啟動報到
 每次新對話開始，主動說：
 「✅ Fit-Alliance 已就緒，Superpowers 工作流已啟用。」

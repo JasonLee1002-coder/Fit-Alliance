@@ -34,7 +34,7 @@ export default function LoginPage() {
         {/* Logo & Title */}
         <div className="text-center mb-8 yuzu-slide-up">
           <div className="mb-5 yuzu-float">
-            <img src="/char-coach.png" alt="Fit Alliance" className="w-28 h-28 drop-shadow-2xl" />
+            <img src="/char-coaches.png" alt="Fit Alliance" className="w-36 h-36 drop-shadow-2xl" />
           </div>
           <h1 className="text-4xl font-black text-gray-900 mb-2 tracking-tight">
             瘦身減肥聯盟

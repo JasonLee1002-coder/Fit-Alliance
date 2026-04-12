@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import PwaInstallPrompt from "@/components/shared/pwa-install-prompt";
+import SplashScreen from "@/components/shared/splash-screen";
 
 export const metadata: Metadata = {
   title: "瘦身減肥聯盟 | Fit Alliance",
@@ -29,6 +30,7 @@ export default function RootLayout({
       className="h-full antialiased"
     >
       <body className="min-h-full flex flex-col bg-gray-50/50">
+        <SplashScreen />
         {children}
         <PwaInstallPrompt />
       </body>

@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import { createClient } from '@/lib/supabase/client'
-import { BroadcasterMascot, TrophyMascot } from '@/components/shared/mascots'
+import { TrophyMascot } from '@/components/shared/mascots'
 import { useRouter } from 'next/navigation'
 import { calculateProgress } from '@/types'
 import type { Challenge, ChallengeParticipant, GroupMessage, MemberRelationship } from '@/types'
@@ -119,16 +119,6 @@ export default function ChallengeHub({ userId, userName, challenges, allParticip
     loadMessages(challengeId)
   }
 
-  const triggerAIBroadcast = async (challengeId: string) => {
-    try {
-      const res = await fetch('/api/ai/broadcaster', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ challengeId }),
-      })
-      if (res.ok) loadMessages(challengeId)
-    } catch {}
-  }
-
   const handleCreate = async () => {
     if (!form.name || !form.end_date || !form.my_target_value) return
     setCreating(true)
@@ -226,7 +216,6 @@ export default function ChallengeHub({ userId, userName, challenges, allParticip
             onToggleChat={() => toggleChat(challenge.id)}
             onSendMessage={() => sendMessage(challenge.id)}
             onChatInputChange={setChatInput}
-            onTriggerAI={() => triggerAIBroadcast(challenge.id)}
             onShare={() => shareChallenge(challenge)}
             onRelationshipSaved={loadRelationships}
           />
@@ -251,23 +240,16 @@ export default function ChallengeHub({ userId, userName, challenges, allParticip
 }
 
 // ─── Challenge Card ───
-function ChallengeCard({ challenge, participants, myParticipant, avgProgress, completedCount, userId, relationships, chatOpen, chatMessages, chatInput, onToggleChat, onSendMessage, onChatInputChange, onTriggerAI, onShare, onRelationshipSaved }: {
+function ChallengeCard({ challenge, participants, myParticipant, avgProgress, completedCount, userId, relationships, chatOpen, chatMessages, chatInput, onToggleChat, onSendMessage, onChatInputChange, onShare, onRelationshipSaved }: {
   challenge: Challenge; participants: ParticipantWithUser[]; myParticipant?: ParticipantWithUser
   avgProgress: number; completedCount: number; userId: string; relationships: Record<string, string>
   chatOpen: boolean; chatMessages: GroupMessage[]; chatInput: string
   onToggleChat: () => void; onSendMessage: () => void; onChatInputChange: (v: string) => void
-  onTriggerAI: () => void; onShare: () => void; onRelationshipSaved: () => void
+  onShare: () => void; onRelationshipSaved: () => void
 }) {
   const countdown = useCountdown(challenge.end_date)
   const isActive = challenge.status === 'active'
   const [selectedMember, setSelectedMember] = useState<{ participant: ParticipantWithUser; rank: number } | null>(null)
-  const [aiLoading, setAiLoading] = useState(false)
-
-  const handleTriggerAI = async () => {
-    setAiLoading(true)
-    await onTriggerAI()
-    setAiLoading(false)
-  }
 
   // Time progress
   const startTime = new Date(challenge.start_date).getTime()
@@ -404,20 +386,6 @@ function ChallengeCard({ challenge, participants, myParticipant, avgProgress, co
 
         {chatOpen && (
           <div className="px-4 pb-4 space-y-3">
-            {/* AI Broadcast Button */}
-            <button onClick={handleTriggerAI} disabled={aiLoading}
-              className={`w-full py-2.5 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs font-bold rounded-full shadow-md hover:shadow-lg transition active:scale-[0.98] disabled:opacity-80 ${aiLoading ? 'yuzu-btn-loading' : ''}`}>
-              {aiLoading ? (
-                <span className="flex items-center justify-center gap-1.5">
-                  <span className="yuzu-spinner" style={{ width: '0.875rem', height: '0.875rem' }} />
-                  播報員備稿中
-                  <span className="yuzu-thinking-dot inline-block w-1 h-1 rounded-full bg-white" />
-                  <span className="yuzu-thinking-dot inline-block w-1 h-1 rounded-full bg-white" />
-                  <span className="yuzu-thinking-dot inline-block w-1 h-1 rounded-full bg-white" />
-                </span>
-              ) : '🎤 請 AI 播報員說話'}
-            </button>
-
             {/* Messages */}
             <div className="max-h-80 overflow-y-auto space-y-2" ref={(el) => { if (el) el.scrollTop = el.scrollHeight }}>
               {chatMessages.map(msg => (
@@ -545,8 +513,8 @@ function MemberDrawer({ participant: p, rank, userId, relationship, onClose, onR
               {p.user?.avatar_url ? (
                 <img src={p.user.avatar_url} alt="" className="w-full h-full object-cover" />
               ) : (
-                <div className="w-full h-full bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center">
-                  <span className="text-white text-2xl font-bold">{p.user?.name?.charAt(0)}</span>
+                <div className="w-full h-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center">
+                  <span className="text-white text-2xl font-bold">{p.user?.name?.charAt(0) ?? '👤'}</span>
                 </div>
               )}
             </div>
@@ -770,8 +738,8 @@ function LeaderboardRow({ participant: p, rank, userId, relationship, onTap }: {
           {p.user?.avatar_url ? (
             <img src={p.user.avatar_url} alt="" className="w-full h-full object-cover" />
           ) : (
-            <div className="w-full h-full bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center">
-              <span className="text-white text-sm font-bold">{p.user?.name?.charAt(0) || '?'}</span>
+            <div className="w-full h-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center">
+              <span className="text-white text-sm font-bold">{p.user?.name?.charAt(0) ?? '👤'}</span>
             </div>
           )}
         </div>

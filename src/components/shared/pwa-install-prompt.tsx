@@ -221,13 +221,23 @@ export default function PwaInstallPrompt() {
                           </StepCard>
                           <StepCard n={2} color={accentColor} delay={0.2}
                             icon={<Smartphone className="w-5 h-5" style={{ color: accentColor }} />}
-                            title='選「加到主畫面」或「安裝應用程式」' desc="點選後桌面就會出現捷徑圖示">
-                            <div className="mt-2 flex justify-center gap-2">
+                            title='找到安裝選項（可能名稱不同）' desc="依你的 Chrome 版本，會顯示以下其中一個：">
+                            <div className="mt-2 space-y-1.5">
                               <div className="px-3 py-1.5 rounded-lg bg-gray-50 border border-gray-200 flex items-center gap-2">
                                 <Download className="w-4 h-4 text-gray-600" />
+                                <span className="text-xs text-gray-700 font-medium">安裝應用程式</span>
+                              </div>
+                              <div className="px-3 py-1.5 rounded-lg bg-gray-50 border border-gray-200 flex items-center gap-2">
+                                <Smartphone className="w-4 h-4 text-gray-600" />
                                 <span className="text-xs text-gray-700 font-medium">加到主畫面</span>
                               </div>
+                              <div className="px-3 py-1.5 rounded-lg bg-emerald-50 border border-emerald-200 flex items-center gap-2">
+                                <Download className="w-4 h-4 text-emerald-600" />
+                                <span className="text-xs text-emerald-700 font-bold">開啟 {appName}</span>
+                                <span className="text-[10px] text-emerald-500 ml-auto">← 新版常見</span>
+                              </div>
                             </div>
+                            <p className="mt-1.5 text-[10px] text-gray-400 text-center">看到任一個都可以點，效果一樣！</p>
                             <div className="mt-2 flex justify-center">
                               <motion.span className="text-2xl" animate={{ scale: [1, 1.15, 1] }}
                                 transition={{ duration: 1.5, repeat: Infinity, delay: 0.3 }}>🎉</motion.span>

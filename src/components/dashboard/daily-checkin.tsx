@@ -297,7 +297,7 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
     <div className="space-y-6">
       {/* Hero Banner */}
       <div className="relative rounded-3xl overflow-hidden shadow-lg">
-        <img src="/hero-family.png" alt="" className="w-full h-40 object-cover object-top" />
+        <img src="/hero-family.png" alt="" className="w-full h-52 object-cover object-center" />
         <div className="absolute inset-0 bg-gradient-to-r from-emerald-900/60 via-transparent to-transparent flex items-end p-5">
           <div>
             <h1 className="text-2xl font-black text-white drop-shadow-lg">嗨，{user.name} 👋</h1>

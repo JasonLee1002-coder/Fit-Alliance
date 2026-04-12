@@ -480,7 +480,7 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
       {encouragement && (
         <div className="bg-gradient-to-r from-emerald-50 to-orange-50 rounded-3xl border border-emerald-100 p-5 yuzu-pop-in">
           <div className="flex items-start gap-3">
-            <img src="/char-coach-male.png" alt="AI教練" className="w-11 h-11 rounded-full shadow flex-shrink-0" />
+            <img src="/char-coaches.png" alt="AI教練" className="w-11 h-11 rounded-full shadow flex-shrink-0" />
             <div>
               <p className="text-sm font-bold text-emerald-700 mb-1">AI 教練說：</p>
               <p className="text-gray-700 leading-relaxed">{encouragement}</p>

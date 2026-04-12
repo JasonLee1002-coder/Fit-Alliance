@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import PwaInstallPrompt from "@/components/shared/pwa-install-prompt";
+import PwaTopBanner from "@/components/shared/pwa-top-banner";
 import SplashScreen from "@/components/shared/splash-screen";
 
 export const metadata: Metadata = {
@@ -31,6 +32,7 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col bg-gray-50/50">
         <SplashScreen />
+        <PwaTopBanner />
         {children}
         <PwaInstallPrompt />
       </body>

@@ -296,13 +296,20 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
   return (
     <div className="space-y-6">
       {/* Hero Banner */}
-      <div className="relative rounded-3xl overflow-hidden shadow-lg">
-        <img src="/hero-family.png" alt="" className="w-full h-52 object-cover object-center" />
-        <div className="absolute inset-0 bg-gradient-to-r from-emerald-900/60 via-transparent to-transparent flex items-end p-5">
-          <div>
-            <h1 className="text-2xl font-black text-white drop-shadow-lg">嗨，{user.name} 👋</h1>
-            <p className="text-emerald-100 text-sm mt-0.5 drop-shadow">{formatDateWithWeekday(new Date())}</p>
-          </div>
+      <div className="relative rounded-3xl overflow-hidden shadow-xl bg-gradient-to-br from-sky-400 via-emerald-400 to-teal-500 min-h-[140px] flex items-end">
+        {/* 問候文字 */}
+        <div className="flex-1 p-5 pb-6 z-10">
+          <p className="text-emerald-100 text-xs font-medium mb-1 tracking-wide">{formatDateWithWeekday(new Date())}</p>
+          <h1 className="text-2xl font-black text-white drop-shadow-lg leading-tight">嗨，{user.name} 👋</h1>
+          <p className="text-white/80 text-sm mt-1.5">今天也要加油！💪</p>
+        </div>
+        {/* 親子圖 — 完整顯示，右側浮出 */}
+        <div className="absolute right-0 bottom-0 w-44 h-44 pointer-events-none">
+          <img
+            src="/hero-family.png"
+            alt=""
+            className="w-full h-full object-contain object-bottom drop-shadow-2xl"
+          />
         </div>
       </div>
 

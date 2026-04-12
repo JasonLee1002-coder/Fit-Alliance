@@ -50,7 +50,7 @@ export default function Sidebar({ user }: { user: User | null }) {
         {/* Logo */}
         <div className="p-5 border-b border-gray-50">
           <div className="flex items-center gap-3">
-            <img src="/icon-192.png" alt="Fit Alliance" className="w-12 h-12 rounded-xl shadow" />
+            <img src="/char-coaches.png" alt="Fit Alliance" className="w-12 h-12 rounded-xl" />
             <div>
               <h1 className="font-bold text-gray-900 text-sm">瘦身減肥聯盟</h1>
               <p className="text-[10px] text-gray-400">Fit Alliance</p>

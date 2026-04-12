@@ -36,6 +36,8 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
     return ''
   })
   const [justCheckedIn, setJustCheckedIn] = useState(false)
+  const [arenaRanking, setArenaRanking] = useState<{ name: string; progress: number; avatar: string | null; isMe: boolean }[]>([])
+  const [arenaTitle, setArenaTitle] = useState('')
   const [screenshotPreview, setScreenshotPreview] = useState<string | null>(null)
   const [screenshotFile, setScreenshotFile] = useState<File | null>(null)
   const [ocrDone, setOcrDone] = useState(false)
@@ -134,6 +136,45 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
       })
     }
   }, [todayRecord])
+
+  useEffect(() => {
+    const fetchArena = async () => {
+      try {
+        const supabase = createClient()
+        const { data: challenges } = await supabase
+          .from('fa_challenges')
+          .select('id, name')
+          .eq('status', 'active')
+          .order('created_at', { ascending: false })
+          .limit(1)
+        if (!challenges || challenges.length === 0) return
+        const challenge = challenges[0]
+        setArenaTitle(challenge.name)
+        const { data: participants } = await supabase
+          .from('fa_challenge_participants')
+          .select('user_id, target_type, target_value, start_value, current_value, user:fa_users(name, avatar_url)')
+          .eq('challenge_id', challenge.id)
+        if (!participants) return
+        const ranked = participants
+          .map((p: any) => {
+            const start = p.start_value ?? 0
+            const curr = p.current_value ?? start
+            const target = p.target_value ?? 1
+            const reduced = start - curr
+            const progress = target > 0 ? Math.min(Math.round((reduced / target) * 100), 100) : 0
+            return {
+              name: p.user?.name ?? '勇者',
+              progress: Math.max(0, progress),
+              avatar: p.user?.avatar_url ?? null,
+              isMe: p.user_id === user.id,
+            }
+          })
+          .sort((a: any, b: any) => b.progress - a.progress)
+        setArenaRanking(ranked)
+      } catch {}
+    }
+    fetchArena()
+  }, [user.id])
 
   const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -589,11 +630,12 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
                   </div>
                   <div className="h-48">
                     <ResponsiveContainer width="100%" height="100%">
-                      <LineChart data={chartData} margin={{ top: 5, right: hasBodyFat ? 35 : 5, bottom: 5, left: -15 }}>
+                      <LineChart data={chartData} margin={{ top: 5, right: hasBodyFat ? 8 : 5, bottom: 5, left: 0 }}>
                         <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
                         <XAxis dataKey="date" tick={{ fontSize: 10, fill: '#94a3b8' }} axisLine={{ stroke: '#334155' }} />
                         <YAxis
                           yAxisId="weight"
+                          width={32}
                           domain={[Math.floor(wMin - wPad), Math.ceil(wMax + wPad)]}
                           tick={{ fontSize: 10, fill: '#34d399' }}
                           axisLine={{ stroke: '#334155' }}
@@ -602,6 +644,7 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
                           <YAxis
                             yAxisId="fat"
                             orientation="right"
+                            width={32}
                             domain={[Math.floor(Math.min(...fats) - 1), Math.ceil(Math.max(...fats) + 1)]}
                             tick={{ fontSize: 10, fill: '#fbbf24' }}
                             axisLine={{ stroke: '#334155' }}
@@ -783,21 +826,72 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
       <div className="grid grid-cols-2 gap-3">
         <a href="/challenge" className="bg-gradient-to-br from-amber-50 to-orange-50 text-orange-700 rounded-2xl p-4 flex items-center gap-3 hover:shadow-lg transition active:scale-[0.98] yuzu-glow-urgent relative overflow-visible border border-orange-100">
           <img src="/nav3d-challenge-sm.png" alt="" className="w-14 h-14 drop-shadow" />
-          <span className="font-bold text-sm">共同挑戰</span>
-        </a>
-        <a href="/coach" className="bg-gradient-to-br from-emerald-50 to-teal-50 text-emerald-700 rounded-2xl p-4 flex items-center gap-3 hover:shadow-lg transition active:scale-[0.98] border border-emerald-100">
-          <img src="/char-coach-sm.png" alt="" className="w-14 h-14 drop-shadow" />
-          <span className="font-bold text-sm">AI 教練</span>
+          <span className="font-bold text-sm">體重競技場</span>
         </a>
         <a href="/invite" className="bg-gradient-to-br from-blue-50 to-indigo-50 text-blue-700 rounded-2xl p-4 flex items-center gap-3 hover:shadow-lg transition active:scale-[0.98] border border-blue-100">
           <img src="/nav3d-invite-sm.png" alt="" className="w-14 h-14 drop-shadow" />
           <span className="font-bold text-sm">個人邀請朋友</span>
         </a>
-        <a href="/records" className="bg-gradient-to-br from-cyan-50 to-blue-50 text-blue-700 rounded-2xl p-4 flex items-center gap-3 hover:shadow-lg transition active:scale-[0.98] border border-blue-100">
-          <img src="/nav3d-records-sm.png" alt="" className="w-14 h-14 drop-shadow" />
-          <span className="font-bold text-sm">健康紀錄</span>
-        </a>
       </div>
+
+      {/* 體重競技場 迷你排名 */}
+      {arenaRanking.length > 0 && (
+        <div className="rounded-3xl overflow-hidden border border-amber-200 shadow-lg">
+          {/* Header */}
+          <div className="bg-gradient-to-r from-amber-600 via-orange-500 to-amber-600 px-4 py-3 flex items-center justify-between">
+            <div>
+              <div className="text-white font-black text-base tracking-wide">🏛️ 體重競技場</div>
+              {arenaTitle && <div className="text-amber-100 text-[11px] font-medium mt-0.5 truncate max-w-[180px]">⚔️ {arenaTitle}</div>}
+            </div>
+            <a href="/challenge" className="text-[11px] font-bold text-amber-100 bg-white/20 px-2.5 py-1 rounded-lg hover:bg-white/30 transition">
+              進入競技場 →
+            </a>
+          </div>
+          {/* Stone texture bg */}
+          <div className="bg-gradient-to-b from-amber-50 to-orange-50 px-4 py-3 space-y-2.5">
+            {arenaRanking.slice(0, 5).map((p, i) => {
+              const medals = ['🥇', '🥈', '🥉']
+              const medal = medals[i] ?? `${i + 1}`
+              const barColors = [
+                'from-amber-400 to-yellow-300',
+                'from-slate-400 to-gray-300',
+                'from-orange-400 to-amber-300',
+                'from-emerald-400 to-teal-300',
+                'from-blue-400 to-indigo-300',
+              ]
+              return (
+                <div key={i} className={`flex items-center gap-2.5 ${p.isMe ? 'bg-amber-100/80 rounded-xl px-2 py-1 -mx-2' : ''}`}>
+                  <div className="text-lg w-7 text-center flex-shrink-0">{medal}</div>
+                  <div className="w-8 h-8 rounded-full bg-amber-200 flex items-center justify-center overflow-hidden flex-shrink-0 border-2 border-amber-300">
+                    {p.avatar
+                      ? <img src={p.avatar} alt="" className="w-full h-full object-cover" />
+                      : <span className="text-amber-700 text-xs font-bold">{p.name.charAt(0)}</span>
+                    }
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className={`text-xs font-bold truncate ${p.isMe ? 'text-amber-800' : 'text-gray-700'}`}>
+                        {p.name}{p.isMe && ' 👈'}
+                      </span>
+                      <span className="text-[11px] font-black text-amber-700 ml-1">{p.progress}%</span>
+                    </div>
+                    <div className="h-1.5 bg-amber-100 rounded-full overflow-hidden border border-amber-200">
+                      <div
+                        className={`h-full bg-gradient-to-r ${barColors[i] ?? barColors[4]} rounded-full transition-all duration-700`}
+                        style={{ width: `${p.progress}%` }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+          {/* Footer */}
+          <div className="bg-gradient-to-r from-amber-600 via-orange-500 to-amber-600 px-4 py-2 text-center">
+            <span className="text-amber-100 text-[11px] font-medium">🛡️ 榮耀屬於堅持到底的勇者</span>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

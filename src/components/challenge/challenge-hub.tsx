@@ -173,22 +173,25 @@ export default function ChallengeHub({ userId, userName, challenges, allParticip
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">🏆 共同挑戰</h1>
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">🏛️ 體重競技場</h1>
+          <p className="text-xs text-amber-600 font-medium mt-0.5">⚔️ 勇者角鬥，榮耀加冕</p>
+        </div>
         <button onClick={() => setShowCreate(true)}
-          className="px-4 py-2 bg-emerald-500 text-white rounded-xl text-sm font-medium hover:bg-emerald-600 transition active:scale-[0.98]">
-          ➕ 建立挑戰
+          className="px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-xl text-sm font-bold hover:from-amber-600 hover:to-orange-600 transition active:scale-[0.98] shadow-lg shadow-amber-200">
+          ⚔️ 創建競技
         </button>
       </div>
 
       {/* Tabs */}
       <div className="flex gap-2">
         <button onClick={() => setTab('active')}
-          className={`px-4 py-2 rounded-xl text-sm font-medium transition ${tab === 'active' ? 'bg-emerald-500 text-white' : 'bg-gray-100 text-gray-600'}`}>
-          🔥 進行中 ({activeChallenges.length})
+          className={`px-4 py-2 rounded-xl text-sm font-bold transition ${tab === 'active' ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-md shadow-amber-200' : 'bg-amber-50 text-amber-700 border border-amber-200'}`}>
+          🔥 競技進行中 ({activeChallenges.length})
         </button>
         <button onClick={() => setTab('ended')}
-          className={`px-4 py-2 rounded-xl text-sm font-medium transition ${tab === 'ended' ? 'bg-gray-700 text-white' : 'bg-gray-100 text-gray-600'}`}>
-          ✅ 已結束 ({endedChallenges.length})
+          className={`px-4 py-2 rounded-xl text-sm font-bold transition ${tab === 'ended' ? 'bg-gray-700 text-white' : 'bg-gray-100 text-gray-500'}`}>
+          🏅 已結束 ({endedChallenges.length})
         </button>
       </div>
 

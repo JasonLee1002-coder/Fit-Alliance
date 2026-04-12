@@ -513,14 +513,14 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
         const prevDate = lastRecord.date
         const daysDiff = Math.round((new Date(today).getTime() - new Date(prevDate).getTime()) / 86400000)
 
-        const rows: { label: string; prev: number | null; curr: number | null; unit: string; color: string; badgeColor: string }[] = [
+        const rows: { label: string; prev: number | null; curr: number | null; unit: string; color: string; badgeColor: string; infoHref?: string }[] = [
           { label: '體重', prev: lastRecord.weight as number, curr: parseFloat(form.weight), unit: 'kg', color: 'text-red-400', badgeColor: 'bg-red-500/20 text-red-300 border-red-500/30' },
-          { label: '體脂率', prev: lastRecord.body_fat as number | null, curr: form.body_fat ? parseFloat(form.body_fat) : null, unit: '%', color: 'text-rose-400', badgeColor: 'bg-rose-500/20 text-rose-300 border-rose-500/30' },
-          { label: '內臟脂肪', prev: lastRecord.visceral_fat as number | null, curr: form.visceral_fat ? parseFloat(form.visceral_fat) : null, unit: '', color: 'text-yellow-400', badgeColor: 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30' },
-          { label: '肌肉量', prev: lastRecord.muscle_mass as number | null, curr: form.muscle_mass ? parseFloat(form.muscle_mass) : null, unit: 'kg', color: 'text-green-400', badgeColor: 'bg-green-500/20 text-green-300 border-green-500/30' },
-          { label: 'BMI', prev: lastRecord.bmi as number | null, curr: form.bmi ? parseFloat(form.bmi) : null, unit: '', color: 'text-blue-400', badgeColor: 'bg-blue-500/20 text-blue-300 border-blue-500/30' },
-          { label: '骨質量', prev: lastRecord.bone_mass as number | null, curr: form.bone_mass ? parseFloat(form.bone_mass) : null, unit: 'kg', color: 'text-cyan-400', badgeColor: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30' },
-          { label: '基礎代謝率', prev: lastRecord.bmr as number | null, curr: form.bmr ? parseFloat(form.bmr) : null, unit: 'kcal', color: 'text-amber-400', badgeColor: 'bg-amber-500/20 text-amber-300 border-amber-500/30' },
+          { label: '體脂率', prev: lastRecord.body_fat as number | null, curr: form.body_fat ? parseFloat(form.body_fat) : null, unit: '%', color: 'text-rose-400', badgeColor: 'bg-rose-500/20 text-rose-300 border-rose-500/30', infoHref: '/body-fat-info' },
+          { label: '內臟脂肪', prev: lastRecord.visceral_fat as number | null, curr: form.visceral_fat ? parseFloat(form.visceral_fat) : null, unit: '', color: 'text-yellow-400', badgeColor: 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30', infoHref: '/visceral-fat-info' },
+          { label: '肌肉量', prev: lastRecord.muscle_mass as number | null, curr: form.muscle_mass ? parseFloat(form.muscle_mass) : null, unit: 'kg', color: 'text-green-400', badgeColor: 'bg-green-500/20 text-green-300 border-green-500/30', infoHref: '/muscle-info' },
+          { label: 'BMI', prev: lastRecord.bmi as number | null, curr: form.bmi ? parseFloat(form.bmi) : null, unit: '', color: 'text-blue-400', badgeColor: 'bg-blue-500/20 text-blue-300 border-blue-500/30', infoHref: '/bmi-info' },
+          { label: '骨質量', prev: lastRecord.bone_mass as number | null, curr: form.bone_mass ? parseFloat(form.bone_mass) : null, unit: 'kg', color: 'text-cyan-400', badgeColor: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30', infoHref: '/bone-mass-info' },
+          { label: '基礎代謝率', prev: lastRecord.bmr as number | null, curr: form.bmr ? parseFloat(form.bmr) : null, unit: 'kcal', color: 'text-amber-400', badgeColor: 'bg-amber-500/20 text-amber-300 border-amber-500/30', infoHref: '/bmr-info' },
         ]
 
         return (
@@ -585,6 +585,11 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
                         <div className={`text-[10px] font-medium mt-0.5 ${isGood ? 'text-emerald-400' : 'text-red-400'}`}>
                           {isUp ? '▲' : '▼'} {absDiff}{row.unit}
                         </div>
+                      )}
+                      {row.infoHref && (
+                        <a href={row.infoHref} className="inline-flex items-center gap-0.5 mt-1 px-1.5 py-0.5 rounded-md bg-slate-700/60 text-slate-400 text-[10px] font-medium hover:bg-slate-600/60 hover:text-slate-200 transition">
+                          📖 知識
+                        </a>
                       )}
                     </div>
                     <div className="flex-1 text-center">
@@ -696,43 +701,6 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
         )
       })()}
 
-      {/* Today's Body Data Summary */}
-      {hasCheckedIn && form.weight && (
-        <div className="bg-gradient-to-b from-slate-800 to-slate-900 rounded-3xl shadow-lg p-5">
-          <h3 className="text-lg font-bold text-emerald-400 mb-4">🏋️ 今日基本資料</h3>
-          <div className="grid grid-cols-2 gap-3">
-            {[
-              { label: '體重', value: form.weight ? `${form.weight} kg` : null, color: 'from-red-500/20 to-red-600/10', borderColor: 'border-red-500/30', textColor: 'text-red-300', labelColor: 'text-red-400' },
-              { label: '體脂率', value: form.body_fat ? `${form.body_fat}%` : null, color: 'from-rose-500/20 to-rose-600/10', borderColor: 'border-rose-500/30', textColor: 'text-rose-300', labelColor: 'text-rose-400', hasInfo: true, infoLink: '/body-fat-info', infoBg: 'bg-rose-500/30 text-rose-300' },
-              { label: 'BMI', value: form.bmi || null, color: 'from-blue-500/20 to-blue-600/10', borderColor: 'border-blue-500/30', textColor: 'text-blue-300', labelColor: 'text-blue-400', hasInfo: true, infoLink: '/bmi-info', infoBg: 'bg-blue-500/30 text-blue-300' },
-              { label: '肌肉量', value: form.muscle_mass ? `${form.muscle_mass} kg` : null, color: 'from-green-500/20 to-green-600/10', borderColor: 'border-green-500/30', textColor: 'text-green-300', labelColor: 'text-green-400' },
-              { label: '內臟脂肪', value: form.visceral_fat || null, color: 'from-yellow-500/20 to-yellow-600/10', borderColor: 'border-yellow-500/30', textColor: 'text-yellow-300', labelColor: 'text-yellow-400', hasInfo: true },
-              { label: '基礎代謝率', value: form.bmr ? `${form.bmr} kcal` : null, color: 'from-amber-500/20 to-amber-600/10', borderColor: 'border-amber-500/30', textColor: 'text-amber-300', labelColor: 'text-amber-400' },
-              { label: '骨質量', value: form.bone_mass ? `${form.bone_mass} kg` : null, color: 'from-cyan-500/20 to-cyan-600/10', borderColor: 'border-cyan-500/30', textColor: 'text-cyan-300', labelColor: 'text-cyan-400' },
-            ].map(item => (
-              <div key={item.label} className={`bg-gradient-to-br ${item.color} rounded-2xl p-3.5 text-center border ${item.borderColor}`}>
-                <div className={`text-xs font-bold ${item.labelColor} mb-1.5 flex items-center justify-center gap-1`}>
-                  {item.label}
-                  {(item as any).hasInfo && (
-                    <a href={(item as any).infoLink || '/visceral-fat-info'} className={`inline-flex items-center justify-center w-4 h-4 rounded-full text-[10px] font-bold hover:opacity-80 transition ${(item as any).infoBg || 'bg-yellow-500/30 text-yellow-300'}`}>?</a>
-                  )}
-                </div>
-                <div className={`text-xl font-bold ${item.value ? item.textColor : 'text-slate-500'}`}>
-                  {item.value || '—'}
-                </div>
-              </div>
-            ))}
-          </div>
-          <div className="mt-4 flex justify-center">
-            <a
-              href="/visceral-fat-info"
-              className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-yellow-500/15 border border-yellow-500/30 text-yellow-300 rounded-xl text-sm font-bold hover:bg-yellow-500/25 transition"
-            >
-              📖 什麼是內臟脂肪？點我了解
-            </a>
-          </div>
-        </div>
-      )}
 
       {/* Trend Chart (when not checked in yet, show standalone) */}
       {!hasCheckedIn && records.length >= 2 && (
@@ -822,17 +790,6 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
         )
       })()}
 
-      {/* Quick Links */}
-      <div className="grid grid-cols-2 gap-3">
-        <a href="/challenge" className="bg-gradient-to-br from-amber-50 to-orange-50 text-orange-700 rounded-2xl p-4 flex items-center gap-3 hover:shadow-lg transition active:scale-[0.98] yuzu-glow-urgent relative overflow-visible border border-orange-100">
-          <img src="/nav3d-challenge-sm.png" alt="" className="w-14 h-14 drop-shadow" />
-          <span className="font-bold text-sm">體重競技場</span>
-        </a>
-        <a href="/invite" className="bg-gradient-to-br from-blue-50 to-indigo-50 text-blue-700 rounded-2xl p-4 flex items-center gap-3 hover:shadow-lg transition active:scale-[0.98] border border-blue-100">
-          <img src="/nav3d-invite-sm.png" alt="" className="w-14 h-14 drop-shadow" />
-          <span className="font-bold text-sm">個人邀請朋友</span>
-        </a>
-      </div>
 
       {/* 體重競技場 迷你排名 */}
       {arenaRanking.length > 0 && (

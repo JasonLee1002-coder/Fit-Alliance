@@ -12,7 +12,7 @@ const PHRASES = [
   { text: '今天也要堅持，你做得到', emoji: '💪' },
 ]
 
-export default function SplashScreen() {
+export default function SplashScreen({ onDone }: { onDone?: () => void } = {}) {
   const [visible, setVisible] = useState(false)
   const [fading, setFading] = useState(false)
   const [phraseIdx, setPhraseIdx] = useState(0)
@@ -22,7 +22,7 @@ export default function SplashScreen() {
 
   useEffect(() => {
     const shown = sessionStorage.getItem('fa_splash_shown')
-    if (shown) return
+    if (shown) { onDone?.(); return }
     sessionStorage.setItem('fa_splash_shown', '1')
     setVisible(true)
     const guard = setTimeout(startFade, 5000)
@@ -54,7 +54,7 @@ export default function SplashScreen() {
     timers.current.forEach(clearTimeout)
     timers.current = []
     const t1 = setTimeout(() => setFading(true), DISPLAY_MS)
-    const t2 = setTimeout(() => setVisible(false), DISPLAY_MS + FADE_MS)
+    const t2 = setTimeout(() => { setVisible(false); onDone?.() }, DISPLAY_MS + FADE_MS)
     timers.current = [t1, t2]
   }
 

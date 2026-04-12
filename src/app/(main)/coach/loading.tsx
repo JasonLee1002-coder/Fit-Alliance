@@ -11,7 +11,7 @@ export default function CoachLoading() {
         className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-3xl p-6 border border-emerald-100 text-center"
       >
         <motion.img
-          src="/char-coach-sm.png"
+          src="/char-coach-male.png"
           alt=""
           className="w-20 h-20 mx-auto mb-3 drop-shadow-lg"
           animate={{ y: [0, -6, 0] }}

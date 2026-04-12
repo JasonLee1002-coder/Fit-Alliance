@@ -24,7 +24,7 @@ function isStandalone(): boolean {
 
 export default function PwaInstallPrompt() {
   const appName = '瘦身減肥聯盟'
-  const appIcon = '/char-coach-sm.png'
+  const appIcon = '/char-coach-male.png'
   const accentColor = '#10B981'
 
   const [show, setShow] = useState(false)

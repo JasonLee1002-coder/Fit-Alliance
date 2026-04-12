@@ -295,36 +295,36 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="space-y-3">
-        <div className="flex items-start justify-between">
+      {/* Hero Banner */}
+      <div className="relative rounded-3xl overflow-hidden shadow-lg">
+        <img src="/hero-family.png" alt="" className="w-full h-40 object-cover object-top" />
+        <div className="absolute inset-0 bg-gradient-to-r from-emerald-900/60 via-transparent to-transparent flex items-end p-5">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">
-              嗨，{user.name} 👋
-            </h1>
-            <p className="text-gray-500 text-sm mt-1">
-              {formatDateWithWeekday(new Date())}
-              {user.target_weight && records[0]?.weight && (
-                <span className="ml-2 text-emerald-600">
-                  目標 {user.target_weight} kg（還差 {Math.abs(records[0].weight as number - user.target_weight).toFixed(1)} kg）
-                </span>
-              )}
-            </p>
-          </div>
-          <div className="flex items-center gap-2 flex-shrink-0">
-            {streak >= 2 && (
-              <span className="bg-orange-100 text-orange-600 px-2.5 py-1 rounded-full text-xs font-bold">
-                🔥 {streak} 天
-              </span>
-            )}
-            <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${
-              hasCheckedIn ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-500'
-            }`}>
-              {hasCheckedIn ? '✅ 已打卡' : '尚未打卡'}
-            </span>
+            <h1 className="text-2xl font-black text-white drop-shadow-lg">嗨，{user.name} 👋</h1>
+            <p className="text-emerald-100 text-sm mt-0.5 drop-shadow">{formatDateWithWeekday(new Date())}</p>
           </div>
         </div>
+      </div>
 
+      {/* Status Bar */}
+      <div className="flex items-center justify-between">
+        {user.target_weight && records[0]?.weight ? (
+          <p className="text-sm text-emerald-600 font-medium">
+            🎯 目標 {user.target_weight} kg · 還差 {Math.abs(records[0].weight as number - user.target_weight).toFixed(1)} kg
+          </p>
+        ) : <div />}
+        <div className="flex items-center gap-2">
+          {streak >= 2 && (
+            <span className="bg-orange-100 text-orange-600 px-2.5 py-1 rounded-full text-xs font-bold">
+              🔥 {streak} 天
+            </span>
+          )}
+          <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${
+            hasCheckedIn ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-500'
+          }`}>
+            {hasCheckedIn ? '✅ 已打卡' : '尚未打卡'}
+          </span>
+        </div>
       </div>
 
       {/* Check-in Card */}
@@ -480,7 +480,7 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
       {encouragement && (
         <div className="bg-gradient-to-r from-emerald-50 to-orange-50 rounded-3xl border border-emerald-100 p-5 yuzu-pop-in">
           <div className="flex items-start gap-3">
-            <img src="/char-coach-sm.png" alt="AI教練" className="w-11 h-11 rounded-full shadow flex-shrink-0" />
+            <img src="/char-coach-male.png" alt="AI教練" className="w-11 h-11 rounded-full shadow flex-shrink-0" />
             <div>
               <p className="text-sm font-bold text-emerald-700 mb-1">AI 教練說：</p>
               <p className="text-gray-700 leading-relaxed">{encouragement}</p>

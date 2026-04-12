@@ -495,14 +495,56 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
         const prevDate = lastRecord.date
         const daysDiff = Math.round((new Date(today).getTime() - new Date(prevDate).getTime()) / 86400000)
 
-        const rows: { label: string; prev: number | null; curr: number | null; unit: string; color: string; badgeColor: string; infoHref?: string }[] = [
-          { label: '體重', prev: lastRecord.weight as number, curr: parseFloat(form.weight), unit: 'kg', color: 'text-red-400', badgeColor: 'bg-red-500/20 text-red-300 border-red-500/30' },
-          { label: '體脂率', prev: lastRecord.body_fat as number | null, curr: form.body_fat ? parseFloat(form.body_fat) : null, unit: '%', color: 'text-rose-400', badgeColor: 'bg-rose-500/20 text-rose-300 border-rose-500/30', infoHref: '/body-fat-info' },
-          { label: '內臟脂肪', prev: lastRecord.visceral_fat as number | null, curr: form.visceral_fat ? parseFloat(form.visceral_fat) : null, unit: '', color: 'text-yellow-400', badgeColor: 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30', infoHref: '/visceral-fat-info' },
-          { label: '肌肉量', prev: lastRecord.muscle_mass as number | null, curr: form.muscle_mass ? parseFloat(form.muscle_mass) : null, unit: 'kg', color: 'text-green-400', badgeColor: 'bg-green-500/20 text-green-300 border-green-500/30', infoHref: '/muscle-info' },
-          { label: 'BMI', prev: lastRecord.bmi as number | null, curr: form.bmi ? parseFloat(form.bmi) : null, unit: '', color: 'text-blue-400', badgeColor: 'bg-blue-500/20 text-blue-300 border-blue-500/30', infoHref: '/bmi-info' },
-          { label: '骨質量', prev: lastRecord.bone_mass as number | null, curr: form.bone_mass ? parseFloat(form.bone_mass) : null, unit: 'kg', color: 'text-cyan-400', badgeColor: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30', infoHref: '/bone-mass-info' },
-          { label: '基礎代謝率', prev: lastRecord.bmr as number | null, curr: form.bmr ? parseFloat(form.bmr) : null, unit: 'kcal', color: 'text-amber-400', badgeColor: 'bg-amber-500/20 text-amber-300 border-amber-500/30', infoHref: '/bmr-info' },
+        const stdWeight = user.height_cm && user.gender ? getStandardWeight(user.height_cm, user.gender as 'male' | 'female') : null
+        const fatRange = user.gender ? getBodyFatRange(user.gender as 'male' | 'female') : null
+        const cBmi = form.bmi ? parseFloat(form.bmi) : null
+        const cFat = form.body_fat ? parseFloat(form.body_fat) : null
+        const cVisc = form.visceral_fat ? parseFloat(form.visceral_fat) : null
+        const cWeight = parseFloat(form.weight)
+
+        const rows: { label: string; prev: number | null; curr: number | null; unit: string; color: string; badgeColor: string; infoHref?: string; refText?: string; refOk?: boolean | null }[] = [
+          {
+            label: '體重', prev: lastRecord.weight as number, curr: cWeight, unit: 'kg',
+            color: 'text-red-400', badgeColor: 'bg-red-500/20 text-red-300 border-red-500/30',
+            refText: stdWeight ? `標準 ${stdWeight} kg` : undefined,
+            refOk: stdWeight ? cWeight <= stdWeight : null,
+          },
+          {
+            label: '體脂率', prev: lastRecord.body_fat as number | null, curr: cFat, unit: '%',
+            color: 'text-rose-400', badgeColor: 'bg-rose-500/20 text-rose-300 border-rose-500/30',
+            infoHref: '/body-fat-info',
+            refText: fatRange ? `建議 ${fatRange.label}` : undefined,
+            refOk: fatRange && cFat != null ? (cFat >= fatRange.min && cFat <= fatRange.max) : null,
+          },
+          {
+            label: '內臟脂肪', prev: lastRecord.visceral_fat as number | null, curr: cVisc, unit: '',
+            color: 'text-yellow-400', badgeColor: 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30',
+            infoHref: '/visceral-fat-info',
+            refText: '建議 1–9',
+            refOk: cVisc != null ? cVisc <= 9 : null,
+          },
+          {
+            label: '肌肉量', prev: lastRecord.muscle_mass as number | null, curr: form.muscle_mass ? parseFloat(form.muscle_mass) : null, unit: 'kg',
+            color: 'text-green-400', badgeColor: 'bg-green-500/20 text-green-300 border-green-500/30',
+            infoHref: '/muscle-info',
+          },
+          {
+            label: 'BMI', prev: lastRecord.bmi as number | null, curr: cBmi, unit: '',
+            color: 'text-blue-400', badgeColor: 'bg-blue-500/20 text-blue-300 border-blue-500/30',
+            infoHref: '/bmi-info',
+            refText: '健康 18.5–24.9',
+            refOk: cBmi != null ? (cBmi >= 18.5 && cBmi <= 24.9) : null,
+          },
+          {
+            label: '骨質量', prev: lastRecord.bone_mass as number | null, curr: form.bone_mass ? parseFloat(form.bone_mass) : null, unit: 'kg',
+            color: 'text-cyan-400', badgeColor: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30',
+            infoHref: '/bone-mass-info',
+          },
+          {
+            label: '基礎代謝率', prev: lastRecord.bmr as number | null, curr: form.bmr ? parseFloat(form.bmr) : null, unit: 'kcal',
+            color: 'text-amber-400', badgeColor: 'bg-amber-500/20 text-amber-300 border-amber-500/30',
+            infoHref: '/bmr-info',
+          },
         ]
 
         return (
@@ -561,16 +603,21 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
                         {row.prev != null ? `${row.prev}${row.unit ? ` ${row.unit}` : ''}` : '—'}
                       </span>
                     </div>
-                    <div className="flex-shrink-0 text-center px-2 min-w-[80px]">
+                    <div className="flex-shrink-0 text-center px-1 min-w-[88px]">
                       <div className={`text-xs font-bold ${row.color}`}>{row.label}</div>
                       {(isUp || isDown) && (
-                        <div className={`text-[10px] font-medium mt-0.5 ${isGood ? 'text-emerald-400' : 'text-red-400'}`}>
+                        <div className={`text-[10px] font-medium ${isGood ? 'text-emerald-400' : 'text-red-400'}`}>
                           {isUp ? '▲' : '▼'} {absDiff}{row.unit}
                         </div>
                       )}
+                      {row.refText && (
+                        <div className={`text-[10px] font-medium mt-0.5 ${row.refOk === true ? 'text-emerald-400' : row.refOk === false ? 'text-red-400' : 'text-slate-400'}`}>
+                          {row.refOk === true ? '✅' : row.refOk === false ? '⚠️' : '📊'} {row.refText}
+                        </div>
+                      )}
                       {row.infoHref && (
-                        <a href={row.infoHref} className="inline-flex items-center gap-0.5 mt-1 px-1.5 py-0.5 rounded-md bg-slate-700/60 text-slate-400 text-[10px] font-medium hover:bg-slate-600/60 hover:text-slate-200 transition">
-                          📖 知識
+                        <a href={row.infoHref} className="inline-flex items-center gap-0.5 mt-1 px-2 py-0.5 rounded-md bg-slate-600/50 text-slate-300 text-[10px] font-medium hover:bg-slate-500/60 hover:text-white transition">
+                          說明 →
                         </a>
                       )}
                     </div>
@@ -692,85 +739,6 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
         </div>
       )}
 
-      {/* Standard Weight Reference */}
-      {user.height_cm && user.gender && (() => {
-        const stdWeight = getStandardWeight(user.height_cm, user.gender as 'male' | 'female')
-        const fatRange = getBodyFatRange(user.gender as 'male' | 'female')
-        const currentWeight = form.weight ? parseFloat(form.weight) : null
-        const currentBmi = form.bmi ? parseFloat(form.bmi) : null
-        const currentBodyFat = form.body_fat ? parseFloat(form.body_fat) : null
-        const currentVisceralFat = form.visceral_fat ? parseFloat(form.visceral_fat) : null
-
-        const refs = [
-          {
-            label: '標準體重', standard: `${stdWeight} kg`, labelColor: 'text-emerald-400',
-            badgeColor: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
-            current: currentWeight, unit: 'kg',
-            diff: currentWeight ? currentWeight - stdWeight : null,
-            diffText: (d: number) => d > 0 ? `還需減 ${d.toFixed(1)} kg` : d < 0 ? `低於 ${Math.abs(d).toFixed(1)} kg` : null,
-            isGood: (d: number) => d <= 0,
-          },
-          {
-            label: '健康 BMI', standard: '18.5-24.9', labelColor: 'text-blue-400',
-            badgeColor: 'bg-blue-500/20 text-blue-300 border-blue-500/30',
-            current: currentBmi, unit: '',
-            diff: currentBmi ? (currentBmi > 24.9 ? currentBmi - 24.9 : currentBmi < 18.5 ? currentBmi - 18.5 : 0) : null,
-            diffText: (d: number) => d > 0 ? `超過 ${d.toFixed(1)}` : d < 0 ? `偏低 ${Math.abs(d).toFixed(1)}` : null,
-            isGood: (d: number) => d === 0,
-          },
-          {
-            label: '建議體脂', standard: fatRange.label, labelColor: 'text-rose-400',
-            badgeColor: 'bg-rose-500/20 text-rose-300 border-rose-500/30',
-            current: currentBodyFat, unit: '%',
-            diff: currentBodyFat ? (currentBodyFat > fatRange.max ? currentBodyFat - fatRange.max : currentBodyFat < fatRange.min ? currentBodyFat - fatRange.min : 0) : null,
-            diffText: (d: number) => d > 0 ? `超過 ${d.toFixed(1)}%` : d < 0 ? `偏低 ${Math.abs(d).toFixed(1)}%` : null,
-            isGood: (d: number) => d === 0,
-          },
-          {
-            label: '建議內臟脂肪', standard: '1-9', labelColor: 'text-yellow-400',
-            badgeColor: 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30',
-            current: currentVisceralFat, unit: '',
-            diff: currentVisceralFat ? (currentVisceralFat > 9 ? currentVisceralFat - 9 : 0) : null,
-            diffText: (d: number) => d > 0 ? `超過 ${d.toFixed(1)}` : null,
-            isGood: (d: number) => d === 0,
-            hasInfo: true,
-          },
-        ]
-
-        return (
-          <div className="bg-gradient-to-b from-slate-800 to-slate-900 rounded-3xl shadow-lg p-5">
-            <h3 className="text-lg font-bold text-emerald-400 mb-4">🎯 健康參考值</h3>
-            <div className="grid grid-cols-2 gap-3">
-              {refs.map(ref => (
-                <div key={ref.label} className={`bg-gradient-to-br from-slate-700/50 to-slate-800/50 rounded-2xl p-3.5 text-center border border-slate-600/30`}>
-                  <div className={`text-xs font-bold ${ref.labelColor} mb-1.5 flex items-center justify-center gap-1`}>
-                    {ref.label}
-                    {ref.hasInfo && (
-                      <a href="/visceral-fat-info" className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-yellow-500/30 text-yellow-300 text-[10px] font-bold hover:bg-yellow-500/50 transition">?</a>
-                    )}
-                  </div>
-                  <div className="text-xl font-bold text-white mb-1">{ref.standard}</div>
-                  {ref.current != null && (
-                    <div className="mt-1.5 space-y-1">
-                      <span className={`inline-block px-2 py-0.5 rounded text-xs font-bold border ${ref.badgeColor}`}>
-                        目前 {ref.current}{ref.unit}
-                      </span>
-                      {ref.diff !== null && ref.diff !== 0 && ref.diffText(ref.diff) && (
-                        <div className={`text-[11px] font-medium ${ref.isGood(ref.diff) ? 'text-emerald-400' : 'text-red-400'}`}>
-                          {ref.isGood(ref.diff) ? '✅ ' : '⚠️ '}{ref.diffText(ref.diff)}
-                        </div>
-                      )}
-                      {ref.diff === 0 && (
-                        <div className="text-[11px] font-medium text-emerald-400">✅ 已達標</div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-        )
-      })()}
 
 
       {/* 體重競技場 迷你排名 */}

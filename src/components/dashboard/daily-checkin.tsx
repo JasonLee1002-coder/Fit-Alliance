@@ -140,37 +140,19 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
   useEffect(() => {
     const fetchArena = async () => {
       try {
-        const supabase = createClient()
-        const { data: challenges } = await supabase
-          .from('fa_challenges')
-          .select('id, name')
-          .eq('status', 'active')
-          .order('created_at', { ascending: false })
-          .limit(1)
-        if (!challenges || challenges.length === 0) return
-        const challenge = challenges[0]
+        const res = await fetch('/api/arena/ranking')
+        if (!res.ok) return
+        const { challenge, participants } = await res.json()
+        if (!challenge || !participants?.length) return
         setArenaTitle(challenge.name)
-        const { data: participants } = await supabase
-          .from('fa_challenge_participants')
-          .select('user_id, target_type, target_value, start_value, current_value, user:fa_users(name, avatar_url)')
-          .eq('challenge_id', challenge.id)
-        if (!participants) return
-        const ranked = participants
-          .map((p: any) => {
-            const start = p.start_value ?? 0
-            const curr = p.current_value ?? start
-            const target = p.target_value ?? 1
-            const reduced = start - curr
-            const progress = target > 0 ? Math.min(Math.round((reduced / target) * 100), 100) : 0
-            return {
-              name: p.user?.name ?? '勇者',
-              progress: Math.max(0, progress),
-              avatar: p.user?.avatar_url ?? null,
-              isMe: p.user_id === user.id,
-            }
-          })
-          .sort((a: any, b: any) => b.progress - a.progress)
-        setArenaRanking(ranked)
+        setArenaRanking(
+          participants.map((p: any) => ({
+            name: p.name ?? null,
+            progress: p.progress,
+            avatar: p.avatar,
+            isMe: p.userId === user.id,
+          }))
+        )
       } catch {}
     }
     fetchArena()
@@ -822,7 +804,7 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
                   <div className="w-8 h-8 rounded-full bg-amber-200 flex items-center justify-center overflow-hidden flex-shrink-0 border-2 border-amber-300">
                     {p.avatar
                       ? <img src={p.avatar} alt="" className="w-full h-full object-cover" />
-                      : <span className="text-amber-700 text-xs font-bold">{p.name.charAt(0)}</span>
+                      : <span className="text-amber-700 text-xs font-bold">{p.name?.charAt(0) ?? '👤'}</span>
                     }
                   </div>
                   <div className="flex-1 min-w-0">
@@ -843,6 +825,16 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
               )
             })}
           </div>
+          {/* 沒頭像提醒 */}
+          {arenaRanking.some(p => !p.avatar) && (
+            <div className="bg-amber-50 border-t border-amber-200 px-4 py-2 flex items-center gap-2">
+              <span className="text-base">📸</span>
+              <div className="flex-1">
+                <p className="text-[11px] text-amber-700 font-medium">有勇者還沒上傳頭像！</p>
+                <a href="/profile" className="text-[10px] text-amber-600 underline">去設定頭像，讓競技場更生動 →</a>
+              </div>
+            </div>
+          )}
           {/* Footer */}
           <div className="bg-gradient-to-r from-amber-600 via-orange-500 to-amber-600 px-4 py-2 text-center">
             <span className="text-amber-100 text-[11px] font-medium">🛡️ 榮耀屬於堅持到底的勇者</span>

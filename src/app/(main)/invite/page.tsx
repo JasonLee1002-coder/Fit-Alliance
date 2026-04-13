@@ -125,6 +125,10 @@ export default function InvitePage() {
               📤 分享邀請連結
             </button>
 
+            <p className="text-xs text-gray-400 mt-3">
+              🏛️ 朋友加入後自動成為你的競技場夥伴
+            </p>
+
             <div className="mt-4 flex gap-2 justify-center">
               <button
                 onClick={() => {

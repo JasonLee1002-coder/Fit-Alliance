@@ -11,6 +11,7 @@ export interface User {
   current_phase: string | null
   profile_completed: boolean
   role: 'admin' | 'user'
+  show_in_arena?: boolean
   created_at: string
 }
 

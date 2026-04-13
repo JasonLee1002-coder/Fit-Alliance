@@ -11,6 +11,7 @@ export default function ProfilePage() {
   const [saving, setSaving] = useState(false)
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
   const [uploadingAvatar, setUploadingAvatar] = useState(false)
+  const [showInArena, setShowInArena] = useState(true)
   const [form, setForm] = useState({
     name: '',
     gender: '',
@@ -45,6 +46,7 @@ export default function ProfilePage() {
         target_date: data.target_date || '',
       })
       setAvatarUrl(data.avatar_url || null)
+      setShowInArena(data.show_in_arena ?? true)
     }
     setLoading(false)
   }
@@ -89,6 +91,7 @@ export default function ProfilePage() {
       height_cm: form.height_cm ? parseFloat(form.height_cm) : null,
       target_weight: form.target_weight ? parseFloat(form.target_weight) : null,
       target_date: form.target_date || null,
+      show_in_arena: showInArena,
     }).eq('id', user.id)
 
     setSaving(false)
@@ -184,6 +187,21 @@ export default function ProfilePage() {
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">🗓️ 目標日期</label>
           <input type="date" value={form.target_date} onChange={e => setForm(f => ({ ...f, target_date: e.target.value }))} className="w-full rounded-xl border border-gray-200 px-4 py-3 text-gray-900 focus:border-emerald-400 outline-none" />
+        </div>
+
+        {/* 競技場顯示開關 */}
+        <div className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl">
+          <div>
+            <p className="text-sm font-medium text-gray-800">顯示在競技場</p>
+            <p className="text-xs text-gray-400 mt-0.5">關閉後朋友看不到你的排名</p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setShowInArena(v => !v)}
+            className={`w-12 h-6 rounded-full transition-colors relative shrink-0 ${showInArena ? 'bg-emerald-500' : 'bg-gray-300'}`}
+          >
+            <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${showInArena ? 'translate-x-6' : 'translate-x-0.5'}`} />
+          </button>
         </div>
 
         <button onClick={handleSave} disabled={saving}

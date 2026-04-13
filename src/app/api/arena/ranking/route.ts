@@ -1,53 +1,118 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { createServiceRoleSupabase } from '@/lib/supabase/server'
+import { createServerClient } from '@supabase/ssr'
+import { cookies } from 'next/headers'
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    // 取得當前登入用戶
+    const cookieStore = await cookies()
+    const supabaseUser = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      { cookies: { getAll: () => cookieStore.getAll(), setAll: () => {} } }
+    )
+    const { data: { user } } = await supabaseUser.auth.getUser()
+    if (!user) return NextResponse.json({ participants: [] })
+
     const supabase = await createServiceRoleSupabase()
 
-    // Get latest active challenge
-    const { data: challenges } = await supabase
-      .from('fa_challenges')
-      .select('id, name')
-      .eq('status', 'active')
-      .order('created_at', { ascending: false })
-      .limit(1)
+    // 找到這個用戶參與的所有群組 ID（身為 creator 或 member）
+    const [{ data: createdGroups }, { data: joinedGroups }] = await Promise.all([
+      supabase.from('fa_groups').select('id').eq('creator_id', user.id),
+      supabase.from('fa_group_members').select('group_id').eq('user_id', user.id),
+    ])
 
-    if (!challenges || challenges.length === 0) {
-      return NextResponse.json({ challenge: null, participants: [] })
+    const groupIds = Array.from(new Set([
+      ...(createdGroups ?? []).map(g => g.id),
+      ...(joinedGroups ?? []).map(g => g.group_id),
+    ]))
+
+    if (groupIds.length === 0) {
+      // 只顯示自己
+      return fetchParticipants(supabase, [user.id], user.id)
     }
 
-    const challenge = challenges[0]
+    // 取得這些群組的所有成員
+    const { data: members } = await supabase
+      .from('fa_group_members')
+      .select('user_id')
+      .in('group_id', groupIds)
 
-    // Get participants with user info (service role bypasses RLS)
-    const { data: participants } = await supabase
-      .from('fa_challenge_participants')
-      .select('user_id, target_type, target_value, start_value, current_value, user:fa_users(id, name, avatar_url)')
-      .eq('challenge_id', challenge.id)
+    // 也包含這些群組的 creators
+    const { data: creators } = await supabase
+      .from('fa_groups')
+      .select('creator_id')
+      .in('id', groupIds)
 
-    if (!participants) {
-      return NextResponse.json({ challenge, participants: [] })
-    }
+    const allUserIds = Array.from(new Set([
+      user.id,
+      ...(members ?? []).map(m => m.user_id),
+      ...(creators ?? []).map(c => c.creator_id),
+    ]))
 
-    const ranked = participants
-      .map((p: any) => {
-        const start = p.start_value ?? 0
-        const curr = p.current_value ?? start
-        const target = p.target_value ?? 1
-        const reduced = start - curr
-        const progress = target > 0 ? Math.min(Math.round((reduced / target) * 100), 100) : 0
-        return {
-          userId: p.user_id,
-          name: p.user?.name ?? null,
-          avatar: p.user?.avatar_url ?? null,
-          progress: Math.max(0, progress),
-        }
-      })
-      .sort((a: any, b: any) => b.progress - a.progress)
-
-    return NextResponse.json({ challenge, participants: ranked })
+    return fetchParticipants(supabase, allUserIds, user.id)
   } catch (err) {
     console.error('[Arena] ranking error:', err)
-    return NextResponse.json({ challenge: null, participants: [] })
+    return NextResponse.json({ participants: [] })
   }
+}
+
+async function fetchParticipants(supabase: any, userIds: string[], currentUserId: string) {
+  // 取用戶資料（含 target_weight、show_in_arena）
+  const { data: users } = await supabase
+    .from('fa_users')
+    .select('id, name, avatar_url, target_weight, show_in_arena')
+    .in('id', userIds)
+    .eq('show_in_arena', true)
+
+  if (!users || users.length === 0) {
+    return NextResponse.json({ participants: [] })
+  }
+
+  const visibleUserIds = users.map((u: any) => u.id)
+
+  // 取每人最早體重（起始點）和最新體重
+  const [{ data: allRecords }] = await Promise.all([
+    supabase
+      .from('fa_health_records')
+      .select('user_id, weight, date')
+      .in('user_id', visibleUserIds)
+      .not('weight', 'is', null)
+      .order('date', { ascending: true }),
+  ])
+
+  // 建立 map：userId → 最早/最新體重
+  const firstWeight: Record<string, number> = {}
+  const latestWeight: Record<string, number> = {}
+
+  for (const r of allRecords ?? []) {
+    if (!r.user_id || !r.weight) continue
+    if (!firstWeight[r.user_id]) firstWeight[r.user_id] = r.weight
+    latestWeight[r.user_id] = r.weight // 最後一筆會是最新（因為 ascending order）
+  }
+
+  // 計算每人進度 %
+  const participants = users.map((u: any) => {
+    const start = firstWeight[u.id] ?? null
+    const current = latestWeight[u.id] ?? start
+    const target = u.target_weight
+
+    let progress = 0
+    if (start && current !== null && target && start > target) {
+      const reduced = start - current
+      const needed = start - target
+      progress = Math.min(100, Math.max(0, Math.round((reduced / needed) * 100)))
+    }
+
+    return {
+      userId: u.id,
+      name: u.name,
+      avatar: u.avatar_url,
+      progress,
+      isMe: u.id === currentUserId,
+    }
+  }).sort((a: any, b: any) => b.progress - a.progress)
+
+  return NextResponse.json({ participants })
 }

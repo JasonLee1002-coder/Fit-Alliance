@@ -15,9 +15,11 @@ interface Props {
   todayRecord?: HealthRecord
   dailyLog: DailyLog | null
   streak: number
+  todayCalories?: number
+  todayMealCount?: number
 }
 
-export default function DailyCheckIn({ user, records, todayRecord, dailyLog, streak }: Props) {
+export default function DailyCheckIn({ user, records, todayRecord, dailyLog, streak, todayCalories = 0, todayMealCount = 0 }: Props) {
   const router = useRouter()
   const cameraInputRef = useRef<HTMLInputElement>(null)
   const galleryInputRef = useRef<HTMLInputElement>(null)
@@ -495,6 +497,80 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
           </div>
         </div>
       )}
+
+      {/* 今日熱量卡片 */}
+      {(() => {
+        // Estimate calorie goal: use BMR from latest record × 1.3 (light activity) × 0.85 (slight deficit)
+        const bmr = records.find(r => r.bmr)?.bmr ?? null
+        const calorieGoal = bmr ? Math.round(bmr * 1.3 * 0.85) : 1500
+        const pct = Math.min(100, Math.round((todayCalories / calorieGoal) * 100))
+        const remaining = Math.max(0, calorieGoal - todayCalories)
+        const over = todayCalories > calorieGoal
+        const circumference = 2 * Math.PI * 28 // r=28
+        const dash = (pct / 100) * circumference
+
+        return (
+          <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-5">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-base font-bold text-gray-900">🍽️ 今日飲食</h3>
+              <a href="/meals" className="text-xs text-violet-600 font-medium">記錄 →</a>
+            </div>
+
+            {todayMealCount === 0 ? (
+              <div className="flex items-center gap-4">
+                <div className="w-16 h-16 rounded-2xl bg-gray-50 border-2 border-dashed border-gray-200 flex items-center justify-center text-2xl flex-shrink-0">
+                  🍽️
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">今天還沒記錄飲食</p>
+                  <a href="/meals" className="mt-1 inline-block px-3 py-1.5 bg-violet-500 text-white text-xs font-medium rounded-xl">
+                    📸 拍照記錄
+                  </a>
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-center gap-4">
+                {/* Ring */}
+                <div className="relative w-16 h-16 flex-shrink-0">
+                  <svg width="64" height="64" viewBox="0 0 64 64" className="-rotate-90">
+                    <circle cx="32" cy="32" r="28" fill="none" stroke="#f3f4f6" strokeWidth="6" />
+                    <circle
+                      cx="32" cy="32" r="28" fill="none"
+                      stroke={over ? '#ef4444' : '#8b5cf6'}
+                      strokeWidth="6"
+                      strokeLinecap="round"
+                      strokeDasharray={`${dash} ${circumference}`}
+                      className="transition-all duration-700"
+                    />
+                  </svg>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center">
+                    <span className="text-xs font-black text-gray-800 leading-none">{pct}%</span>
+                  </div>
+                </div>
+
+                {/* Info */}
+                <div className="flex-1">
+                  <div className="flex items-end gap-1">
+                    <span className="text-2xl font-black text-gray-900">{todayCalories}</span>
+                    <span className="text-sm text-gray-400 mb-0.5">/ {calorieGoal} kcal</span>
+                  </div>
+                  <p className={`text-xs mt-0.5 font-medium ${over ? 'text-red-500' : 'text-violet-600'}`}>
+                    {over
+                      ? `⚠️ 超出 ${todayCalories - calorieGoal} kcal`
+                      : `還可以吃 ${remaining} kcal`
+                    }
+                  </p>
+                  <p className="text-xs text-gray-400 mt-1">今日 {todayMealCount} 餐 · 目標基於 BMR</p>
+                </div>
+
+                <a href="/meals" className="px-3 py-2 bg-violet-50 text-violet-700 text-xs font-medium rounded-xl hover:bg-violet-100 transition shrink-0">
+                  + 新增
+                </a>
+              </div>
+            )}
+          </div>
+        )
+      })()}
 
       {/* Comparison Card (show after check-in or if today has record) */}
       {hasCheckedIn && form.weight && lastRecord && (() => {

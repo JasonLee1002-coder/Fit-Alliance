@@ -29,10 +29,15 @@ export default function ChallengeHub() {
 
   return (
     <div className="space-y-5">
-      {/* Header */}
-      <div className="text-center">
-        <h1 className="text-2xl font-black text-gray-900">🏛️ 體重競技場</h1>
-        <p className="text-gray-400 text-sm mt-1">以個人目標達成率競技，公平出發</p>
+      {/* Arena Banner */}
+      <div className="relative rounded-3xl overflow-hidden shadow-xl">
+        <img src="/arena-banner.png" alt="" className="w-full h-48 object-cover object-center" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent flex items-end p-5">
+          <div>
+            <h1 className="text-2xl font-black text-white drop-shadow-lg">🏛️ 體重競技場</h1>
+            <p className="text-white/80 text-sm mt-0.5 drop-shadow">以個人目標達成率競技，公平出發</p>
+          </div>
+        </div>
       </div>
 
       {/* Leaderboard */}

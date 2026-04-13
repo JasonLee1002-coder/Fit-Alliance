@@ -59,12 +59,12 @@ export async function GET(request: NextRequest) {
 }
 
 async function fetchParticipants(supabase: any, userIds: string[], currentUserId: string) {
-  // 取用戶資料（含 target_weight、show_in_arena）
+  // 取用戶資料（含 target_weight）
+  // show_in_arena 欄位未來加上後可啟用篩選
   const { data: users } = await supabase
     .from('fa_users')
-    .select('id, name, avatar_url, target_weight, show_in_arena')
+    .select('id, name, avatar_url, target_weight')
     .in('id', userIds)
-    .eq('show_in_arena', true)
 
   if (!users || users.length === 0) {
     return NextResponse.json({ participants: [] })

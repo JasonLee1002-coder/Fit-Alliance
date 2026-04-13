@@ -94,6 +94,27 @@ export default function CoachChat({ userId, userName }: Props) {
         )}
       </div>
 
+      {/* Quick suggestions — only when no user messages yet */}
+      {messages.length === 0 && (
+        <div className="pt-2 pb-1 flex gap-2 flex-wrap">
+          {[
+            '我該怎麼開始減肥？',
+            '每天要吃幾大卡？',
+            '運動還是節食比較有效？',
+            '停滯期怎麼辦？',
+          ].map(q => (
+            <button
+              key={q}
+              type="button"
+              onClick={() => { setInput(q) }}
+              className="px-3 py-1.5 bg-emerald-50 border border-emerald-100 text-emerald-700 text-xs font-medium rounded-xl hover:bg-emerald-100 transition active:scale-[0.97]"
+            >
+              {q}
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* Input */}
       <form onSubmit={handleSubmit} className="pt-3 border-t border-gray-100">
         <div className="flex gap-2">

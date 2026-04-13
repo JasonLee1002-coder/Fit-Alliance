@@ -814,6 +814,40 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
       })()}
 
 
+      {/* 新用戶引導 — 完全沒有紀錄時顯示 */}
+      {records.length === 0 && (
+        <div className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-3xl border border-emerald-100 p-6">
+          <div className="text-center mb-4">
+            <span className="text-4xl">🎉</span>
+            <h2 className="text-lg font-black text-gray-900 mt-2">歡迎加入 Fit Alliance！</h2>
+            <p className="text-sm text-gray-500 mt-1">3 個步驟開始你的健康旅程</p>
+          </div>
+          <div className="space-y-3">
+            {[
+              { step: 1, icon: '⚖️', title: '記錄第一筆體重', desc: '在上方打卡區輸入今天的體重', done: false, href: null },
+              { step: 2, icon: '🎯', title: '設定目標體重', desc: '讓 AI 教練幫你規劃減脂進度', done: !!user.target_weight, href: '/profile' },
+              { step: 3, icon: '🤝', title: '邀請朋友一起', desc: '在競技場互相督促，效果更好', done: false, href: '/invite' },
+            ].map(({ step, icon, title, desc, done, href }) => (
+              <div key={step} className={`flex items-center gap-3 p-3 rounded-2xl ${done ? 'bg-emerald-100/60' : 'bg-white border border-gray-100'}`}>
+                <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-lg flex-shrink-0 ${done ? 'bg-emerald-500' : 'bg-gray-100'}`}>
+                  {done ? '✅' : icon}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-bold text-gray-800">{title}</p>
+                  <p className="text-xs text-gray-400">{desc}</p>
+                </div>
+                {href && !done && (
+                  <a href={href} className="text-xs text-emerald-600 font-medium shrink-0">去設定 →</a>
+                )}
+                {!href && !done && (
+                  <span className="text-xs text-gray-400 shrink-0">↑ 上方</span>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Trend Chart (when not checked in yet, show standalone) */}
       {!hasCheckedIn && records.length >= 2 && (
         <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6">

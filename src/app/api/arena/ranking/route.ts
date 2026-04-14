@@ -17,38 +17,51 @@ export async function GET(request: NextRequest) {
 
     const supabase = await createServiceRoleSupabase()
 
-    // 找到這個用戶參與的所有群組 ID（身為 creator 或 member）
+    // 1. 找到這個用戶參與的所有群組 ID
     const [{ data: createdGroups }, { data: joinedGroups }] = await Promise.all([
       supabase.from('fa_groups').select('id').eq('creator_id', user.id),
       supabase.from('fa_group_members').select('group_id').eq('user_id', user.id),
     ])
-
     const groupIds = Array.from(new Set([
       ...(createdGroups ?? []).map(g => g.id),
       ...(joinedGroups ?? []).map(g => g.group_id),
     ]))
 
-    if (groupIds.length === 0) {
-      // 只顯示自己
-      return fetchParticipants(supabase, [user.id], user.id)
-    }
+    // 2. 取得這些群組的所有成員 + creators
+    const [{ data: members }, { data: creators }] = groupIds.length > 0
+      ? await Promise.all([
+          supabase.from('fa_group_members').select('user_id').in('group_id', groupIds),
+          supabase.from('fa_groups').select('creator_id').in('id', groupIds),
+        ])
+      : [{ data: [] }, { data: [] }]
 
-    // 取得這些群組的所有成員
-    const { data: members } = await supabase
-      .from('fa_group_members')
-      .select('user_id')
-      .in('group_id', groupIds)
+    // 3. 也包含透過 fa_member_relationships 連結的用戶（雙向）
+    const [{ data: relFrom }, { data: relTo }] = await Promise.all([
+      supabase.from('fa_member_relationships').select('to_user_id').eq('from_user_id', user.id),
+      supabase.from('fa_member_relationships').select('from_user_id').eq('to_user_id', user.id),
+    ])
 
-    // 也包含這些群組的 creators
-    const { data: creators } = await supabase
-      .from('fa_groups')
-      .select('creator_id')
-      .in('id', groupIds)
+    // 4. 也包含 legacy fa_challenge_participants 的共同挑戰成員
+    const { data: myChallenges } = await supabase
+      .from('fa_challenge_participants')
+      .select('challenge_id')
+      .eq('user_id', user.id)
+
+    const myChallengeIds = (myChallenges ?? []).map((c: any) => c.challenge_id)
+    const { data: challengeMembers } = myChallengeIds.length > 0
+      ? await supabase
+          .from('fa_challenge_participants')
+          .select('user_id')
+          .in('challenge_id', myChallengeIds)
+      : { data: [] }
 
     const allUserIds = Array.from(new Set([
       user.id,
-      ...(members ?? []).map(m => m.user_id),
-      ...(creators ?? []).map(c => c.creator_id),
+      ...(members ?? []).map((m: any) => m.user_id),
+      ...(creators ?? []).map((c: any) => c.creator_id),
+      ...(relFrom ?? []).map((r: any) => r.to_user_id),
+      ...(relTo ?? []).map((r: any) => r.from_user_id),
+      ...(challengeMembers ?? []).map((m: any) => m.user_id),
     ]))
 
     return fetchParticipants(supabase, allUserIds, user.id)

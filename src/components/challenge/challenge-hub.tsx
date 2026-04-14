@@ -30,12 +30,16 @@ export default function ChallengeHub() {
   return (
     <div className="space-y-5">
       {/* Arena Banner */}
-      <div className="relative rounded-3xl overflow-hidden shadow-xl">
-        <img src="/arena-banner.png" alt="" className="w-full h-48 object-cover object-center" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent flex items-end p-5">
+      <div className="relative rounded-3xl overflow-hidden shadow-xl h-44 bg-gradient-to-br from-amber-500 via-orange-500 to-rose-500">
+        {/* decorative glow */}
+        <div className="absolute -top-10 -right-10 w-48 h-48 rounded-full bg-yellow-300/40 blur-3xl" />
+        <div className="absolute -bottom-10 -left-10 w-56 h-56 rounded-full bg-rose-400/40 blur-3xl" />
+        <div className="absolute top-4 right-4 text-5xl opacity-30">🏆</div>
+        <div className="absolute top-4 left-4 text-4xl opacity-20">⚔️</div>
+        <div className="relative h-full flex items-end p-5">
           <div>
             <h1 className="text-2xl font-black text-white drop-shadow-lg">🏛️ 體重競技場</h1>
-            <p className="text-white/80 text-sm mt-0.5 drop-shadow">以個人目標達成率競技，公平出發</p>
+            <p className="text-white/90 text-sm mt-1 drop-shadow">以個人目標達成率競技，公平出發</p>
           </div>
         </div>
       </div>

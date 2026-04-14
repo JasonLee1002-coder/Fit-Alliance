@@ -7,7 +7,7 @@ import type { HealthRecord } from '@/types'
 type Tab = 'chart' | 'list'
 type TimeRange = 'week' | 'month' | 'quarter' | 'all'
 
-export default function RecordsView({ records }: { records: HealthRecord[] }) {
+export default function RecordsView({ records, readOnly = false }: { records: HealthRecord[]; readOnly?: boolean }) {
   const [tab, setTab] = useState<Tab>('chart')
   const [timeRange, setTimeRange] = useState<TimeRange>('month')
 
@@ -118,7 +118,7 @@ export default function RecordsView({ records }: { records: HealthRecord[] }) {
                       <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                       <XAxis dataKey="date" tick={{ fontSize: 10, fill: '#aaa' }} />
                       <YAxis tick={{ fontSize: 10, fill: '#aaa' }} domain={['auto', 'auto']} />
-                      <Tooltip formatter={(v: any) => [`${v} kg`, '體重']} />
+                      <Tooltip formatter={(v: any) => [`${v} kg`, '體重']} allowEscapeViewBox={{ x: false, y: false }} wrapperStyle={{ zIndex: 10 }} />
                       <Area type="monotone" dataKey="weight" stroke="#10b981" strokeWidth={2.5}
                         fill="url(#weightGrad)" dot={{ r: 3, fill: '#10b981' }} activeDot={{ r: 5 }} name="體重" />
                     </AreaChart>
@@ -147,7 +147,7 @@ export default function RecordsView({ records }: { records: HealthRecord[] }) {
                         <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                         <XAxis dataKey="date" tick={{ fontSize: 10, fill: '#aaa' }} />
                         <YAxis tick={{ fontSize: 10, fill: '#aaa' }} domain={['auto', 'auto']} />
-                        <Tooltip formatter={(v: any) => [`${v}%`, '體脂率']} />
+                        <Tooltip formatter={(v: any) => [`${v}%`, '體脂率']} allowEscapeViewBox={{ x: false, y: false }} wrapperStyle={{ zIndex: 10 }} />
                         <Area type="monotone" dataKey="bodyFat" stroke="#f59e0b" strokeWidth={2}
                           fill="url(#fatGrad)" dot={{ r: 2, fill: '#f59e0b' }} name="體脂率" />
                       </AreaChart>
@@ -177,7 +177,7 @@ export default function RecordsView({ records }: { records: HealthRecord[] }) {
                         <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                         <XAxis dataKey="date" tick={{ fontSize: 10, fill: '#aaa' }} />
                         <YAxis tick={{ fontSize: 10, fill: '#aaa' }} domain={['auto', 'auto']} />
-                        <Tooltip formatter={(v: any) => [`${v} kg`, '肌肉量']} />
+                        <Tooltip formatter={(v: any) => [`${v} kg`, '肌肉量']} allowEscapeViewBox={{ x: false, y: false }} wrapperStyle={{ zIndex: 10 }} />
                         <Area type="monotone" dataKey="muscle" stroke="#06b6d4" strokeWidth={2}
                           fill="url(#muscleGrad)" dot={{ r: 2, fill: '#06b6d4' }} name="肌肉量" />
                       </AreaChart>

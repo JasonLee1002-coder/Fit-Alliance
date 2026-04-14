@@ -5,7 +5,6 @@ import { cookies } from 'next/headers'
 
 export async function GET(request: NextRequest) {
   try {
-    // 取得當前登入用戶
     const cookieStore = await cookies()
     const supabaseUser = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -17,7 +16,7 @@ export async function GET(request: NextRequest) {
 
     const supabase = await createServiceRoleSupabase()
 
-    // 1. 找到這個用戶參與的所有群組 ID
+    // 1. 群組
     const [{ data: createdGroups }, { data: joinedGroups }] = await Promise.all([
       supabase.from('fa_groups').select('id').eq('creator_id', user.id),
       supabase.from('fa_group_members').select('group_id').eq('user_id', user.id),
@@ -26,8 +25,6 @@ export async function GET(request: NextRequest) {
       ...(createdGroups ?? []).map(g => g.id),
       ...(joinedGroups ?? []).map(g => g.group_id),
     ]))
-
-    // 2. 取得這些群組的所有成員 + creators
     const [{ data: members }, { data: creators }] = groupIds.length > 0
       ? await Promise.all([
           supabase.from('fa_group_members').select('user_id').in('group_id', groupIds),
@@ -35,18 +32,16 @@ export async function GET(request: NextRequest) {
         ])
       : [{ data: [] }, { data: [] }]
 
-    // 3. 透過 fa_member_relationships 連結的用戶（雙向）
+    // 2. 關係標籤（用於沒有 fa_users 的成員）
     const [{ data: relFrom }, { data: relTo }] = await Promise.all([
       supabase.from('fa_member_relationships').select('to_user_id, label').eq('from_user_id', user.id),
       supabase.from('fa_member_relationships').select('from_user_id, label').eq('to_user_id', user.id),
     ])
-
-    // 建立關係標籤 map（用於沒有 fa_users 的用戶顯示名稱）
     const relationshipLabels: Record<string, string> = {}
     for (const r of relFrom ?? []) relationshipLabels[r.to_user_id] = r.label ?? ''
     for (const r of relTo ?? []) relationshipLabels[r.from_user_id] = r.label ?? ''
 
-    // 4. legacy fa_challenge_participants 共同挑戰成員
+    // 3. 挑戰成員（含挑戰起始資料作為進度計算基準）
     const { data: myChallenges } = await supabase
       .from('fa_challenge_participants')
       .select('challenge_id')
@@ -60,15 +55,17 @@ export async function GET(request: NextRequest) {
           .in('challenge_id', myChallengeIds)
       : { data: [] }
 
-    // 建立挑戰進度 map（用於沒有 fa_health_records 但有挑戰資料的用戶）
-    const challengeProgressMap: Record<string, { start: number; current: number; targetType: string; targetValue: number }> = {}
+    // 建立挑戰基準 map：每人的 start_value / target（挑戰當初設定，最準確）
+    const challengeBaseMap: Record<string, { start: number; target: number; challengeCurrent: number }> = {}
     for (const cp of challengeParticipants ?? []) {
-      if (!challengeProgressMap[cp.user_id] && cp.start_value && cp.current_value) {
-        challengeProgressMap[cp.user_id] = {
+      if (!challengeBaseMap[cp.user_id] && cp.start_value) {
+        const targetWeight = cp.target_type === 'reduce_percent'
+          ? cp.start_value * (1 - cp.target_value / 100)
+          : cp.start_value - cp.target_value
+        challengeBaseMap[cp.user_id] = {
           start: cp.start_value,
-          current: cp.current_value,
-          targetType: cp.target_type,
-          targetValue: cp.target_value,
+          target: targetWeight,
+          challengeCurrent: cp.current_value ?? cp.start_value,
         }
       }
     }
@@ -82,7 +79,7 @@ export async function GET(request: NextRequest) {
       ...(challengeParticipants ?? []).map((m: any) => m.user_id),
     ]))
 
-    return fetchParticipants(supabase, allUserIds, user.id, relationshipLabels, challengeProgressMap)
+    return fetchParticipants(supabase, allUserIds, user.id, relationshipLabels, challengeBaseMap)
   } catch (err) {
     console.error('[Arena] ranking error:', err)
     return NextResponse.json({ participants: [] })
@@ -94,19 +91,18 @@ async function fetchParticipants(
   userIds: string[],
   currentUserId: string,
   relationshipLabels: Record<string, string>,
-  challengeProgressMap: Record<string, { start: number; current: number; targetType: string; targetValue: number }>,
+  challengeBaseMap: Record<string, { start: number; target: number; challengeCurrent: number }>,
 ) {
-  // 取用戶資料（含 target_weight）
+  // 取用戶資料
   const { data: users } = await supabase
     .from('fa_users')
     .select('id, name, avatar_url, target_weight')
     .in('id', userIds)
 
-  // 建立已知用戶 map
   const userMap: Record<string, any> = {}
   for (const u of users ?? []) userMap[u.id] = u
 
-  // 補齊沒有 fa_users 資料的用戶（用關係標籤當名稱）
+  // 補齊沒有 fa_users 的成員（用關係標籤當名稱）
   for (const uid of userIds) {
     if (!userMap[uid]) {
       userMap[uid] = {
@@ -118,66 +114,36 @@ async function fetchParticipants(
     }
   }
 
-  const allUsers = Object.values(userMap)
-  if (allUsers.length === 0) {
-    return NextResponse.json({ participants: [] })
-  }
-
-  // 取每人最早體重（起始點）和最新體重（來自 health records）
-  const { data: allRecords } = await supabase
+  // 取最新 health record 體重（最準確的現況）
+  const { data: latestRecords } = await supabase
     .from('fa_health_records')
     .select('user_id, weight, date')
     .in('user_id', userIds)
     .not('weight', 'is', null)
-    .order('date', { ascending: true })
+    .order('date', { ascending: false })
 
-  const firstWeight: Record<string, number> = {}
-  const latestWeight: Record<string, number> = {}
-
-  for (const r of allRecords ?? []) {
-    if (!r.user_id || !r.weight) continue
-    if (!firstWeight[r.user_id]) firstWeight[r.user_id] = r.weight
-    latestWeight[r.user_id] = r.weight
+  const latestWeightMap: Record<string, number> = {}
+  for (const r of latestRecords ?? []) {
+    if (!latestWeightMap[r.user_id]) latestWeightMap[r.user_id] = r.weight
   }
 
-  // 計算每人進度 %
+  const allUsers = Object.values(userMap)
   const participants = allUsers.map((u: any) => {
     let progress = 0
+    const cb = challengeBaseMap[u.id]
+    const currentWeight = latestWeightMap[u.id] ?? cb?.challengeCurrent ?? null
 
-    const cp = challengeProgressMap[u.id]
-    const hasHealthRecords = !!(firstWeight[u.id] && latestWeight[u.id])
-
-    if (hasHealthRecords) {
-      const start = firstWeight[u.id]
-      const current = latestWeight[u.id]
-
-      // 先嘗試用 fa_users.target_weight
-      if (u.target_weight && start > u.target_weight) {
-        const reduced = start - current
-        const needed = start - u.target_weight
+    if (cb && currentWeight !== null) {
+      // 用挑戰起始體重 + 挑戰目標 + 最新實際體重 → 最準確
+      const reduced = cb.start - currentWeight
+      const needed = cb.start - cb.target
+      if (needed > 0) {
         progress = Math.min(100, Math.max(0, Math.round((reduced / needed) * 100)))
       }
-      // 沒有 target_weight 時，用挑戰目標推算（適用於沒有 fa_users 的成員）
-      else if (cp) {
-        const targetWeight = cp.targetType === 'reduce_percent'
-          ? cp.start * (1 - cp.targetValue / 100)
-          : cp.start - cp.targetValue
-        if (cp.start > targetWeight) {
-          const reduced = start - current  // 用 health records 的實際體重
-          const needed = cp.start - targetWeight
-          progress = Math.min(100, Math.max(0, Math.round((reduced / needed) * 100)))
-        }
-      }
-    } else if (cp) {
-      // 沒有 health records，用挑戰 start_value / current_value
-      const targetWeight = cp.targetType === 'reduce_percent'
-        ? cp.start * (1 - cp.targetValue / 100)
-        : cp.start - cp.targetValue
-      if (cp.start > targetWeight) {
-        const reduced = cp.start - cp.current
-        const needed = cp.start - targetWeight
-        progress = Math.min(100, Math.max(0, Math.round((reduced / needed) * 100)))
-      }
+    } else if (currentWeight !== null && u.target_weight) {
+      // 沒有挑戰資料，用 fa_users.target_weight
+      const start = currentWeight  // 只有當前體重，無從計算起始，進度無法算
+      // Skip — not enough data
     }
 
     return {

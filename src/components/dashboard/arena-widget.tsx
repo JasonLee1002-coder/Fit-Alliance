@@ -1,21 +1,24 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import Link from 'next/link'
 
 interface Participant {
   name: string
+  userId: string
   progress: number
   avatar: string | null
   isMe: boolean
 }
 
-const BAR_COLORS = [
-  'from-amber-400 to-yellow-300',
-  'from-slate-400 to-gray-300',
-  'from-orange-400 to-amber-300',
+const RANK_BAR = [
+  'from-yellow-400 via-amber-300 to-yellow-400',
+  'from-slate-400 via-gray-300 to-slate-400',
+  'from-orange-400 via-amber-300 to-orange-400',
   'from-emerald-400 to-teal-300',
   'from-blue-400 to-indigo-300',
 ]
+const RANK_PCT = ['text-amber-600', 'text-slate-500', 'text-orange-500', 'text-emerald-600', 'text-blue-600']
 
 export default function ArenaWidget() {
   const [ranking, setRanking] = useState<Participant[]>([])
@@ -44,38 +47,41 @@ export default function ArenaWidget() {
           <div className="text-white font-black text-base tracking-wide">🏛️ 體重競技場</div>
           {title && <div className="text-amber-100 text-[11px] font-medium mt-0.5 truncate max-w-[180px]">⚔️ {title}</div>}
         </div>
-        <a href="/challenge" className="text-[11px] font-bold text-amber-100 bg-white/20 px-2.5 py-1 rounded-lg hover:bg-white/30 transition">
+        <Link href="/challenge" className="text-[11px] font-bold text-amber-100 bg-white/20 px-2.5 py-1 rounded-lg hover:bg-white/30 transition">
           進入競技場 →
-        </a>
+        </Link>
       </div>
 
       {/* Rankings */}
       <div className="bg-gradient-to-b from-amber-50 to-orange-50 px-4 py-3 space-y-2.5">
-        {ranking.map((p, i) => (
-          <div key={i} className={`flex items-center gap-2.5 ${p.isMe ? 'bg-amber-100/80 rounded-xl px-2 py-1 -mx-2' : ''}`}>
-            <div className="text-lg w-7 text-center flex-shrink-0">{medals[i] ?? `${i + 1}`}</div>
-            <div className="w-8 h-8 rounded-full bg-amber-200 flex items-center justify-center overflow-hidden flex-shrink-0 border-2 border-amber-300">
-              {p.avatar
-                ? <img src={p.avatar} alt="" className="w-full h-full object-cover" />
-                : <span className="text-amber-700 text-xs font-bold">{p.name?.charAt(0) ?? '👤'}</span>
-              }
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center justify-between mb-1">
-                <span className={`text-xs font-bold truncate ${p.isMe ? 'text-amber-800' : 'text-gray-700'}`}>
-                  {p.name}{p.isMe && ' 👈'}
-                </span>
-                <span className="text-[11px] font-black text-amber-700 ml-1">{p.progress}%</span>
+        {ranking.map((p, i) => {
+          const href = p.isMe ? '/records' : `/arena/member/${p.userId}`
+          return (
+            <Link key={p.userId} href={href} className={`flex items-center gap-2.5 transition active:opacity-70 ${p.isMe ? 'bg-amber-100/80 rounded-xl px-2 py-1 -mx-2' : ''}`}>
+              <div className="text-lg w-7 text-center flex-shrink-0">{medals[i] ?? `${i + 1}`}</div>
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center overflow-hidden flex-shrink-0 border-2 ${i === 0 ? 'border-amber-400 shadow-sm shadow-amber-300/50' : 'border-amber-300'}`}>
+                {p.avatar
+                  ? <img src={p.avatar} alt="" className="w-full h-full object-cover" />
+                  : <span className={`text-xs font-bold ${i === 0 ? 'text-amber-700 bg-amber-200 w-full h-full flex items-center justify-center' : 'text-amber-700'}`}>{p.name?.charAt(0) ?? '👤'}</span>
+                }
               </div>
-              <div className="h-1.5 bg-amber-100 rounded-full overflow-hidden border border-amber-200">
-                <div
-                  className={`h-full bg-gradient-to-r ${BAR_COLORS[i] ?? BAR_COLORS[4]} rounded-full transition-all duration-700`}
-                  style={{ width: `${p.progress}%` }}
-                />
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between mb-1">
+                  <span className={`text-xs font-bold truncate ${i === 0 ? 'text-amber-800' : 'text-gray-700'}`}>
+                    {p.name}{p.isMe && ' 👈'}{i === 0 && ' ✨'}
+                  </span>
+                  <span className={`text-[11px] font-black ml-1 ${RANK_PCT[i] ?? RANK_PCT[4]}`}>{p.progress}%</span>
+                </div>
+                <div className={`h-1.5 rounded-full overflow-hidden ${i === 0 ? 'bg-amber-200' : 'bg-amber-100'}`}>
+                  <div
+                    className={`h-full bg-gradient-to-r ${RANK_BAR[i] ?? RANK_BAR[4]} rounded-full transition-all duration-700 ${i === 0 ? 'shadow-sm shadow-amber-400/50' : ''}`}
+                    style={{ width: `${Math.max(p.progress, 2)}%` }}
+                  />
+                </div>
               </div>
-            </div>
-          </div>
-        ))}
+            </Link>
+          )
+        })}
       </div>
 
       {/* No avatar nudge */}

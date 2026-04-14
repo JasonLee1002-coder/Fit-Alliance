@@ -1,7 +1,7 @@
 import { createServerSupabase } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import DailyCheckIn from '@/components/dashboard/daily-checkin'
-import type { User, HealthRecord, MealRecord, FoodItem } from '@/types'
+import type { User, HealthRecord } from '@/types'
 
 export const dynamic = 'force-dynamic'
 
@@ -12,10 +12,9 @@ export default async function HomePage() {
 
   const today = new Date().toISOString().split('T')[0]
 
-  const [{ data: profile }, { data: records }, { data: todayMeals }] = await Promise.all([
+  const [{ data: profile }, { data: records }] = await Promise.all([
     supabase.from('fa_users').select('*').eq('id', authUser.id).single(),
     supabase.from('fa_health_records').select('*').eq('user_id', authUser.id).order('date', { ascending: false }).limit(30),
-    supabase.from('fa_meal_records').select('meal_type, user_corrected_items, ai_recognized_items').eq('user_id', authUser.id).eq('date', today),
   ])
 
   const todayRecord = records?.find(r => r.date === today)
@@ -36,14 +35,6 @@ export default async function HomePage() {
     }
   }
 
-  // Calculate today's total calories from meals
-  const todayCalories = (todayMeals ?? []).reduce((sum, meal) => {
-    const items = ((meal.user_corrected_items ?? meal.ai_recognized_items ?? []) as FoodItem[])
-    return sum + items.reduce((s, i) => s + (i.calories ?? 0), 0)
-  }, 0)
-
-  const todayMealCount = todayMeals?.length ?? 0
-
   return (
     <DailyCheckIn
       user={profile as User}
@@ -51,8 +42,6 @@ export default async function HomePage() {
       todayRecord={todayRecord as HealthRecord | undefined}
       dailyLog={null}
       streak={streak}
-      todayCalories={todayCalories}
-      todayMealCount={todayMealCount}
     />
   )
 }

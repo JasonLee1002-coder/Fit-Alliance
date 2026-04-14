@@ -14,7 +14,8 @@ export const metadata: Metadata = {
   },
   other: { "mobile-web-app-capable": "yes" },
   icons: [
-    { rel: "icon", url: "/favicon.png?v=20260414", sizes: "192x192", type: "image/png" },
+    { rel: "icon", url: "/favicon-32.png", sizes: "32x32", type: "image/png" },
+    { rel: "icon", url: "/icon-192.png?v=20260414", sizes: "192x192", type: "image/png" },
     { rel: "apple-touch-icon", url: "/icon-192.png?v=20260414" },
   ],
 };

@@ -79,7 +79,7 @@ export default function SplashScreen({ onDone }: { onDone?: () => void } = {}) {
       <div className="shrink-0 pb-10 pt-4 px-8 flex flex-col items-center gap-3">
         {/* App 標題 */}
         <div className="text-center">
-          <p className="text-emerald-900 text-2xl font-black tracking-tight">瘦身減肥聯盟</p>
+          <p className="text-emerald-900 text-2xl font-black tracking-tight">瘦身減肥競技場</p>
           <p className="text-emerald-700 text-sm mt-0.5">一起變瘦，一起變強</p>
         </div>
 

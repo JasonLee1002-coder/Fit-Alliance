@@ -4,13 +4,13 @@ import PwaTopBanner from "@/components/shared/pwa-top-banner";
 import SplashScreen from "@/components/shared/splash-screen";
 
 export const metadata: Metadata = {
-  title: "瘦身減肥聯盟 | Fit Alliance",
+  title: "瘦身減肥競技場 | Fit Alliance",
   description: "一起變瘦，一起變強。AI 教練陪你減脂，群體力量讓你堅持。",
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "瘦身減肥聯盟",
+    title: "瘦身減肥競技場",
   },
   other: { "mobile-web-app-capable": "yes" },
   icons: [

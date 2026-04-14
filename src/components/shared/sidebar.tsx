@@ -52,7 +52,7 @@ export default function Sidebar({ user }: { user: User | null }) {
           <div className="flex items-center gap-3">
             <img src="/char-coaches.png" alt="Fit Alliance" className="w-12 h-12 rounded-xl" />
             <div>
-              <h1 className="font-bold text-gray-900 text-sm">瘦身減肥聯盟</h1>
+              <h1 className="font-bold text-gray-900 text-sm">瘦身減肥競技場</h1>
               <p className="text-[10px] text-gray-400">Fit Alliance</p>
             </div>
           </div>

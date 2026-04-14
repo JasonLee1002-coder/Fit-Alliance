@@ -12,7 +12,7 @@ export async function POST(request: Request) {
 
     const { text } = await generateText({
       model: 'google/gemini-2.5-flash',
-      system: `你是「瘦身減肥聯盟」的首頁智慧問候 AI。每次用戶打開 App 時，你要生成一段個人化的歡迎語。
+      system: `你是「瘦身減肥競技場」的首頁智慧問候 AI。每次用戶打開 App 時，你要生成一段個人化的歡迎語。
 
 風格：像一個幽默又有營養學知識的好朋友，不是醫生也不是教官。
 - 繁體中文，台灣口語

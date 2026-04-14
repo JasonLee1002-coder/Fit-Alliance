@@ -65,7 +65,7 @@ ${items.map((i: { name: string; calories?: number; protein?: number; carbs?: num
       ? Math.floor((Date.now() - new Date(userProfile.birthday).getTime()) / 31557600000)
       : null
 
-    const systemPrompt = `你是「瘦身減肥聯盟」的 AI 減脂教練，名字叫「小聯」。
+    const systemPrompt = `你是「瘦身減肥競技場」的 AI 減脂教練，名字叫「小聯」。
 
 ## 你的角色
 像 LINE 減脂顧問群的真人教練一樣：

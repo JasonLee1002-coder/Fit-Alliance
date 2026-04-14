@@ -37,7 +37,7 @@ export default function LoginPage() {
             <img src="/char-coaches.png" alt="Fit Alliance" className="w-36 h-36 drop-shadow-2xl" />
           </div>
           <h1 className="text-4xl font-black text-gray-900 mb-2 tracking-tight">
-            瘦身減肥聯盟
+            瘦身減肥競技場
           </h1>
           <p className="text-gray-400 text-lg font-light">
             一起變瘦，一起變強

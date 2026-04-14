@@ -407,7 +407,7 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
 
         {/* Weight (main field) */}
         <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-1">體重 (kg)</label>
+          <label className="block text-base font-black text-emerald-700 mb-2 tracking-wide">⚖️ 體重 <span className="text-sm font-medium text-gray-400">(kg)</span></label>
           <input
             ref={weightInputRef}
             type="number"
@@ -432,16 +432,16 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
         {showMore && (
           <div className="grid grid-cols-2 gap-3 mb-4 p-4 bg-gray-50 rounded-2xl">
             {[
-              { key: 'body_fat', label: '體脂率 (%)', placeholder: '例：25.0', color: 'text-orange-600', infoLink: '/body-fat-info' },
-              { key: 'bmi', label: 'BMI', placeholder: '例：24.5', color: 'text-blue-600', infoLink: '/bmi-info' },
-              { key: 'muscle_mass', label: '肌肉量 (kg)', placeholder: '例：45.0', color: 'text-cyan-600', infoLink: '/muscle-info' },
-              { key: 'visceral_fat', label: '內臟脂肪', placeholder: '例：8', color: 'text-rose-600', infoLink: '/visceral-fat-info' },
-              { key: 'bone_mass', label: '骨質量 (kg)', placeholder: '例：3.0', color: 'text-violet-600', infoLink: '/bone-mass-info' },
-              { key: 'bmr', label: '基礎代謝率 (kcal)', placeholder: '例：1500', color: 'text-amber-600', infoLink: '/bmr-info' },
+              { key: 'body_fat', label: '🔥 體脂率', unit: '%', placeholder: '例：25.0', color: 'text-orange-600', infoLink: '/body-fat-info' },
+              { key: 'bmi', label: '📊 BMI', unit: '', placeholder: '例：24.5', color: 'text-blue-600', infoLink: '/bmi-info' },
+              { key: 'muscle_mass', label: '💪 肌肉量', unit: 'kg', placeholder: '例：45.0', color: 'text-cyan-600', infoLink: '/muscle-info' },
+              { key: 'visceral_fat', label: '🫀 內臟脂肪', unit: '', placeholder: '例：8', color: 'text-rose-600', infoLink: '/visceral-fat-info' },
+              { key: 'bone_mass', label: '🦴 骨質量', unit: 'kg', placeholder: '例：3.0', color: 'text-violet-600', infoLink: '/bone-mass-info' },
+              { key: 'bmr', label: '⚡ 代謝率', unit: 'kcal', placeholder: '例：1500', color: 'text-amber-600', infoLink: '/bmr-info' },
             ].map(field => (
               <div key={field.key}>
                 <div className="flex items-center justify-between mb-1">
-                  <label className={`text-xs font-bold ${field.color}`}>{field.label}</label>
+                  <label className={`text-sm font-black ${field.color}`}>{field.label}{field.unit ? <span className="text-xs font-medium text-gray-400 ml-1">({field.unit})</span> : null}</label>
                   {(field as any).infoLink && (
                     <a
                       href={(field as any).infoLink}
@@ -619,16 +619,16 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
                 const isGood = isLowerBetter ? isDown : isUp
 
                 return (
-                  <div key={row.label} className="flex items-center justify-between py-2.5 border-b border-slate-700/50 last:border-0">
+                  <div key={row.label} className="flex items-center justify-between py-3 border-b border-slate-700/50 last:border-0">
                     <div className="flex-1 text-center">
-                      <span className={`inline-block px-2.5 py-1 rounded-lg text-sm font-bold border ${row.prev != null ? row.badgeColor : 'bg-slate-700/30 text-slate-500 border-slate-600/30'}`}>
+                      <span className={`inline-block px-3 py-1.5 rounded-xl text-base font-black border ${row.prev != null ? row.badgeColor : 'bg-slate-700/30 text-slate-500 border-slate-600/30'}`}>
                         {row.prev != null ? `${row.prev}${row.unit ? ` ${row.unit}` : ''}` : '—'}
                       </span>
                     </div>
                     <div className="flex-shrink-0 text-center px-1 min-w-[88px]">
-                      <div className={`text-xs font-bold ${row.color}`}>{row.label}</div>
+                      <div className={`text-sm font-black ${row.color} drop-shadow-sm`}>{row.label}</div>
                       {(isUp || isDown) && (
-                        <div className={`text-[10px] font-medium ${isGood ? 'text-emerald-400' : 'text-red-400'}`}>
+                        <div className={`text-xs font-bold mt-0.5 px-2 py-0.5 rounded-full inline-block ${isGood ? 'bg-emerald-500/20 text-emerald-300' : 'bg-red-500/20 text-red-300'}`}>
                           {isUp ? '▲' : '▼'} {absDiff}{row.unit}
                         </div>
                       )}
@@ -644,7 +644,7 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
                       )}
                     </div>
                     <div className="flex-1 text-center">
-                      <span className={`inline-block px-2.5 py-1 rounded-lg text-sm font-bold border ${
+                      <span className={`inline-block px-3 py-1.5 rounded-xl text-base font-black border ${
                         row.curr == null ? 'bg-slate-700/30 text-slate-500 border-slate-600/30' : isGood ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' : (!isUp && !isDown) ? row.badgeColor : 'bg-red-500/20 text-red-300 border-red-500/30'
                       }`}>
                         {row.curr != null ? `${row.curr}${row.unit ? ` ${row.unit}` : ''}` : '—'}

@@ -26,19 +26,32 @@ const RANK_PCT = ['text-amber-600', 'text-slate-500', 'text-orange-500', 'text-e
 export default function ArenaWidget() {
   const [ranking, setRanking] = useState<Participant[]>([])
   const [title, setTitle] = useState('')
+  const [loaded, setLoaded] = useState(false)
 
   useEffect(() => {
     fetch('/api/arena/ranking')
       .then(r => r.ok ? r.json() : null)
       .then(data => {
-        if (!data?.participants?.length) return
-        if (data.challenge?.name) setTitle(data.challenge.name)
-        setRanking(data.participants.slice(0, 5))
+        if (data?.participants?.length) {
+          if (data.challenge?.name) setTitle(data.challenge.name)
+          setRanking(data.participants.slice(0, 5))
+        }
+        setLoaded(true)
       })
-      .catch(() => {})
+      .catch(() => setLoaded(true))
   }, [])
 
-  if (ranking.length === 0) return null
+  if (loaded && ranking.length === 0) return null
+  if (!loaded) return (
+    <div className="rounded-3xl overflow-hidden border border-amber-200 shadow-lg animate-pulse">
+      <div className="bg-gradient-to-r from-amber-600 via-orange-500 to-amber-600 px-4 py-3">
+        <div className="text-white font-black text-base">🏛️ 體重競技場</div>
+      </div>
+      <div className="bg-amber-50 px-4 py-6 space-y-3">
+        {[1,2,3].map(i => <div key={i} className="h-8 bg-amber-100 rounded-xl" />)}
+      </div>
+    </div>
+  )
 
   const medals = ['🥇', '🥈', '🥉']
 

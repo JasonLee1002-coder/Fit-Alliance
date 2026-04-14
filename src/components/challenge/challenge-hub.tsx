@@ -50,16 +50,37 @@ const DEFAULT_STYLE = {
   animate: '',
 }
 
+const CACHE_KEY = 'fa_arena_ranking'
+const CACHE_TTL_MS = 5 * 60 * 1000 // 5 分鐘才強制重算
+
 export default function ChallengeHub() {
   const [participants, setParticipants] = useState<Participant[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    // 先讀快取，有就立即顯示（不用等）
+    try {
+      const raw = sessionStorage.getItem(CACHE_KEY)
+      if (raw) {
+        const { data, ts } = JSON.parse(raw)
+        if (data?.length) {
+          setParticipants(data)
+          setLoading(false)
+          if (Date.now() - ts < CACHE_TTL_MS) return // 快取還新鮮就不重 fetch
+        }
+      }
+    } catch { /* ignore */ }
+
+    // 無快取或快取過期 → fetch（已有快取時 loading 已是 false，不會 spinner）
     fetch('/api/arena/ranking')
       .then(r => r.json())
       .then(data => {
-        setParticipants(data.participants ?? [])
+        const list = data.participants ?? []
+        setParticipants(list)
         setLoading(false)
+        try {
+          sessionStorage.setItem(CACHE_KEY, JSON.stringify({ data: list, ts: Date.now() }))
+        } catch { /* ignore */ }
       })
       .catch(() => setLoading(false))
   }, [])

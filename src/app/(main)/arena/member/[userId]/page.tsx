@@ -1,9 +1,9 @@
 import { createServerSupabase } from '@/lib/supabase/server'
 import { createServiceRoleSupabase } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import Link from 'next/link'
 import RecordsView from '@/components/dashboard/records-view'
 import type { HealthRecord } from '@/types'
+import BackToArenaButton from '@/components/arena/back-to-arena-button'
 
 export const dynamic = 'force-dynamic'
 
@@ -25,7 +25,6 @@ export default async function MemberRecordsPage({ params }: Props) {
     serviceSupabase.from('fa_health_records').select('*').eq('user_id', userId).order('date', { ascending: false }).limit(100),
   ])
 
-  // 若無 fa_users，用關係標籤補名
   let displayName = profile?.name ?? null
   if (!displayName) {
     const { data: rel } = await serviceSupabase
@@ -39,12 +38,8 @@ export default async function MemberRecordsPage({ params }: Props) {
 
   return (
     <div className="space-y-4">
-      {/* Back + header */}
-      <div className="flex items-center gap-3">
-        <Link href="/challenge" className="text-sm text-gray-500 hover:text-gray-700 transition">
-          ← 競技場
-        </Link>
-      </div>
+      {/* Back button — 立體大按鈕 */}
+      <BackToArenaButton />
 
       {/* Member card */}
       <div className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-3xl border border-amber-100 p-4 flex items-center gap-4">
@@ -61,7 +56,6 @@ export default async function MemberRecordsPage({ params }: Props) {
         </div>
       </div>
 
-      {/* Records view — same component as own records */}
       {(records ?? []).length === 0 ? (
         <div className="bg-white rounded-3xl border border-gray-100 p-10 text-center">
           <div className="text-4xl mb-3">⚖️</div>

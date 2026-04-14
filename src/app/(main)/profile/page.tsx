@@ -3,6 +3,97 @@
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { useState, useEffect, useRef } from 'react'
+import { Share, Plus, MoreVertical, Smartphone, Download } from 'lucide-react'
+
+function PwaInstallSection() {
+  const [platform, setPlatform] = useState<'ios' | 'android' | null>(null)
+  const [isStandalone, setIsStandalone] = useState(false)
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null)
+  const [showGuide, setShowGuide] = useState(false)
+
+  useEffect(() => {
+    const standalone = window.matchMedia('(display-mode: standalone)').matches ||
+      ('standalone' in navigator && (navigator as any).standalone === true)
+    setIsStandalone(standalone)
+    if (standalone) return
+
+    const ua = navigator.userAgent
+    if (/iPad|iPhone|iPod/.test(ua)) setPlatform('ios')
+    else if (/Android/.test(ua)) setPlatform('android')
+
+    const handler = (e: Event) => { e.preventDefault(); setDeferredPrompt(e) }
+    window.addEventListener('beforeinstallprompt', handler)
+    return () => window.removeEventListener('beforeinstallprompt', handler)
+  }, [])
+
+  if (isStandalone || !platform) return null
+
+  const handleInstall = async () => {
+    if (platform === 'android' && deferredPrompt) {
+      deferredPrompt.prompt()
+      await deferredPrompt.userChoice
+      setDeferredPrompt(null)
+    } else {
+      setShowGuide(v => !v)
+    }
+  }
+
+  return (
+    <div className="bg-emerald-50 rounded-3xl border border-emerald-100 p-5">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center">
+            <Smartphone className="w-5 h-5 text-emerald-600" />
+          </div>
+          <div>
+            <p className="text-sm font-bold text-gray-800">加到手機主畫面</p>
+            <p className="text-xs text-gray-500">像 App 一樣快速開啟</p>
+          </div>
+        </div>
+        <button
+          onClick={handleInstall}
+          className="px-4 py-2 bg-emerald-500 text-white text-sm font-bold rounded-xl shadow active:scale-95 transition"
+        >
+          {platform === 'android' && deferredPrompt ? '立即安裝' : '查看步驟'}
+        </button>
+      </div>
+
+      {showGuide && (
+        <div className="mt-4 space-y-2.5">
+          {platform === 'ios' && (
+            <div className="p-3 bg-amber-50 rounded-xl border border-amber-200">
+              <p className="text-xs text-amber-700">⚠️ 必須用 <strong>Safari</strong> 開啟本頁才能安裝。如果是從 LINE 進來，請先複製網址，再用 Safari 貼上開啟。</p>
+            </div>
+          )}
+          {platform === 'ios' ? (
+            <>
+              <GuideStep n={1} icon={<Share className="w-4 h-4" />} title="點底部「分享」⬆️" desc="Safari 底部中間的按鈕" />
+              <GuideStep n={2} icon={<Plus className="w-4 h-4" />} title='找「加入主畫面」' desc="往下滑，有 ＋ 號的選項" />
+              <GuideStep n={3} icon={<Download className="w-4 h-4" />} title='點「新增」完成 🎉' desc="桌面就會出現圖示" />
+            </>
+          ) : (
+            <>
+              <GuideStep n={1} icon={<MoreVertical className="w-4 h-4" />} title='點右上角「⋮」' desc="Chrome 右上角三個點" />
+              <GuideStep n={2} icon={<Smartphone className="w-4 h-4" />} title='選「加到主畫面」' desc="完成！桌面就會出現圖示 🎉" />
+            </>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function GuideStep({ n, icon, title, desc }: { n: number; icon: React.ReactNode; title: string; desc: string }) {
+  return (
+    <div className="flex gap-3 items-start">
+      <div className="w-6 h-6 rounded-full bg-emerald-500 text-white text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">{n}</div>
+      <div className="flex-1 bg-white rounded-xl px-3 py-2 border border-gray-100">
+        <div className="flex items-center gap-1.5 text-emerald-600 mb-0.5">{icon}<span className="text-sm font-bold text-gray-800">{title}</span></div>
+        <p className="text-xs text-gray-500">{desc}</p>
+      </div>
+    </div>
+  )
+}
 
 export default function ProfilePage() {
   const router = useRouter()
@@ -214,6 +305,9 @@ export default function ProfilePage() {
           ) : '💾 儲存設定'}
         </button>
       </div>
+
+      {/* 加到主畫面 */}
+      <PwaInstallSection />
 
       <button onClick={handleLogout}
         className="w-full py-3 bg-red-50 text-red-600 rounded-2xl font-medium hover:bg-red-100 transition">

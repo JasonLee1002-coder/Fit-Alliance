@@ -31,7 +31,7 @@ export default function PwaTopBanner() {
   useEffect(() => {
     if (isStandalone()) return
     const dismissed = localStorage.getItem('pwa-banner-dismissed')
-    if (dismissed) return
+    if (dismissed && Date.now() - parseInt(dismissed) < 3 * 24 * 60 * 60 * 1000) return
 
     const plat = detectPlatform()
     if (!plat) return
@@ -54,7 +54,7 @@ export default function PwaTopBanner() {
   function handleDismiss() {
     setShow(false)
     setShowSteps(false)
-    localStorage.setItem('pwa-banner-dismissed', '1')
+    localStorage.setItem('pwa-banner-dismissed', Date.now().toString())
   }
 
   async function handleInstall() {

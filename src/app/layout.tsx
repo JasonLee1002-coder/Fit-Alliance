@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import PwaInstallPrompt from "@/components/shared/pwa-install-prompt";
 import PwaTopBanner from "@/components/shared/pwa-top-banner";
 import SplashScreen from "@/components/shared/splash-screen";
 
@@ -34,7 +33,6 @@ export default function RootLayout({
         <SplashScreen />
         <PwaTopBanner />
         {children}
-        <PwaInstallPrompt />
       </body>
     </html>
   );

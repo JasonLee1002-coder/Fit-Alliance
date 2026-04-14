@@ -1,5 +1,6 @@
 'use client'
 import { useRouter } from 'next/navigation'
+import UserMetricCard from '@/components/shared/user-metric-card'
 
 export default function MuscleInfoPage() {
   const router = useRouter()
@@ -14,6 +15,20 @@ export default function MuscleInfoPage() {
         <h1 className="text-2xl font-bold text-gray-900">💪 認識肌肉量</h1>
         <p className="text-gray-500 text-sm mt-2">越多越好的健康數值</p>
       </div>
+
+      <UserMetricCard
+        metric="muscle_mass"
+        label="肌肉量"
+        unit="kg"
+        color="#10b981"
+        evaluate={(v, p) => {
+          if (!p.gender) return { type: 'neutral', message: '請先設定性別以比對標準範圍' }
+          const range = p.gender === 'male' ? { min: 49, max: 59 } : { min: 36, max: 44 }
+          if (v < range.min) return { type: 'low', message: `偏低 ${(range.min - v).toFixed(1)} kg（建議多做阻力訓練）` }
+          if (v > range.max) return { type: 'good', message: `超出標準 ${(v - range.max).toFixed(1)} kg，肌肉量優秀！` }
+          return { type: 'good', message: `在理想範圍內（${range.min}-${range.max} kg）！` }
+        }}
+      />
 
       <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-3xl border border-green-100 p-6 text-center">
         <div className="text-6xl mb-3">💪</div>

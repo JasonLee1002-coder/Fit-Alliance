@@ -1,6 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
+import UserMetricCard from '@/components/shared/user-metric-card'
 
 export default function VisceralFatInfoPage() {
   const router = useRouter()
@@ -23,6 +24,18 @@ export default function VisceralFatInfoPage() {
         <h1 className="text-2xl font-bold text-gray-900">🫀 認識內臟脂肪</h1>
         <p className="text-gray-500 text-sm mt-2">了解內臟脂肪對健康的影響</p>
       </div>
+
+      <UserMetricCard
+        metric="visceral_fat"
+        label="內臟脂肪"
+        unit=""
+        color="#f43f5e"
+        evaluate={(v) => {
+          if (v <= 9) return { type: 'good', message: `健康範圍（標準 1-9），繼續保持！` }
+          if (v <= 14) return { type: 'high', message: `偏高 ${v - 9}（超過健康值 9）` }
+          return { type: 'high', message: `過高 ${v - 14}（建議就醫諮詢）` }
+        }}
+      />
 
       {/* Hero Illustration */}
       <div className="bg-gradient-to-br from-rose-50 to-orange-50 rounded-3xl border border-rose-100 p-6 text-center">

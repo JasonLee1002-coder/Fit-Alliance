@@ -1,6 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
+import UserMetricCard from '@/components/shared/user-metric-card'
 
 export default function BmiInfoPage() {
   const router = useRouter()
@@ -18,6 +19,21 @@ export default function BmiInfoPage() {
         <h1 className="text-2xl font-bold text-gray-900">📐 認識 BMI 身體質量指數</h1>
         <p className="text-gray-500 text-sm mt-2">最常見的體重評估指標</p>
       </div>
+
+      <UserMetricCard
+        metric="bmi"
+        label="BMI"
+        unit=""
+        color="#3b82f6"
+        evaluate={(v) => {
+          if (v < 18.5) return { type: 'low', message: `偏低 ${(18.5 - v).toFixed(1)}，體重過輕` }
+          if (v < 23) return { type: 'good', message: '正常範圍，維持健康體態！' }
+          if (v < 25) return { type: 'high', message: `過重 ${(v - 22.9).toFixed(1)}，建議控制飲食` }
+          if (v < 30) return { type: 'high', message: `輕度肥胖（超標 ${(v - 24.9).toFixed(1)}）` }
+          if (v < 35) return { type: 'high', message: `中度肥胖（超標 ${(v - 29.9).toFixed(1)}）` }
+          return { type: 'high', message: `重度肥胖（超標 ${(v - 34.9).toFixed(1)}）` }
+        }}
+      />
 
       {/* Hero */}
       <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-3xl border border-blue-100 p-6 text-center">

@@ -1,6 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
+import UserMetricCard from '@/components/shared/user-metric-card'
 
 export default function BodyFatInfoPage() {
   const router = useRouter()
@@ -23,6 +24,20 @@ export default function BodyFatInfoPage() {
         <h1 className="text-2xl font-bold text-gray-900">📊 認識體脂肪與體脂率</h1>
         <p className="text-gray-500 text-sm mt-2">了解體脂肪對身體組成的意義</p>
       </div>
+
+      <UserMetricCard
+        metric="body_fat"
+        label="體脂率"
+        unit="%"
+        color="#f97316"
+        evaluate={(v, p) => {
+          if (!p.gender) return { type: 'neutral', message: `請先設定性別以比對標準範圍` }
+          const range = p.gender === 'male' ? { min: 10, max: 20 } : { min: 18, max: 28 }
+          if (v < range.min) return { type: 'low', message: `偏低 ${(range.min - v).toFixed(1)}%（健康下限 ${range.min}%）` }
+          if (v > range.max) return { type: 'high', message: `偏高 ${(v - range.max).toFixed(1)}%（健康上限 ${range.max}%）` }
+          return { type: 'good', message: `在健康範圍內（${range.min}-${range.max}%）！` }
+        }}
+      />
 
       {/* Hero */}
       <div className="bg-gradient-to-br from-orange-50 to-amber-50 rounded-3xl border border-orange-100 p-6 text-center">

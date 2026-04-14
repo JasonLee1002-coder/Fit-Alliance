@@ -1,5 +1,6 @@
 'use client'
 import { useRouter } from 'next/navigation'
+import UserMetricCard from '@/components/shared/user-metric-card'
 
 export default function BmrInfoPage() {
   const router = useRouter()
@@ -14,6 +15,14 @@ export default function BmrInfoPage() {
         <h1 className="text-2xl font-bold text-gray-900">🔥 認識基礎代謝率</h1>
         <p className="text-gray-500 text-sm mt-2">你每天「躺著就燒」的熱量</p>
       </div>
+
+      <UserMetricCard
+        metric="bmr"
+        label="基礎代謝率"
+        unit="kcal"
+        color="#f59e0b"
+        evaluate={(v) => ({ type: 'neutral', message: `你每天躺著就燒 ${v} kcal，一年約 ${Math.round(v * 365 / 7700)} kg 脂肪！` })}
+      />
 
       <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-3xl border border-amber-100 p-6 text-center">
         <div className="text-6xl mb-3">🔥</div>

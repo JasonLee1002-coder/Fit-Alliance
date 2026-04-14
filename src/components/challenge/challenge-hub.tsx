@@ -121,7 +121,7 @@ export default function ChallengeHub() {
           <>
             {participants.map((p, i) => {
               const style = RANK_STYLES[i] ?? DEFAULT_STYLE
-              const href = p.isMe ? '/records' : `/arena/member/${p.userId}`
+              const href = `/arena/member/${p.userId}`
 
               return (
                 <Link

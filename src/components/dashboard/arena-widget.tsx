@@ -58,7 +58,7 @@ export default function ArenaWidget() {
       {/* Rankings */}
       <div className="bg-gradient-to-b from-amber-50 to-orange-50 px-4 py-3 space-y-2.5">
         {ranking.map((p, i) => {
-          const href = p.isMe ? '/records' : `/arena/member/${p.userId}`
+          const href = `/arena/member/${p.userId}`
           return (
             <Link key={p.userId} href={href} className={`flex items-center gap-2.5 transition active:opacity-70 ${p.isMe ? 'bg-amber-100/80 rounded-xl px-2 py-1 -mx-2' : ''}`}>
               <div className="text-lg w-7 text-center flex-shrink-0">{medals[i] ?? `${i + 1}`}</div>

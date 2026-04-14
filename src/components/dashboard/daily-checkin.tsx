@@ -145,8 +145,8 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
         const res = await fetch('/api/arena/ranking')
         if (!res.ok) return
         const { challenge, participants } = await res.json()
-        if (!challenge || !participants?.length) return
-        setArenaTitle(challenge.name)
+        if (!participants?.length) return
+        if (challenge?.name) setArenaTitle(challenge.name)
         setArenaRanking(
           participants.map((p: any) => ({
             name: p.name ?? null,

@@ -531,16 +531,9 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
             </div>
 
             {todayMealCount === 0 ? (
-              <div className="flex items-center gap-4">
-                <div className="w-16 h-16 rounded-2xl bg-gray-50 border-2 border-dashed border-gray-200 flex items-center justify-center text-2xl flex-shrink-0">
-                  🍽️
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">今天還沒記錄飲食</p>
-                  <a href="/meals" className="mt-1 inline-block px-3 py-1.5 bg-violet-500 text-white text-xs font-medium rounded-xl">
-                    📸 拍照記錄
-                  </a>
-                </div>
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">🍽️</span>
+                <p className="text-sm text-gray-400">今天還沒記錄飲食</p>
               </div>
             ) : (
               <div className="flex items-center gap-4">

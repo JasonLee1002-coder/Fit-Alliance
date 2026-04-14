@@ -146,12 +146,21 @@ async function fetchParticipants(
       // Skip — not enough data
     }
 
+    const weightLostKg = cb && currentWeight !== null ? +(cb.start - currentWeight).toFixed(1) : null
+    const weightLostPct = cb && currentWeight !== null && cb.start > 0
+      ? +((cb.start - currentWeight) / cb.start * 100).toFixed(1)
+      : null
+
     return {
       userId: u.id,
       name: u.name,
       avatar: u.avatar_url,
       progress,
       isMe: u.id === currentUserId,
+      startWeight: cb?.start ?? null,
+      currentWeight,
+      weightLostKg,
+      weightLostPct,
     }
   }).sort((a: any, b: any) => b.progress - a.progress)
 

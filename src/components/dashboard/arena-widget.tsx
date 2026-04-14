@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import AnimatedWeightPct from '@/components/shared/animated-weight-pct'
 
 interface Participant {
   name: string
@@ -9,6 +10,8 @@ interface Participant {
   progress: number
   avatar: string | null
   isMe: boolean
+  weightLostKg: number | null
+  weightLostPct: number | null
 }
 
 const RANK_BAR = [
@@ -66,12 +69,18 @@ export default function ArenaWidget() {
                 }
               </div>
               <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between mb-1">
+                <div className="flex items-center justify-between mb-0.5">
                   <span className={`text-xs font-bold truncate ${i === 0 ? 'text-amber-800' : 'text-gray-700'}`}>
                     {p.name}{p.isMe && ' 👈'}{i === 0 && ' ✨'}
                   </span>
-                  <span className={`text-[11px] font-black ml-1 ${RANK_PCT[i] ?? RANK_PCT[4]}`}>{p.progress}%</span>
+                  <span className={`text-[10px] font-bold ml-1 ${RANK_PCT[i] ?? RANK_PCT[4]}`}>達成{p.progress}%</span>
                 </div>
+                {/* 體重變化 % — 靈魂數字 */}
+                {p.weightLostPct !== null && (
+                  <div className="mb-1">
+                    <AnimatedWeightPct pct={p.weightLostPct} kg={p.weightLostKg ?? undefined} size="compact" />
+                  </div>
+                )}
                 <div className={`h-1.5 rounded-full overflow-hidden ${i === 0 ? 'bg-amber-200' : 'bg-amber-100'}`}>
                   <div
                     className={`h-full bg-gradient-to-r ${RANK_BAR[i] ?? RANK_BAR[4]} rounded-full transition-all duration-700 ${i === 0 ? 'shadow-sm shadow-amber-400/50' : ''}`}

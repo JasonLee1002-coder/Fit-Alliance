@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import AnimatedWeightPct from '@/components/shared/animated-weight-pct'
 
 interface Participant {
   userId: string
@@ -9,6 +10,8 @@ interface Participant {
   avatar: string | null
   progress: number
   isMe: boolean
+  weightLostKg: number | null
+  weightLostPct: number | null
 }
 
 const RANK_STYLES = [
@@ -50,7 +53,7 @@ const DEFAULT_STYLE = {
   animate: '',
 }
 
-const CACHE_KEY = 'fa_arena_ranking'
+const CACHE_KEY = 'fa_arena_ranking_v2'  // v2: 含 weightLostPct 欄位
 const CACHE_TTL_MS = 5 * 60 * 1000 // 5 分鐘才強制重算
 
 export default function ChallengeHub() {
@@ -146,15 +149,24 @@ export default function ChallengeHub() {
                   </div>
 
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between mb-1.5">
+                    <div className="flex items-center justify-between mb-1">
                       <span className={`text-sm font-bold truncate ${i === 0 ? 'text-amber-800' : 'text-gray-800'}`}>
                         {p.name}{p.isMe ? ' 👈' : ''}
                         {i === 0 && <span className="ml-1 text-xs">✨</span>}
                       </span>
-                      <span className={`text-sm font-black ml-2 shrink-0 ${style.pct}`}>
-                        {p.progress}%
+                      {/* 目標達成率 */}
+                      <span className={`text-xs font-bold ml-2 shrink-0 px-1.5 py-0.5 rounded-lg bg-gray-50 ${style.pct}`}>
+                        達成 {p.progress}%
                       </span>
                     </div>
+
+                    {/* 體重變化百分比 — 靈魂數字 */}
+                    {p.weightLostPct !== null && (
+                      <div className="mb-1.5">
+                        <AnimatedWeightPct pct={p.weightLostPct} kg={p.weightLostKg ?? undefined} size="compact" />
+                      </div>
+                    )}
+
                     <div className={`h-2.5 bg-gray-100 rounded-full overflow-hidden ${i === 0 ? style.glow : ''}`}>
                       <div
                         className={`h-full bg-gradient-to-r ${style.bar} rounded-full transition-all duration-700`}

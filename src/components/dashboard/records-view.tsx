@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from 'recharts'
 import type { HealthRecord } from '@/types'
+import AnimatedWeightPct from '@/components/shared/animated-weight-pct'
 
 type Tab = 'chart' | 'list'
 type TimeRange = 'week' | 'month' | 'quarter' | 'all'
@@ -35,12 +36,22 @@ export default function RecordsView({ records, readOnly = false }: { records: He
   const firstWeight = allWeights[allWeights.length - 1] ?? null
   const latestWeight = allWeights[0] ?? null
   const totalLost = firstWeight && latestWeight ? +(firstWeight - latestWeight).toFixed(1) : null
+  const weightChangePct = firstWeight && latestWeight && firstWeight > 0
+    ? +((firstWeight - latestWeight) / firstWeight * 100).toFixed(1)
+    : null
   const minWeight = allWeights.length ? Math.min(...allWeights) : null
   const totalDays = records.length
 
   return (
     <div className="space-y-5">
       <h1 className="text-2xl font-bold text-gray-900">📊 健康紀錄</h1>
+
+      {/* Hero 體重變化百分比 */}
+      {weightChangePct !== null && totalDays >= 2 && (
+        <div className="bg-gradient-to-br from-emerald-50 via-white to-teal-50 rounded-3xl border border-emerald-100 shadow-sm p-6">
+          <AnimatedWeightPct pct={weightChangePct} kg={totalLost ?? undefined} size="hero" />
+        </div>
+      )}
 
       {/* Summary Stats */}
       {totalDays > 0 && (

@@ -337,10 +337,13 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
       </div>
 
       {/* Check-in Card */}
-      <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-bold text-gray-900">⚡ 今日打卡</h2>
-          <div className="flex gap-2">
+      <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-5">
+        <h2 className="text-lg font-bold text-gray-900 mb-4">⚡ 今日打卡</h2>
+
+        {/* 主要入口：大按鈕區 */}
+        {!screenshotPreview && !ocrDone && (
+          <div className="grid grid-cols-2 gap-3 mb-5">
+            {/* 選截圖 */}
             <button
               onClick={() => {
                 if (galleryInputRef.current) {
@@ -349,10 +352,17 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
                 }
               }}
               disabled={ocrLoading}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-600 hover:border-emerald-300 transition active:scale-[0.98]"
+              className="group relative flex flex-col items-center justify-center gap-2 py-5 rounded-2xl bg-gradient-to-br from-violet-500 to-purple-600 text-white shadow-lg shadow-violet-200 active:scale-[0.94] active:shadow-md transition-all duration-150 disabled:opacity-50 overflow-hidden"
             >
-              🖼️ 選截圖
+              <div className="absolute inset-0 bg-white/0 group-active:bg-white/10 transition-colors duration-100" />
+              <span className="text-4xl drop-shadow leading-none">🖼️</span>
+              <div className="text-center">
+                <div className="text-base font-black tracking-wide">選截圖</div>
+                <div className="text-xs text-violet-200 mt-0.5">從相簿選體重截圖</div>
+              </div>
             </button>
+
+            {/* 拍照 */}
             <button
               onClick={() => {
                 if (cameraInputRef.current) {
@@ -361,14 +371,20 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
                 }
               }}
               disabled={ocrLoading}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-600 hover:border-emerald-300 transition active:scale-[0.98]"
+              className="group relative flex flex-col items-center justify-center gap-2 py-5 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-200 active:scale-[0.94] active:shadow-md transition-all duration-150 disabled:opacity-50 overflow-hidden"
             >
-              📷 拍照
+              <div className="absolute inset-0 bg-white/0 group-active:bg-white/10 transition-colors duration-100" />
+              <span className="text-4xl drop-shadow leading-none">📷</span>
+              <div className="text-center">
+                <div className="text-base font-black tracking-wide">拍照</div>
+                <div className="text-xs text-emerald-200 mt-0.5">直接拍體重計畫面</div>
+              </div>
             </button>
-            <input ref={cameraInputRef} type="file" accept="image/*" capture="environment" onChange={handleImageSelect} className="hidden" />
-            <input ref={galleryInputRef} type="file" accept="image/*" onChange={handleImageSelect} className="hidden" />
           </div>
-        </div>
+        )}
+
+        <input ref={cameraInputRef} type="file" accept="image/*" capture="environment" onChange={handleImageSelect} className="hidden" />
+        <input ref={galleryInputRef} type="file" accept="image/*" onChange={handleImageSelect} className="hidden" />
 
         {/* Screenshot Preview */}
         {screenshotPreview && (
@@ -396,8 +412,18 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
           </div>
         )}
         {ocrDone && !ocrLoading && (
-          <div className="mb-4 p-3 bg-emerald-50 rounded-xl text-sm text-emerald-700 border border-emerald-200 yuzu-pop-in">
-            ✅ AI 辨識完成，請確認數值（可手動修正）
+          <div className="mb-4 p-3 bg-emerald-50 rounded-xl border border-emerald-200 yuzu-pop-in flex items-center justify-between">
+            <span className="text-sm text-emerald-700">✅ AI 辨識完成，請確認數值</span>
+            <button
+              onClick={() => {
+                setOcrDone(false)
+                setScreenshotPreview(null)
+                setScreenshotFile(null)
+              }}
+              className="text-xs text-emerald-600 font-medium underline"
+            >
+              重拍
+            </button>
           </div>
         )}
 
@@ -469,9 +495,12 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
         {/* Submit */}
         <button
           ref={submitBtnRef}
-          onClick={handleSubmit}
+          onClick={() => {
+            if (navigator.vibrate) navigator.vibrate(30)
+            handleSubmit()
+          }}
           disabled={loading || !form.weight}
-          className={`w-full bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-bold py-4 rounded-2xl shadow-lg hover:shadow-xl transition-all active:scale-[0.98] disabled:opacity-30 text-lg ${loading ? 'yuzu-btn-loading' : ''} ${form.weight && !loading ? 'yuzu-glow-pulse shadow-emerald-200/50' : ''}`}
+          className={`w-full bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-black py-5 rounded-2xl shadow-xl transition-all duration-150 active:scale-[0.95] active:shadow-md disabled:opacity-30 text-xl tracking-wide ${loading ? 'yuzu-btn-loading' : ''} ${form.weight && !loading ? 'yuzu-glow-pulse shadow-emerald-300/60' : ''}`}
         >
           {loading ? (
             <span className="flex items-center justify-center gap-2">

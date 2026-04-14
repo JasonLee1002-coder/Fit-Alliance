@@ -309,6 +309,12 @@ export default function ProfilePage() {
       {/* 加到主畫面 */}
       <PwaInstallSection />
 
+      {/* App 圖示更新提示 */}
+      <div className="bg-amber-50 rounded-2xl border border-amber-100 p-4">
+        <p className="text-xs text-amber-800 font-medium">📱 桌面圖示顯示舊版？</p>
+        <p className="text-xs text-amber-700 mt-1">長按桌面的 App 圖示 → 移除 → 重新從瀏覽器安裝，即可更新為最新圖示。</p>
+      </div>
+
       <button onClick={handleLogout}
         className="w-full py-3 bg-red-50 text-red-600 rounded-2xl font-medium hover:bg-red-100 transition">
         登出

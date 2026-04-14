@@ -456,18 +456,23 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
             {[
               { key: 'body_fat', label: '體脂率 (%)', placeholder: '例：25.0', color: 'text-orange-600', infoLink: '/body-fat-info' },
               { key: 'bmi', label: 'BMI', placeholder: '例：24.5', color: 'text-blue-600', infoLink: '/bmi-info' },
-              { key: 'muscle_mass', label: '肌肉量 (kg)', placeholder: '例：45.0', color: 'text-cyan-600' },
+              { key: 'muscle_mass', label: '肌肉量 (kg)', placeholder: '例：45.0', color: 'text-cyan-600', infoLink: '/muscle-info' },
               { key: 'visceral_fat', label: '內臟脂肪', placeholder: '例：8', color: 'text-rose-600', infoLink: '/visceral-fat-info' },
-              { key: 'bone_mass', label: '骨質量 (kg)', placeholder: '例：3.0', color: 'text-violet-600' },
-              { key: 'bmr', label: '基礎代謝率 (kcal)', placeholder: '例：1500', color: 'text-amber-600' },
+              { key: 'bone_mass', label: '骨質量 (kg)', placeholder: '例：3.0', color: 'text-violet-600', infoLink: '/bone-mass-info' },
+              { key: 'bmr', label: '基礎代謝率 (kcal)', placeholder: '例：1500', color: 'text-amber-600', infoLink: '/bmr-info' },
             ].map(field => (
               <div key={field.key}>
-                <label className={`flex items-center gap-1 text-xs font-bold mb-1 ${field.color}`}>
-                  {field.label}
+                <div className="flex items-center justify-between mb-1">
+                  <label className={`text-xs font-bold ${field.color}`}>{field.label}</label>
                   {(field as any).infoLink && (
-                    <a href={(field as any).infoLink} className="inline-flex items-center justify-center w-3.5 h-3.5 rounded-full bg-gray-200 text-gray-500 text-[9px] font-bold hover:bg-gray-300 transition">?</a>
+                    <a
+                      href={(field as any).infoLink}
+                      className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-lg bg-gray-200 text-gray-600 text-[10px] font-bold hover:bg-gray-300 active:scale-95 transition"
+                    >
+                      說明 →
+                    </a>
                   )}
-                </label>
+                </div>
                 <input
                   type="number"
                   step="0.1"

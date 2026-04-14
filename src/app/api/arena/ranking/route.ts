@@ -144,34 +144,39 @@ async function fetchParticipants(
   const participants = allUsers.map((u: any) => {
     let progress = 0
 
-    if (firstWeight[u.id] && latestWeight[u.id]) {
-      // 優先使用 health records 計算進度
+    const cp = challengeProgressMap[u.id]
+    const hasHealthRecords = !!(firstWeight[u.id] && latestWeight[u.id])
+
+    if (hasHealthRecords) {
       const start = firstWeight[u.id]
       const current = latestWeight[u.id]
-      const target = u.target_weight
-      if (target && start > target) {
+
+      // 先嘗試用 fa_users.target_weight
+      if (u.target_weight && start > u.target_weight) {
         const reduced = start - current
-        const needed = start - target
+        const needed = start - u.target_weight
         progress = Math.min(100, Math.max(0, Math.round((reduced / needed) * 100)))
       }
-    } else if (challengeProgressMap[u.id]) {
-      // 沒有 health records，使用挑戰打卡資料
-      const cp = challengeProgressMap[u.id]
-      if (cp.targetType === 'reduce_percent') {
-        const targetWeight = cp.start * (1 - cp.targetValue / 100)
+      // 沒有 target_weight 時，用挑戰目標推算（適用於沒有 fa_users 的成員）
+      else if (cp) {
+        const targetWeight = cp.targetType === 'reduce_percent'
+          ? cp.start * (1 - cp.targetValue / 100)
+          : cp.start - cp.targetValue
         if (cp.start > targetWeight) {
-          const reduced = cp.start - cp.current
+          const reduced = start - current  // 用 health records 的實際體重
           const needed = cp.start - targetWeight
           progress = Math.min(100, Math.max(0, Math.round((reduced / needed) * 100)))
         }
-      } else {
-        // reduce_absolute
-        const targetWeight = cp.start - cp.targetValue
-        if (cp.start > targetWeight) {
-          const reduced = cp.start - cp.current
-          const needed = cp.targetValue
-          progress = Math.min(100, Math.max(0, Math.round((reduced / needed) * 100)))
-        }
+      }
+    } else if (cp) {
+      // 沒有 health records，用挑戰 start_value / current_value
+      const targetWeight = cp.targetType === 'reduce_percent'
+        ? cp.start * (1 - cp.targetValue / 100)
+        : cp.start - cp.targetValue
+      if (cp.start > targetWeight) {
+        const reduced = cp.start - cp.current
+        const needed = cp.start - targetWeight
+        progress = Math.min(100, Math.max(0, Math.round((reduced / needed) * 100)))
       }
     }
 

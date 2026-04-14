@@ -1,5 +1,6 @@
 'use client'
 import { useRouter } from 'next/navigation'
+import UserMetricCard from '@/components/shared/user-metric-card'
 
 export default function BoneMassInfoPage() {
   const router = useRouter()
@@ -14,6 +15,14 @@ export default function BoneMassInfoPage() {
         <h1 className="text-2xl font-bold text-gray-900">🦴 認識骨質量</h1>
         <p className="text-gray-500 text-sm mt-2">身體的鋼筋骨架</p>
       </div>
+
+      <UserMetricCard
+        metric="bone_mass"
+        label="骨質量"
+        unit="kg"
+        color="#06b6d4"
+        evaluate={() => ({ type: 'neutral', message: '請對照下方表格，找出你的性別與體重區間' })}
+      />
 
       <div className="bg-gradient-to-br from-cyan-50 to-sky-50 rounded-3xl border border-cyan-100 p-6 text-center">
         <div className="text-6xl mb-3">🦴</div>

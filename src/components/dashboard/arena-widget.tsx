@@ -73,13 +73,16 @@ export default function ArenaWidget() {
         {ranking.map((p, i) => {
           const href = `/arena/member/${p.userId}`
           return (
-            <Link key={p.userId} href={href} className={`flex items-center gap-2.5 transition active:opacity-70 ${p.isMe ? 'bg-amber-100/80 rounded-xl px-2 py-1 -mx-2' : ''}`}>
+            <Link key={p.userId} href={href} className={`group flex items-center gap-2.5 transition active:opacity-70 ${p.isMe ? 'bg-amber-100/80 rounded-xl px-2 py-1 -mx-2' : ''}`}>
               <div className="text-lg w-7 text-center flex-shrink-0">{medals[i] ?? `${i + 1}`}</div>
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center overflow-hidden flex-shrink-0 border-2 ${i === 0 ? 'border-amber-400 shadow-sm shadow-amber-300/50' : 'border-amber-300'}`}>
-                {p.avatar
-                  ? <img src={p.avatar} alt="" className="w-full h-full object-cover" />
-                  : <span className={`text-xs font-bold ${i === 0 ? 'text-amber-700 bg-amber-200 w-full h-full flex items-center justify-center' : 'text-amber-700'}`}>{p.name?.charAt(0) ?? '👤'}</span>
-                }
+              <div className="relative flex-shrink-0">
+                <div className={`yuzu-tap-ring w-8 h-8 rounded-full flex items-center justify-center overflow-hidden border-2 group-hover:scale-110 transition-transform ${i === 0 ? 'border-amber-400' : 'border-amber-300'}`}>
+                  {p.avatar
+                    ? <img src={p.avatar} alt="" className="w-full h-full object-cover" />
+                    : <span className={`text-xs font-bold ${i === 0 ? 'text-amber-700 bg-amber-200 w-full h-full flex items-center justify-center' : 'text-amber-700'}`}>{p.name?.charAt(0) ?? '👤'}</span>
+                  }
+                </div>
+                <span className="absolute -bottom-0.5 -right-0.5 text-[8px] bg-white rounded-full w-3 h-3 flex items-center justify-center shadow border border-amber-300">👆</span>
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between mb-0.5">

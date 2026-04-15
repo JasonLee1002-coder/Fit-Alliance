@@ -75,6 +75,38 @@ body {
   animation: yuzu-glow-pulse 2s ease-in-out infinite;
 }
 
+/* Shimmer sweep across element (for CTA buttons) */
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  60%, 100% { transform: translateX(200%); }
+}
+
+/* CTA glow — strong attention pull for primary action buttons */
+@keyframes yuzu-cta-glow-violet {
+  0%, 100% { box-shadow: 0 4px 20px 0 rgba(139, 92, 246, 0.35), 0 0 0 0 rgba(139, 92, 246, 0); }
+  50% { box-shadow: 0 8px 30px 5px rgba(139, 92, 246, 0.55), 0 0 0 6px rgba(139, 92, 246, 0.12); }
+}
+.yuzu-cta-glow-violet {
+  animation: yuzu-cta-glow-violet 1.8s ease-in-out infinite;
+}
+@keyframes yuzu-cta-glow-emerald {
+  0%, 100% { box-shadow: 0 4px 20px 0 rgba(16, 185, 129, 0.35), 0 0 0 0 rgba(16, 185, 129, 0); }
+  50% { box-shadow: 0 8px 30px 5px rgba(16, 185, 129, 0.55), 0 0 0 6px rgba(16, 185, 129, 0.12); }
+}
+.yuzu-cta-glow-emerald {
+  animation: yuzu-cta-glow-emerald 1.8s ease-in-out infinite 0.4s;
+}
+
+/* Avatar tap hint — subtle ring pulse to signal "clickable" */
+@keyframes yuzu-tap-ring {
+  0% { box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.7); }
+  70% { box-shadow: 0 0 0 8px rgba(251, 191, 36, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(251, 191, 36, 0); }
+}
+.yuzu-tap-ring {
+  animation: yuzu-tap-ring 2s ease-out infinite;
+}
+
 /* Urgent glow (for active challenges) — 超強特效 */
 .yuzu-glow-urgent {
   position: relative;

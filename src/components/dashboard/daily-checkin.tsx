@@ -330,11 +330,12 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
                 }
               }}
               disabled={ocrLoading}
-              className="group relative flex flex-col items-center justify-center gap-2 py-5 rounded-2xl bg-gradient-to-br from-violet-500 to-purple-600 text-white shadow-lg shadow-violet-200 active:scale-[0.94] active:shadow-md transition-all duration-150 disabled:opacity-50 overflow-hidden"
+              className="yuzu-cta-glow-violet group relative flex flex-col items-center justify-center gap-2 py-5 rounded-2xl bg-gradient-to-br from-violet-500 to-purple-600 text-white shadow-lg shadow-violet-200 active:scale-[0.94] active:shadow-md transition-all duration-150 disabled:opacity-50 overflow-hidden"
             >
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full animate-[shimmer_2.5s_infinite]" />
               <div className="absolute inset-0 bg-white/0 group-active:bg-white/10 transition-colors duration-100" />
               <span className="text-4xl drop-shadow leading-none">🖼️</span>
-              <div className="text-center">
+              <div className="text-center relative">
                 <div className="text-base font-black tracking-wide">選截圖</div>
                 <div className="text-xs text-violet-200 mt-0.5">從相簿選體重截圖</div>
               </div>
@@ -349,11 +350,12 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
                 }
               }}
               disabled={ocrLoading}
-              className="group relative flex flex-col items-center justify-center gap-2 py-5 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-200 active:scale-[0.94] active:shadow-md transition-all duration-150 disabled:opacity-50 overflow-hidden"
+              className="yuzu-cta-glow-emerald group relative flex flex-col items-center justify-center gap-2 py-5 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-200 active:scale-[0.94] active:shadow-md transition-all duration-150 disabled:opacity-50 overflow-hidden"
             >
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full animate-[shimmer_2.5s_infinite_0.6s]" />
               <div className="absolute inset-0 bg-white/0 group-active:bg-white/10 transition-colors duration-100" />
               <span className="text-4xl drop-shadow leading-none">📷</span>
-              <div className="text-center">
+              <div className="text-center relative">
                 <div className="text-base font-black tracking-wide">拍照</div>
                 <div className="text-xs text-emerald-200 mt-0.5">直接拍體重計畫面</div>
               </div>

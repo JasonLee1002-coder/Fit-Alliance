@@ -138,14 +138,17 @@ export default function ChallengeHub() {
                     {style.medal || <span className="text-gray-400 font-bold text-sm">{i + 1}</span>}
                   </div>
 
-                  <div className={`w-11 h-11 rounded-full flex items-center justify-center overflow-hidden shrink-0 ${style.ring} ${i === 0 ? 'shadow-md shadow-amber-300/50' : ''}`}>
-                    {p.avatar ? (
-                      <img src={p.avatar} alt="" className="w-full h-full object-cover" />
-                    ) : (
-                      <div className={`w-full h-full flex items-center justify-center text-sm font-bold ${i === 0 ? 'bg-amber-100 text-amber-700' : i === 1 ? 'bg-gray-100 text-gray-600' : i === 2 ? 'bg-orange-100 text-orange-600' : 'bg-emerald-100 text-emerald-600'}`}>
-                        {(p.name || '?').charAt(0)}
-                      </div>
-                    )}
+                  <div className="relative shrink-0">
+                    <div className={`yuzu-tap-ring w-11 h-11 rounded-full flex items-center justify-center overflow-hidden ${style.ring} ${i === 0 ? 'shadow-md shadow-amber-300/50' : ''}`}>
+                      {p.avatar ? (
+                        <img src={p.avatar} alt="" className="w-full h-full object-cover" />
+                      ) : (
+                        <div className={`w-full h-full flex items-center justify-center text-sm font-bold ${i === 0 ? 'bg-amber-100 text-amber-700' : i === 1 ? 'bg-gray-100 text-gray-600' : i === 2 ? 'bg-orange-100 text-orange-600' : 'bg-emerald-100 text-emerald-600'}`}>
+                          {(p.name || '?').charAt(0)}
+                        </div>
+                      )}
+                    </div>
+                    <span className="absolute -bottom-0.5 -right-0.5 text-[10px] bg-white rounded-full w-4 h-4 flex items-center justify-center shadow border border-amber-300">👆</span>
                   </div>
 
                   <div className="flex-1 min-w-0">

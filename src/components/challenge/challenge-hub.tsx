@@ -140,16 +140,6 @@ export default function ChallengeHub() {
                   {i === 0 && (
                     <div className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-200/30 to-transparent -translate-x-full animate-[shimmer_2s_infinite]" />
                   )}
-                  {/* 皮克敏冠軍旗 — 第一名右上角 */}
-                  {i === 0 && (
-                    <motion.img
-                      src="/pikmin-arena.png"
-                      alt="皮克敏冠軍"
-                      className="absolute top-0 right-3 w-12 h-12 object-contain pointer-events-none"
-                      animate={{ rotate: [-8, 8, -8], y: [0, -3, 0] }}
-                      transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-                    />
-                  )}
 
                   <div className="text-xl w-8 text-center shrink-0">
                     {style.medal || <span className="text-gray-400 font-bold text-sm">{i + 1}</span>}
@@ -187,11 +177,27 @@ export default function ChallengeHub() {
                       </div>
                     )}
 
-                    <div className={`h-2.5 bg-gray-100 rounded-full overflow-hidden ${i === 0 ? style.glow : ''}`}>
-                      <div
-                        className={`h-full bg-gradient-to-r ${style.bar} rounded-full transition-all duration-700`}
-                        style={{ width: `${Math.max(p.progress, 2)}%` }}
-                      />
+                    {/* 進度條 + 皮克敏站在條棒右端 */}
+                    <div className="relative">
+                      <div className={`h-2.5 bg-gray-100 rounded-full overflow-hidden ${i === 0 ? style.glow : ''}`}>
+                        <div
+                          className={`h-full bg-gradient-to-r ${style.bar} rounded-full transition-all duration-700`}
+                          style={{ width: `${Math.max(p.progress, 2)}%` }}
+                        />
+                      </div>
+                      {i === 0 && (
+                        <motion.img
+                          src="/pikmin-arena.png"
+                          alt="皮克敏"
+                          className="absolute -top-5 pointer-events-none w-7 h-7 object-contain"
+                          style={{
+                            left: `calc(${Math.max(p.progress, 2)}% - 14px)`,
+                            mixBlendMode: 'multiply',
+                          }}
+                          animate={{ y: [0, -3, 0] }}
+                          transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
+                        />
+                      )}
                     </div>
                     {i === 0 && p.progress > 0 && (
                       <p className="text-[10px] text-amber-600 mt-1 font-medium">👑 目前領先！點擊查看紀錄</p>

@@ -9,7 +9,8 @@ import UnifiedHealthChart from '@/components/shared/unified-health-chart'
 type Tab = 'chart' | 'list'
 
 export default function RecordsView({ records, readOnly = false }: { records: HealthRecord[]; readOnly?: boolean }) {
-  const [tab, setTab] = useState<Tab>('chart')
+  // 不足 2 筆時直接顯示列表（圖表無意義）
+  const [tab, setTab] = useState<Tab>(records.length >= 2 ? 'chart' : 'list')
 
   // Summary stats
   const allWeights = records.map(r => r.weight).filter(Boolean) as number[]

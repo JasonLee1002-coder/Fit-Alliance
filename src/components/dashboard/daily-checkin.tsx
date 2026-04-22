@@ -385,11 +385,18 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
                 }
               }}
               disabled={ocrLoading}
-              className="yuzu-cta-glow-violet group relative flex flex-col items-center justify-center gap-2 py-5 rounded-2xl bg-gradient-to-br from-violet-500 to-purple-600 text-white shadow-lg shadow-violet-200 active:scale-[0.94] active:shadow-md transition-all duration-150 disabled:opacity-50 overflow-hidden"
+              className="yuzu-cta-glow-violet group relative flex flex-col items-center justify-center gap-1 pt-3 pb-4 rounded-2xl bg-gradient-to-br from-violet-500 to-purple-600 text-white shadow-lg shadow-violet-200 active:scale-[0.94] active:shadow-md transition-all duration-150 disabled:opacity-50 overflow-hidden"
             >
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full animate-[shimmer_2.5s_infinite]" />
               <div className="absolute inset-0 bg-white/0 group-active:bg-white/10 transition-colors duration-100" />
-              <span className="text-4xl drop-shadow leading-none">🖼️</span>
+              <motion.img
+                src="/pikmin-gallery.png"
+                alt=""
+                className="w-20 h-20 object-contain drop-shadow-lg relative pointer-events-none"
+                style={{ mixBlendMode: 'multiply' }}
+                animate={{ y: [0, -6, 0], rotate: [-2, 2, -2] }}
+                transition={{ duration: 2.2, repeat: Infinity, ease: 'easeInOut' }}
+              />
               <div className="text-center relative">
                 <div className="text-base font-black tracking-wide">選截圖</div>
                 <div className="text-xs text-violet-200 mt-0.5">從相簿選體重截圖</div>
@@ -405,11 +412,18 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
                 }
               }}
               disabled={ocrLoading}
-              className="yuzu-cta-glow-emerald group relative flex flex-col items-center justify-center gap-2 py-5 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-200 active:scale-[0.94] active:shadow-md transition-all duration-150 disabled:opacity-50 overflow-hidden"
+              className="yuzu-cta-glow-emerald group relative flex flex-col items-center justify-center gap-1 pt-3 pb-4 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-200 active:scale-[0.94] active:shadow-md transition-all duration-150 disabled:opacity-50 overflow-hidden"
             >
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full animate-[shimmer_2.5s_infinite_0.6s]" />
               <div className="absolute inset-0 bg-white/0 group-active:bg-white/10 transition-colors duration-100" />
-              <span className="text-4xl drop-shadow leading-none">📷</span>
+              <motion.img
+                src="/pikmin-camera.png"
+                alt=""
+                className="w-20 h-20 object-contain drop-shadow-lg relative pointer-events-none"
+                style={{ mixBlendMode: 'multiply' }}
+                animate={{ y: [0, -5, 0], rotate: [3, -3, 3] }}
+                transition={{ duration: 1.9, repeat: Infinity, ease: 'easeInOut' }}
+              />
               <div className="text-center relative">
                 <div className="text-base font-black tracking-wide">拍照</div>
                 <div className="text-xs text-emerald-200 mt-0.5">直接拍體重計畫面</div>
@@ -653,7 +667,17 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
 
         return (
           <div className="bg-gradient-to-b from-slate-800 to-slate-900 rounded-3xl shadow-lg p-5 overflow-hidden">
-            <h3 className="text-lg font-bold text-emerald-400 mb-3">📊 核心數據比較</h3>
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-lg font-bold text-emerald-400">📊 核心數據比較</h3>
+              <motion.img
+                src="/pikmin-chart.png"
+                alt=""
+                className="w-16 h-16 object-contain pointer-events-none"
+                style={{ mixBlendMode: 'multiply' }}
+                animate={{ y: [0, -5, 0], rotate: [-3, 3, -3] }}
+                transition={{ duration: 2.8, repeat: Infinity, ease: 'easeInOut' }}
+              />
+            </div>
 
             {/* Time Range Selector */}
             <div className="flex gap-1.5 mb-4 overflow-x-auto pb-1">

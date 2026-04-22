@@ -103,13 +103,13 @@ export default function ChallengeHub({ refreshKey }: { refreshKey?: number }) {
       <div className="relative rounded-3xl overflow-hidden shadow-xl h-44 bg-gradient-to-br from-amber-500 via-orange-500 to-rose-500">
         <div className="absolute -top-10 -right-10 w-48 h-48 rounded-full bg-yellow-300/40 blur-3xl" />
         <div className="absolute -bottom-10 -left-10 w-56 h-56 rounded-full bg-rose-400/40 blur-3xl" />
-        {/* 皮克敏競技場圖 — 右側浮出 */}
+        {/* 3D 教練＋皮克敏 — 右側大圖浮出 */}
         <motion.img
           src="/nav3d-challenge-sm.png"
           alt=""
-          className="absolute right-0 bottom-0 w-36 h-36 object-contain object-bottom drop-shadow-2xl pointer-events-none"
+          className="absolute right-0 bottom-0 w-48 h-48 object-contain object-bottom drop-shadow-2xl pointer-events-none"
           style={{ mixBlendMode: 'multiply' }}
-          animate={{ y: [0, -6, 0] }}
+          animate={{ y: [0, -8, 0], rotate: [-1, 1, -1] }}
           transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
         />
         <div className="relative h-full flex items-end p-5">

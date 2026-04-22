@@ -23,12 +23,13 @@ const RANK_BAR = [
 ]
 const RANK_PCT = ['text-amber-600', 'text-slate-500', 'text-orange-500', 'text-emerald-600', 'text-blue-600']
 
-export default function ArenaWidget() {
+export default function ArenaWidget({ refreshKey }: { refreshKey?: number }) {
   const [ranking, setRanking] = useState<Participant[]>([])
   const [title, setTitle] = useState('')
   const [loaded, setLoaded] = useState(false)
 
   useEffect(() => {
+    setLoaded(false)
     fetch('/api/arena/ranking')
       .then(r => r.ok ? r.json() : null)
       .then(data => {
@@ -39,7 +40,7 @@ export default function ArenaWidget() {
         setLoaded(true)
       })
       .catch(() => setLoaded(true))
-  }, [])
+  }, [refreshKey])
 
   if (loaded && ranking.length === 0) return null
   if (!loaded) return (

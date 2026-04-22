@@ -5,9 +5,8 @@ import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { formatDateWithWeekday, calculateBMI, getStandardWeight, getBodyFatRange } from '@/lib/utils'
 import type { User, HealthRecord, DailyLog } from '@/types'
-import TrendChart from './trend-chart'
 import ArenaWidget from './arena-widget'
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
+import UnifiedHealthChart from '@/components/shared/unified-health-chart'
 import { ScaleMascot, CoachMascot, TrophyMascot, CameraMascot } from '@/components/shared/mascots'
 
 interface Props {
@@ -37,6 +36,7 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
     return ''
   })
   const [justCheckedIn, setJustCheckedIn] = useState(false)
+  const [arenaRefreshKey, setArenaRefreshKey] = useState(0)
   const [screenshotPreview, setScreenshotPreview] = useState<string | null>(null)
   const [screenshotFile, setScreenshotFile] = useState<File | null>(null)
   const [ocrDone, setOcrDone] = useState(false)
@@ -85,16 +85,28 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
     }
   }, [encouragement])
 
+  // Helper: find closest record to N days ago (excluding today)
+  const getWeightDaysAgo = (days: number): number | undefined => {
+    const target = new Date()
+    target.setDate(target.getDate() - days)
+    const today = new Date().toISOString().split('T')[0]
+    let closest: HealthRecord | undefined
+    let closestDiff = Infinity
+    for (const r of records) {
+      if (r.date === today) continue
+      const diff = Math.abs(new Date(r.date).getTime() - target.getTime())
+      if (diff < closestDiff) { closestDiff = diff; closest = r }
+    }
+    // Only return if within reasonable range (days ± 3)
+    return closestDiff < (days + 3) * 86400000 ? closest?.weight ?? undefined : undefined
+  }
+
   // Auto-fetch daily greeting if no coach message exists
   useEffect(() => {
     if (encouragement) return
     const fetchGreeting = async () => {
       try {
         const now = new Date()
-        const recentWeights = records.slice(0, 5).map(r => r.weight).filter(Boolean) as number[]
-        const trend = recentWeights.length >= 3
-          ? recentWeights[0] < recentWeights[recentWeights.length - 1] ? '下降中' : '上升中'
-          : undefined
         const res = await fetch('/api/ai/greeting', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -102,10 +114,11 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
             userName: user.name,
             gender: user.gender,
             latestWeight: records[0]?.weight,
-            previousWeight: records[1]?.weight,
+            prevWeight: records[1]?.weight,
+            weekAgoWeight: getWeightDaysAgo(7),
+            monthAgoWeight: getWeightDaysAgo(30),
             targetWeight: user.target_weight,
             streak,
-            recentTrend: trend,
             bodyFat: records[0]?.body_fat,
             dayOfWeek: ['日', '一', '二', '三', '四', '五', '六'][now.getDay()],
             hour: now.getHours(),
@@ -244,10 +257,11 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
           body: JSON.stringify({
             userName: user.name,
             currentWeight: parseFloat(form.weight),
-            previousWeight: lastRecord?.weight,
-            bodyFatChange: form.body_fat && lastRecord?.body_fat
-              ? parseFloat(form.body_fat) - (lastRecord.body_fat as number)
-              : null,
+            prevWeight: lastRecord?.weight,
+            weekAgoWeight: getWeightDaysAgo(7),
+            monthAgoWeight: getWeightDaysAgo(30),
+            currentBodyFat: form.body_fat ? parseFloat(form.body_fat) : null,
+            prevBodyFat: lastRecord?.body_fat ?? null,
             streak: streak + (todayRecord ? 0 : 1),
             targetWeight: user.target_weight,
           }),
@@ -261,6 +275,7 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
       }
 
       setJustCheckedIn(true)
+      setArenaRefreshKey(k => k + 1)
       router.refresh()
     } finally {
       setLoading(false)
@@ -658,98 +673,11 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
             </div>
 
             {/* Integrated Trend Chart */}
-            {(() => {
-              const rangeOffsets: Record<string, number> = { prev: 7, week: 7, month: 30, quarter: 90, year: 365, '3year': 1095 }
-              const cutoffDate = new Date()
-              cutoffDate.setDate(cutoffDate.getDate() - (rangeOffsets[compareRange] || 7))
-              const chartRecords = records
-                .filter(r => new Date(r.date) >= cutoffDate)
-                .slice()
-                .sort((a, b) => a.date.localeCompare(b.date))
-              const chartData = chartRecords.map(r => ({
-                date: r.date.slice(5),
-                weight: r.weight,
-                bodyFat: r.body_fat,
-              }))
-              const hasBodyFat = chartData.some(d => d.bodyFat != null)
-              const weights = chartData.map(d => d.weight).filter((v): v is number => v != null)
-              const fats = chartData.map(d => d.bodyFat).filter((v): v is number => v != null)
-
-              if (chartData.length < 2) return null
-
-              const wMin = Math.min(...weights)
-              const wMax = Math.max(...weights)
-              const wPad = (wMax - wMin) * 0.15 || 2
-
-              return (
-                <div className="mt-5 pt-4 border-t border-slate-700/50">
-                  <div className="text-xs text-slate-400 mb-2">
-                    {chartRecords[0]?.date} ~ {chartRecords[chartRecords.length - 1]?.date}
-                  </div>
-                  <div className="h-48">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <LineChart data={chartData} margin={{ top: 5, right: hasBodyFat ? 8 : 5, bottom: 5, left: 0 }}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
-                        <XAxis dataKey="date" tick={{ fontSize: 10, fill: '#94a3b8' }} axisLine={{ stroke: '#334155' }} />
-                        <YAxis
-                          yAxisId="weight"
-                          width={32}
-                          domain={[Math.floor(wMin - wPad), Math.ceil(wMax + wPad)]}
-                          tick={{ fontSize: 10, fill: '#34d399' }}
-                          axisLine={{ stroke: '#334155' }}
-                        />
-                        {hasBodyFat && fats.length >= 2 && (
-                          <YAxis
-                            yAxisId="fat"
-                            orientation="right"
-                            width={32}
-                            domain={[Math.floor(Math.min(...fats) - 1), Math.ceil(Math.max(...fats) + 1)]}
-                            tick={{ fontSize: 10, fill: '#fbbf24' }}
-                            axisLine={{ stroke: '#334155' }}
-                          />
-                        )}
-                        <Tooltip
-                          contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '12px', fontSize: '12px', color: '#e2e8f0' }}
-                          formatter={(value, name) => {
-                            if (name === 'weight') return [`${value} kg`, '體重']
-                            return [`${value}%`, '體脂率']
-                          }}
-                        />
-                        <Line
-                          yAxisId="weight"
-                          type="monotone"
-                          dataKey="weight"
-                          stroke="#10b981"
-                          strokeWidth={2.5}
-                          dot={{ fill: '#10b981', strokeWidth: 0, r: 3 }}
-                          connectNulls
-                          name="weight"
-                        />
-                        {hasBodyFat && fats.length >= 2 && (
-                          <Line
-                            yAxisId="fat"
-                            type="monotone"
-                            dataKey="bodyFat"
-                            stroke="#f59e0b"
-                            strokeWidth={2}
-                            dot={{ fill: '#f59e0b', strokeWidth: 0, r: 3 }}
-                            strokeDasharray="5 3"
-                            connectNulls
-                            name="bodyFat"
-                          />
-                        )}
-                      </LineChart>
-                    </ResponsiveContainer>
-                  </div>
-                  <div className="flex items-center justify-center gap-4 mt-2 text-[11px]">
-                    <span className="flex items-center gap-1"><span className="w-3 h-0.5 bg-emerald-500 inline-block rounded" /> <span className="text-emerald-400">體重</span></span>
-                    {hasBodyFat && fats.length >= 2 && (
-                      <span className="flex items-center gap-1"><span className="w-3 h-0.5 bg-amber-500 inline-block rounded border-dashed" /> <span className="text-amber-400">體脂率</span></span>
-                    )}
-                  </div>
-                </div>
-              )
-            })()}
+            {records.length >= 2 && (
+              <div className="mt-5 pt-4 border-t border-slate-700/50">
+                <UnifiedHealthChart records={records} defaultRange="week" showRangeSelector={false} className="!bg-transparent !p-0" />
+              </div>
+            )}
           </div>
         )
       })()}
@@ -791,16 +719,13 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
 
       {/* Trend Chart (when not checked in yet, show standalone) */}
       {!hasCheckedIn && records.length >= 2 && (
-        <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6">
-          <h3 className="text-lg font-bold text-gray-900 mb-4">📈 近期趨勢</h3>
-          <TrendChart records={records.slice(0, 7).reverse()} />
-        </div>
+        <UnifiedHealthChart records={records} defaultRange="week" showRangeSelector />
       )}
 
 
 
       {/* 體重競技場 迷你排名 */}
-      <ArenaWidget />
+      <ArenaWidget refreshKey={arenaRefreshKey} />
     </div>
   )
 }

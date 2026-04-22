@@ -24,6 +24,7 @@ const RANK_STYLES = [
     ring: 'ring-2 ring-amber-300',
     pct: 'text-amber-600',
     animate: 'animate-pulse',
+    pikmin: '/pikmin-rank1.png',  // 黃色皮克敏 + 金冠
   },
   {
     medal: '🥈',
@@ -33,6 +34,7 @@ const RANK_STYLES = [
     ring: 'ring-1 ring-slate-200',
     pct: 'text-slate-500',
     animate: '',
+    pikmin: '/pikmin-rank2.png',  // 紅色皮克敏 + 銀牌
   },
   {
     medal: '🥉',
@@ -42,6 +44,7 @@ const RANK_STYLES = [
     ring: 'ring-1 ring-orange-200',
     pct: 'text-orange-500',
     animate: '',
+    pikmin: '/pikmin-rank3.png',  // 藍色皮克敏 + 銅牌
   },
 ]
 const DEFAULT_STYLE = {
@@ -184,12 +187,24 @@ export default function ChallengeHub() {
                       </div>
                     )}
 
-                    {/* 進度條 */}
-                    <div className={`h-2.5 bg-gray-100 rounded-full overflow-hidden ${i === 0 ? style.glow : ''}`}>
-                      <div
-                        className={`h-full bg-gradient-to-r ${style.bar} rounded-full transition-all duration-700`}
-                        style={{ width: `${Math.max(p.progress, 2)}%` }}
-                      />
+                    {/* 進度條 + 排名皮克敏站在條棒右端 */}
+                    <div className="relative pb-1">
+                      <div className={`h-2.5 bg-gray-100 rounded-full overflow-hidden ${i === 0 ? style.glow : ''}`}>
+                        <div
+                          className={`h-full bg-gradient-to-r ${style.bar} rounded-full transition-all duration-700`}
+                          style={{ width: `${Math.max(p.progress, 2)}%` }}
+                        />
+                      </div>
+                      {style.pikmin && p.progress > 0 && (
+                        <motion.img
+                          src={style.pikmin}
+                          alt=""
+                          className="absolute -top-4 pointer-events-none w-7 h-7 object-contain"
+                          style={{ left: `calc(${Math.max(p.progress, 2)}% - 14px)`, mixBlendMode: 'multiply' }}
+                          animate={{ y: [0, -3, 0] }}
+                          transition={{ duration: 1.5 + i * 0.3, repeat: Infinity, ease: 'easeInOut' }}
+                        />
+                      )}
                     </div>
                     {i === 0 && p.progress > 0 && (
                       <p className="text-[10px] text-amber-600 mt-1 font-medium">👑 目前領先！點擊查看紀錄</p>
@@ -199,17 +214,6 @@ export default function ChallengeHub() {
                     )}
                   </div>
 
-                  {/* 第一名：皮克敏站在右側，不擋進度條 */}
-                  {i === 0 && (
-                    <motion.img
-                      src="/pikmin-arena.png"
-                      alt="皮克敏"
-                      className="shrink-0 w-10 h-10 object-contain pointer-events-none"
-                      style={{ mixBlendMode: 'multiply' }}
-                      animate={{ y: [0, -4, 0] }}
-                      transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
-                    />
-                  )}
                 </Link>
               )
             })}

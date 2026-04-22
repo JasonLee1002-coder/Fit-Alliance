@@ -63,6 +63,9 @@ export default async function MemberRecordsPage({ params }: Props) {
           <p className="text-xs text-amber-600">
             {isMe ? '點擊回競技場查看排名 ⚔️' : '競技夥伴 · 共同挑戰中 ⚔️'}
           </p>
+          <p className="text-[10px] text-gray-300 mt-0.5 font-mono">
+            {records?.length ?? 0} 筆 · uid: {userId.slice(0, 8)}
+          </p>
         </div>
       </div>
 

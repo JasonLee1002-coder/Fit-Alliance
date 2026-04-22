@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { motion } from 'framer-motion'
 import type { HealthRecord } from '@/types'
 import AnimatedWeightPct from '@/components/shared/animated-weight-pct'
 import UnifiedHealthChart from '@/components/shared/unified-health-chart'
@@ -78,10 +79,16 @@ export default function RecordsView({ records, readOnly = false }: { records: He
       ) : (
         <div className="bg-white rounded-3xl shadow-sm border border-gray-100 divide-y divide-gray-50">
           {records.length === 0 ? (
-            <div className="p-10 text-center">
-              <div className="text-5xl mb-3">⚖️</div>
+            <div className="p-8 text-center">
+              <motion.img
+                src="/pikmin-scale.png"
+                alt="皮克敏量體重"
+                className="w-28 h-28 object-contain mx-auto mb-3"
+                animate={{ y: [0, -6, 0] }}
+                transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
+              />
               <h3 className="text-base font-bold text-gray-800">還沒有體重紀錄</h3>
-              <p className="text-sm text-gray-400 mt-1 mb-4">每天記錄是進步最快的秘訣</p>
+              <p className="text-sm text-gray-400 mt-1 mb-4">皮克敏在等你！每天記錄是進步最快的秘訣</p>
               <a href="/" className="inline-block px-5 py-2.5 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-bold rounded-2xl shadow text-sm">
                 ⚡ 去記錄今天體重
               </a>

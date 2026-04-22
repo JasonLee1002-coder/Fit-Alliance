@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect, useCallback } from 'react'
+import { motion } from 'framer-motion'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { formatDateWithWeekday, calculateBMI, getStandardWeight, getBodyFatRange } from '@/lib/utils'
@@ -298,14 +299,18 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
           <h1 className="text-2xl font-black text-white drop-shadow-lg leading-tight">嗨，{user.name} 👋</h1>
           <p className="text-white/80 text-sm mt-1.5">今天也要加油！💪</p>
         </div>
-        {/* 親子圖 — 完整顯示，右側浮出 */}
-        <div className="absolute right-0 bottom-0 w-44 h-44 pointer-events-none">
+        {/* 親子圖 + 皮克敏 — 上下輕飄動畫 */}
+        <motion.div
+          className="absolute right-0 bottom-0 w-44 h-44 pointer-events-none"
+          animate={{ y: [0, -8, 0] }}
+          transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+        >
           <img
             src="/hero-family.png"
             alt=""
             className="w-full h-full object-contain object-bottom drop-shadow-2xl"
           />
-        </div>
+        </motion.div>
       </div>
 
       {/* Status Bar */}
@@ -514,11 +519,36 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
         </button>
       </div>
 
+      {/* 皮克敏歡呼 — 打卡成功瞬間 */}
+      {justCheckedIn && (
+        <motion.div
+          className="flex flex-col items-center py-2"
+          initial={{ opacity: 0, scale: 0.5, y: 30 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+        >
+          <motion.img
+            src="/pikmin-cheer.png"
+            alt="皮克敏慶祝"
+            className="w-28 h-28 object-contain drop-shadow-lg"
+            animate={{ y: [0, -10, 0], rotate: [-3, 3, -3] }}
+            transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
+          />
+          <p className="text-sm font-bold text-emerald-600 mt-1">皮克敏們為你歡呼！🎉</p>
+        </motion.div>
+      )}
+
       {/* AI Coach - always visible */}
       {encouragement && (
         <div className="bg-gradient-to-r from-emerald-50 to-orange-50 rounded-3xl border border-emerald-100 p-5 yuzu-pop-in">
           <div className="flex items-start gap-3">
-            <img src="/char-coaches.png" alt="AI教練" className="w-11 h-11 rounded-full shadow flex-shrink-0" />
+            <motion.img
+              src="/char-coaches.png"
+              alt="AI教練"
+              className="w-11 h-11 rounded-full shadow flex-shrink-0"
+              animate={{ rotate: [-3, 3, -3] }}
+              transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
+            />
             <div>
               <p className="text-sm font-bold text-emerald-700 mb-1">AI 教練說：</p>
               <p className="text-gray-700 leading-relaxed">{encouragement}</p>

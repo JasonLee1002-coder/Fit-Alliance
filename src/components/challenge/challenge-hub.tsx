@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { motion } from 'framer-motion'
 import Link from 'next/link'
 import AnimatedWeightPct from '@/components/shared/animated-weight-pct'
 
@@ -109,9 +110,15 @@ export default function ChallengeHub() {
         {loading ? (
           <div className="flex items-center justify-center h-40 text-gray-400">載入中...</div>
         ) : participants.length === 0 ? (
-          <div className="text-center py-12 px-6">
-            <span className="text-5xl">🏟️</span>
-            <h2 className="text-lg font-bold text-gray-800 mt-3">還沒有競技夥伴</h2>
+          <div className="text-center py-10 px-6">
+            <motion.img
+              src="/pikmin-empty.png"
+              alt="皮克敏探頭"
+              className="w-24 h-24 object-contain mx-auto mb-3"
+              animate={{ y: [0, -8, 0] }}
+              transition={{ duration: 2.8, repeat: Infinity, ease: 'easeInOut' }}
+            />
+            <h2 className="text-lg font-bold text-gray-800">還沒有競技夥伴</h2>
             <p className="text-gray-400 text-sm mt-2">邀請朋友加入，一起在競技場上比拼！</p>
             <Link href="/invite" className="mt-4 inline-block px-6 py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-bold rounded-2xl shadow text-sm">
               📤 邀請朋友
@@ -132,6 +139,16 @@ export default function ChallengeHub() {
                   {/* Gold shimmer for 1st */}
                   {i === 0 && (
                     <div className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-200/30 to-transparent -translate-x-full animate-[shimmer_2s_infinite]" />
+                  )}
+                  {/* 皮克敏冠軍旗 — 第一名右上角 */}
+                  {i === 0 && (
+                    <motion.img
+                      src="/pikmin-arena.png"
+                      alt="皮克敏冠軍"
+                      className="absolute top-0 right-3 w-12 h-12 object-contain pointer-events-none"
+                      animate={{ rotate: [-8, 8, -8], y: [0, -3, 0] }}
+                      transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+                    />
                   )}
 
                   <div className="text-xl w-8 text-center shrink-0">

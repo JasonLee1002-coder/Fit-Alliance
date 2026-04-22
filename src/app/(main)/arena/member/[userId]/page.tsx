@@ -70,6 +70,9 @@ export default async function MemberRecordsPage({ params }: Props) {
         <div className="bg-white rounded-3xl border border-gray-100 p-10 text-center">
           <div className="text-4xl mb-3">⚖️</div>
           <p className="text-gray-500 text-sm">{displayName} 還沒有健康紀錄</p>
+          {recordsError && (
+            <p className="text-xs text-red-400 mt-2">fetch 錯誤: {recordsError.message}</p>
+          )}
         </div>
       ) : (
         <RecordsView records={(records ?? []) as HealthRecord[]} readOnly />

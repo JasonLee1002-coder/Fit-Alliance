@@ -54,17 +54,18 @@ export default function RecordsView({ records, readOnly = false }: { records: He
         </div>
       )}
 
-      {/* Tabs */}
+      {/* Tabs — 不足 2 筆時隱藏圖表 tab */}
       <div className="flex gap-2">
-        {([
-          { key: 'chart' as Tab, label: '📈 圖表' },
-          { key: 'list' as Tab, label: '📋 列表' },
-        ]).map(t => (
-          <button key={t.key} onClick={() => setTab(t.key)}
-            className={`px-4 py-2 rounded-xl text-sm font-medium transition ${tab === t.key ? 'bg-emerald-500 text-white shadow-sm' : 'bg-gray-100 text-gray-600'}`}>
-            {t.label}
+        {records.length >= 2 && (
+          <button onClick={() => setTab('chart')}
+            className={`px-4 py-2 rounded-xl text-sm font-medium transition ${tab === 'chart' ? 'bg-emerald-500 text-white shadow-sm' : 'bg-gray-100 text-gray-600'}`}>
+            📈 圖表
           </button>
-        ))}
+        )}
+        <button onClick={() => setTab('list')}
+          className={`px-4 py-2 rounded-xl text-sm font-medium transition ${tab === 'list' ? 'bg-emerald-500 text-white shadow-sm' : 'bg-gray-100 text-gray-600'}`}>
+          📋 列表 {records.length > 0 && <span className="ml-1 text-xs opacity-70">({records.length})</span>}
+        </button>
       </div>
 
       {tab === 'chart' ? (

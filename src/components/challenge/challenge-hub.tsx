@@ -95,8 +95,15 @@ export default function ChallengeHub() {
       <div className="relative rounded-3xl overflow-hidden shadow-xl h-44 bg-gradient-to-br from-amber-500 via-orange-500 to-rose-500">
         <div className="absolute -top-10 -right-10 w-48 h-48 rounded-full bg-yellow-300/40 blur-3xl" />
         <div className="absolute -bottom-10 -left-10 w-56 h-56 rounded-full bg-rose-400/40 blur-3xl" />
-        <div className="absolute top-4 right-4 text-5xl opacity-30">🏆</div>
-        <div className="absolute top-4 left-4 text-4xl opacity-20">⚔️</div>
+        {/* 皮克敏競技場圖 — 右側浮出 */}
+        <motion.img
+          src="/nav3d-challenge-sm.png"
+          alt=""
+          className="absolute right-0 bottom-0 w-36 h-36 object-contain object-bottom drop-shadow-2xl pointer-events-none"
+          style={{ mixBlendMode: 'multiply' }}
+          animate={{ y: [0, -6, 0] }}
+          transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
+        />
         <div className="relative h-full flex items-end p-5">
           <div>
             <h1 className="text-2xl font-black text-white drop-shadow-lg">🏛️ 體重競技場</h1>

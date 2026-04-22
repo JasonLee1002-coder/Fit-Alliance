@@ -7,10 +7,10 @@ import { cn } from '@/lib/utils'
 import type { User } from '@/types'
 
 const navItems = [
-  { href: '/', label: '每日打卡首頁', img: '/nav-disney-home.png', description: '體重紀錄＆趨勢' },
-  { href: '/challenge', label: '體重競技場', img: '/nav-disney-challenge.png', description: '⚔️ 競技排行' },
-  { href: '/invite', label: '個人邀請朋友', img: '/nav-disney-invite.png', description: '分享連結' },
-  { href: '/report', label: '問題回報', img: '/nav-disney-report.png', description: '回報問題' },
+  { href: '/', label: '每日打卡首頁', img: '/nav-pikmin-home.png', description: '體重紀錄＆趨勢' },
+  { href: '/challenge', label: '體重競技場', img: '/nav-pikmin-challenge.png', description: '⚔️ 競技排行' },
+  { href: '/invite', label: '個人邀請朋友', img: '/nav-pikmin-invite.png', description: '分享連結' },
+  { href: '/report', label: '問題回報', img: '/nav-pikmin-report.png', description: '回報問題' },
 ]
 
 export default function Sidebar({ user }: { user: User | null }) {
@@ -19,10 +19,10 @@ export default function Sidebar({ user }: { user: User | null }) {
 
   return (
     <>
-      {/* Mobile hamburger */}
+      {/* Mobile hamburger — 右上角，不擋 logo */}
       <button
         onClick={() => setMobileOpen(true)}
-        className="lg:hidden fixed top-4 left-4 z-50 bg-white rounded-xl shadow-lg p-2.5 border border-gray-100"
+        className="lg:hidden fixed top-4 right-4 z-50 bg-white rounded-xl shadow-lg p-2.5 border border-gray-100"
         aria-label="開啟選單"
       >
         <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">

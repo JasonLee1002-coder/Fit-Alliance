@@ -8,7 +8,42 @@ import { formatDateWithWeekday, calculateBMI, getStandardWeight, getBodyFatRange
 import type { User, HealthRecord, DailyLog } from '@/types'
 import ArenaWidget from './arena-widget'
 import UnifiedHealthChart from '@/components/shared/unified-health-chart'
+import AnimatedWeightPct from '@/components/shared/animated-weight-pct'
 import { ScaleMascot, CoachMascot, TrophyMascot, CameraMascot } from '@/components/shared/mascots'
+
+// ── 紀錄清單（收合式）──
+function RecordsList({ records }: { records: HealthRecord[] }) {
+  const [open, setOpen] = useState(false)
+  if (records.length === 0) return null
+  return (
+    <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+      <button
+        onClick={() => setOpen(o => !o)}
+        className="w-full flex items-center justify-between px-5 py-4 text-left"
+      >
+        <span className="text-sm font-bold text-gray-800">📋 所有紀錄（{records.length} 筆）</span>
+        <span className="text-gray-400 text-xs">{open ? '收起 ▲' : '展開 ▼'}</span>
+      </button>
+      {open && (
+        <div className="divide-y divide-gray-50 border-t border-gray-100">
+          {records.map(r => (
+            <div key={r.id} className="px-5 py-3 flex items-center justify-between">
+              <div>
+                <div className="text-sm font-medium text-gray-900">{r.date}</div>
+                <div className="text-xs text-gray-400 mt-0.5">
+                  {r.body_fat ? `體脂 ${r.body_fat}%` : ''}
+                  {r.muscle_mass ? ` · 肌肉 ${r.muscle_mass}kg` : ''}
+                  {r.visceral_fat ? ` · 內臟脂肪 ${r.visceral_fat}` : ''}
+                </div>
+              </div>
+              <div className="text-xl font-bold text-gray-900">{r.weight} kg</div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
 
 interface Props {
   user: User
@@ -747,12 +782,50 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
         </div>
       )}
 
-      {/* Trend Chart (when not checked in yet, show standalone) */}
-      {!hasCheckedIn && records.length >= 2 && (
-        <UnifiedHealthChart records={records} defaultRange="week" showRangeSelector />
-      )}
+      {/* ── 健康紀錄區（原健康紀錄頁，合併至此）── */}
+      {records.length >= 2 && (() => {
+        const allWeights = records.map(r => r.weight).filter(Boolean) as number[]
+        const firstWeight = allWeights[allWeights.length - 1] ?? null
+        const latestWeight = allWeights[0] ?? null
+        const totalLost = firstWeight && latestWeight ? +(firstWeight - latestWeight).toFixed(1) : null
+        const weightChangePct = firstWeight && latestWeight && firstWeight > 0
+          ? +((firstWeight - latestWeight) / firstWeight * 100).toFixed(1)
+          : null
+        const minWeight = allWeights.length ? Math.min(...allWeights) : null
 
+        return (
+          <>
+            {/* 大指標卡 */}
+            <div className="bg-gradient-to-br from-emerald-50 via-white to-teal-50 rounded-3xl border border-emerald-100 shadow-sm p-6">
+              <AnimatedWeightPct pct={weightChangePct ?? 0} kg={totalLost ?? undefined} size="hero" />
+            </div>
 
+            {/* 摘要統計 */}
+            <div className="grid grid-cols-3 gap-3">
+              <div className="bg-white rounded-2xl border border-gray-100 p-3 text-center shadow-sm">
+                <div className="text-xl font-black text-emerald-600">{records.length}</div>
+                <div className="text-xs text-gray-400 mt-0.5">記錄天數</div>
+              </div>
+              <div className="bg-white rounded-2xl border border-gray-100 p-3 text-center shadow-sm">
+                <div className={`text-xl font-black ${totalLost && totalLost > 0 ? 'text-emerald-600' : 'text-gray-400'}`}>
+                  {totalLost !== null ? (totalLost > 0 ? `↓${totalLost}` : totalLost < 0 ? `↑${Math.abs(totalLost)}` : '0') : '—'} <span className="text-sm font-medium">kg</span>
+                </div>
+                <div className="text-xs text-gray-400 mt-0.5">總變化</div>
+              </div>
+              <div className="bg-white rounded-2xl border border-gray-100 p-3 text-center shadow-sm">
+                <div className="text-xl font-black text-blue-600">{minWeight ?? '—'} <span className="text-sm font-medium">kg</span></div>
+                <div className="text-xs text-gray-400 mt-0.5">歷史最低</div>
+              </div>
+            </div>
+
+            {/* 統一暗黑圖表 */}
+            <UnifiedHealthChart records={records} defaultRange={hasCheckedIn ? 'month' : 'week'} showRangeSelector />
+
+            {/* 紀錄清單（收合） */}
+            <RecordsList records={records} />
+          </>
+        )
+      })()}
 
       {/* 體重競技場 迷你排名 */}
       <ArenaWidget refreshKey={arenaRefreshKey} />

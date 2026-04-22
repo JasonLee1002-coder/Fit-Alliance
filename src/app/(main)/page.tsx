@@ -14,7 +14,7 @@ export default async function HomePage() {
 
   const [{ data: profile }, { data: records }] = await Promise.all([
     supabase.from('fa_users').select('*').eq('id', authUser.id).single(),
-    supabase.from('fa_health_records').select('*').eq('user_id', authUser.id).order('date', { ascending: false }).limit(30),
+    supabase.from('fa_health_records').select('*').eq('user_id', authUser.id).order('date', { ascending: false }).limit(100),
   ])
 
   const todayRecord = records?.find(r => r.date === today)

@@ -22,10 +22,14 @@ export default async function MemberRecordsPage({ params }: Props) {
 
   const isMe = user.id === userId
 
-  const [{ data: profile }, { data: records }] = await Promise.all([
+  const [{ data: profile }, { data: records, error: recordsError }] = await Promise.all([
     serviceSupabase.from('fa_users').select('id, name, avatar_url, target_weight').eq('id', userId).maybeSingle(),
     serviceSupabase.from('fa_health_records').select('*').eq('user_id', userId).order('date', { ascending: false }).limit(100),
   ])
+
+  if (recordsError) {
+    console.error('[arena/member] records fetch error:', recordsError)
+  }
 
   let displayName = profile?.name ?? null
   if (!displayName && !isMe) {

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import PwaTopBanner from "@/components/shared/pwa-top-banner";
 import SplashScreen from "@/components/shared/splash-screen";
+import ServiceWorkerInit from "@/components/shared/service-worker-init";
 
 export const metadata: Metadata = {
   title: "瘦身減肥競技場 | Fit Alliance",
@@ -31,6 +32,7 @@ export default function RootLayout({
       className="h-full antialiased"
     >
       <body className="min-h-full flex flex-col bg-gray-50/50">
+        <ServiceWorkerInit />
         <SplashScreen />
         <PwaTopBanner />
         {children}

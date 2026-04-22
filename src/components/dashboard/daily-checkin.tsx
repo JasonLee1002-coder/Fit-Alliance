@@ -672,8 +672,7 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
               <motion.img
                 src="/pikmin-chart.png"
                 alt=""
-                className="w-16 h-16 object-contain pointer-events-none"
-                style={{ mixBlendMode: 'multiply' }}
+                className="w-16 h-16 object-contain pointer-events-none drop-shadow-lg"
                 animate={{ y: [0, -5, 0], rotate: [-3, 3, -3] }}
                 transition={{ duration: 2.8, repeat: Infinity, ease: 'easeInOut' }}
               />

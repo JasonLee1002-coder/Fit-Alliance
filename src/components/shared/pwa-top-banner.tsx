@@ -84,7 +84,7 @@ export default function PwaTopBanner() {
           >
             <div className="flex items-center gap-2 min-w-0">
               <Smartphone className="w-4 h-4 shrink-0" />
-              <span className="text-sm font-medium truncate">加到主畫面，像 App 一樣使用！</span>
+              <span className="text-sm font-medium truncate">安裝到主畫面，像 App 一樣使用！</span>
             </div>
             <div className="flex items-center gap-2 shrink-0">
               <button
@@ -153,7 +153,7 @@ export default function PwaTopBanner() {
                         <MiniStep n={1} color="#10B981" icon={<MoreVertical className="w-4 h-4" />}
                           title='點右上角「⋮」選單' desc="Chrome 右上角三個點" />
                         <MiniStep n={2} color="#10B981" icon={<Smartphone className="w-4 h-4" />}
-                          title='選「加到主畫面」或「安裝應用程式」' desc="點選後桌面就會出現圖示 🎉" />
+                          title='選「安裝應用程式」或「加到主畫面」' desc="新版 Chrome 叫「安裝」，舊版叫「加到主畫面」，是同一個功能 🎉" />
                       </>
                     )}
                   </div>

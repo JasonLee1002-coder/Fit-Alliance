@@ -5,13 +5,20 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import type { HealthRecord } from '@/types'
 
 type TimeRange = 'week' | 'month' | 'quarter' | 'year' | 'all'
+type Metric = 'weight' | 'bodyFat' | 'muscle'
 
 const TIME_RANGES: { key: TimeRange; label: string; days: number }[] = [
-  { key: 'week', label: '週', days: 7 },
-  { key: 'month', label: '月', days: 30 },
-  { key: 'quarter', label: '季', days: 90 },
-  { key: 'year', label: '年', days: 365 },
-  { key: 'all', label: '全部', days: 99999 },
+  { key: 'week',    label: '週',  days: 7 },
+  { key: 'month',   label: '月',  days: 30 },
+  { key: 'quarter', label: '季',  days: 90 },
+  { key: 'year',    label: '年',  days: 365 },
+  { key: 'all',     label: '全部', days: 99999 },
+]
+
+const METRICS: { key: Metric; label: string; unit: string; color: string; textColor: string }[] = [
+  { key: 'weight',  label: '體重',  unit: 'kg', color: '#10b981', textColor: 'text-emerald-400' },
+  { key: 'bodyFat', label: '體脂率', unit: '%',  color: '#f59e0b', textColor: 'text-amber-400' },
+  { key: 'muscle',  label: '肌肉量', unit: 'kg', color: '#06b6d4', textColor: 'text-cyan-400' },
 ]
 
 interface Props {
@@ -21,26 +28,14 @@ interface Props {
   className?: string
 }
 
-interface TooltipPayload {
-  dataKey: string
-  color: string
-  value: number
-  name: string
-  unit: string
-}
-
-const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?: TooltipPayload[]; label?: string }) => {
+const CustomTooltip = ({ active, payload, label, unit }: {
+  active?: boolean; payload?: { value: number }[]; label?: string; unit?: string
+}) => {
   if (!active || !payload?.length) return null
   return (
-    <div className="bg-slate-700/95 border border-slate-500/60 rounded-xl px-3 py-2 text-xs shadow-2xl backdrop-blur-sm pointer-events-none">
-      <div className="text-slate-300 font-medium mb-1.5 border-b border-slate-600 pb-1">{label}</div>
-      {payload.map((p) => (
-        <div key={p.dataKey} className="flex items-center gap-1.5 mt-1">
-          <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: p.color }} />
-          <span className="text-slate-400">{p.name}</span>
-          <span className="font-bold text-white ml-auto pl-3">{p.value}{p.unit}</span>
-        </div>
-      ))}
+    <div className="bg-slate-700/95 border border-slate-500/60 rounded-xl px-3 py-2 text-xs shadow-2xl pointer-events-none">
+      <div className="text-slate-300 font-medium mb-1">{label}</div>
+      <div className="font-bold text-white text-sm">{payload[0].value}{unit}</div>
     </div>
   )
 }
@@ -52,6 +47,7 @@ export default function UnifiedHealthChart({
   className,
 }: Props) {
   const [timeRange, setTimeRange] = useState<TimeRange>(defaultRange)
+  const [metric, setMetric] = useState<Metric>('weight')
 
   const cutoffDays = TIME_RANGES.find(t => t.key === timeRange)?.days ?? 30
   const cutoff = new Date()
@@ -63,39 +59,56 @@ export default function UnifiedHealthChart({
 
   const chartData = filtered.map(r => ({
     date: r.date.slice(5),
-    weight: r.weight ?? null,
-    bodyFat: r.body_fat ?? null,
-    muscle: r.muscle_mass ?? null,
+    weight:  r.weight     ?? null,
+    bodyFat: r.body_fat   ?? null,
+    muscle:  r.muscle_mass ?? null,
   }))
 
-  const hasBodyFat = chartData.some(d => d.bodyFat != null)
-  const hasMuscle = chartData.some(d => d.muscle != null)
+  const currentMetric = METRICS.find(m => m.key === metric)!
+  const hasData = chartData.some(d => d[metric] != null)
 
-  const weights = chartData.map(d => d.weight).filter((v): v is number => v != null)
-  const muscles = chartData.map(d => d.muscle).filter((v): v is number => v != null)
-  const fats = chartData.map(d => d.bodyFat).filter((v): v is number => v != null)
+  // Auto Y-axis domain with padding
+  const vals = chartData.map(d => d[metric]).filter((v): v is number => v != null)
+  const min = vals.length ? Math.min(...vals) : 0
+  const max = vals.length ? Math.max(...vals) : 100
+  const pad = (max - min) * 0.2 || 2
+  const domain: [number, number] = [
+    parseFloat((min - pad).toFixed(1)),
+    parseFloat((max + pad).toFixed(1)),
+  ]
 
-  // Left axis: weight + muscle (both in kg, unified scale)
-  const leftVals = [...weights, ...muscles]
-  const leftMin = leftVals.length ? Math.min(...leftVals) : 0
-  const leftMax = leftVals.length ? Math.max(...leftVals) : 100
-  const leftPad = (leftMax - leftMin) * 0.18 || 3
-
-  // Right axis: body fat (%)
-  const fatMin = fats.length ? Math.min(...fats) : 0
-  const fatMax = fats.length ? Math.max(...fats) : 50
-  const fatPad = (fatMax - fatMin) * 0.18 || 3
-
-  if (chartData.length < 2) {
-    return (
-      <div className={`bg-gradient-to-b from-slate-800 to-slate-900 rounded-3xl p-5 ${className ?? ''}`}>
-        <div className="h-40 flex items-center justify-center text-slate-400 text-sm">需要至少 2 筆紀錄</div>
-      </div>
+  // Check which metrics actually have data
+  const availableMetrics = METRICS.filter(m =>
+    records.some(r =>
+      m.key === 'weight'  ? r.weight      != null :
+      m.key === 'bodyFat' ? r.body_fat    != null :
+                            r.muscle_mass != null
     )
-  }
+  )
 
   return (
     <div className={`bg-gradient-to-b from-slate-800 to-slate-900 rounded-3xl p-5 ${className ?? ''}`}>
+
+      {/* Metric selector */}
+      {availableMetrics.length > 1 && (
+        <div className="flex gap-2 mb-4 flex-wrap">
+          {availableMetrics.map(m => (
+            <button
+              key={m.key}
+              onClick={() => setMetric(m.key)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition ${
+                metric === m.key
+                  ? 'text-white shadow-sm'
+                  : 'bg-slate-700/60 text-slate-400 hover:text-slate-200'
+              }`}
+              style={metric === m.key ? { backgroundColor: m.color } : {}}
+            >
+              {m.label}
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* Time range selector */}
       {showRangeSelector && (
         <div className="flex gap-1.5 mb-4 overflow-x-auto pb-1 scrollbar-none">
@@ -116,118 +129,67 @@ export default function UnifiedHealthChart({
       )}
 
       {/* Chart */}
-      <div className="h-52">
-        <ResponsiveContainer width="100%" height="100%">
-          <LineChart
-            data={chartData}
-            margin={{ top: 8, right: hasBodyFat ? 34 : 8, bottom: 5, left: -8 }}
-          >
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
-            <XAxis
-              dataKey="date"
-              tick={{ fontSize: 10, fill: '#94a3b8' }}
-              axisLine={{ stroke: '#334155' }}
-              tickLine={false}
-            />
-            {/* Left Y-axis: weight & muscle (kg) */}
-            <YAxis
-              yAxisId="left"
-              domain={[Math.floor(leftMin - leftPad), Math.ceil(leftMax + leftPad)]}
-              tick={{ fontSize: 10, fill: '#34d399' }}
-              axisLine={{ stroke: '#334155' }}
-              tickLine={false}
-              width={30}
-            />
-            {/* Right Y-axis: body fat (%) */}
-            {hasBodyFat && (
-              <YAxis
-                yAxisId="right"
-                orientation="right"
-                domain={[Math.floor(fatMin - fatPad), Math.ceil(fatMax + fatPad)]}
-                tick={{ fontSize: 10, fill: '#fbbf24' }}
+      {!hasData || chartData.length < 2 ? (
+        <div className="h-44 flex items-center justify-center text-slate-400 text-sm">
+          {chartData.length < 2 ? '需要至少 2 筆紀錄' : `尚無${currentMetric.label}數據`}
+        </div>
+      ) : (
+        <div className="h-52">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={chartData} margin={{ top: 8, right: 8, bottom: 5, left: -8 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
+              <XAxis
+                dataKey="date"
+                tick={{ fontSize: 10, fill: '#94a3b8' }}
                 axisLine={{ stroke: '#334155' }}
                 tickLine={false}
-                width={30}
               />
-            )}
-            {/* Tooltip: pinned above chart so it never blocks curves */}
-            <Tooltip
-              content={<CustomTooltip />}
-              allowEscapeViewBox={{ x: false, y: true }}
-              position={{ y: -90 }}
-              cursor={{ stroke: '#475569', strokeWidth: 1, strokeDasharray: '4 2' }}
-            />
-            {/* Weight — solid emerald */}
-            <Line
-              yAxisId="left"
-              type="monotone"
-              dataKey="weight"
-              stroke="#10b981"
-              strokeWidth={2.5}
-              dot={{ fill: '#10b981', strokeWidth: 0, r: 3 }}
-              activeDot={{ r: 5, fill: '#10b981', strokeWidth: 0 }}
-              connectNulls
-              name="體重"
-              unit=" kg"
-            />
-            {/* Muscle — dashed cyan, left axis */}
-            {hasMuscle && (
+              <YAxis
+                domain={domain}
+                tick={{ fontSize: 10, fill: currentMetric.color }}
+                axisLine={{ stroke: '#334155' }}
+                tickLine={false}
+                width={34}
+                tickFormatter={v => `${v}`}
+              />
+              <Tooltip
+                content={<CustomTooltip unit={` ${currentMetric.unit}`} />}
+                allowEscapeViewBox={{ x: false, y: true }}
+                position={{ y: -70 }}
+                cursor={{ stroke: '#475569', strokeWidth: 1, strokeDasharray: '4 2' }}
+              />
               <Line
-                yAxisId="left"
                 type="monotone"
-                dataKey="muscle"
-                stroke="#06b6d4"
-                strokeWidth={2}
-                strokeDasharray="6 3"
-                dot={{ fill: '#06b6d4', strokeWidth: 0, r: 2 }}
-                activeDot={{ r: 4, fill: '#06b6d4', strokeWidth: 0 }}
+                dataKey={metric}
+                stroke={currentMetric.color}
+                strokeWidth={2.5}
+                dot={{ fill: currentMetric.color, strokeWidth: 0, r: 3 }}
+                activeDot={{ r: 5, fill: currentMetric.color, strokeWidth: 0 }}
                 connectNulls
-                name="肌肉量"
-                unit=" kg"
               />
-            )}
-            {/* Body fat — dashed amber, right axis */}
-            {hasBodyFat && (
-              <Line
-                yAxisId="right"
-                type="monotone"
-                dataKey="bodyFat"
-                stroke="#f59e0b"
-                strokeWidth={2}
-                strokeDasharray="5 3"
-                dot={{ fill: '#f59e0b', strokeWidth: 0, r: 2 }}
-                activeDot={{ r: 4, fill: '#f59e0b', strokeWidth: 0 }}
-                connectNulls
-                name="體脂率"
-                unit="%"
-              />
-            )}
-          </LineChart>
-        </ResponsiveContainer>
-      </div>
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      )}
 
-      {/* Legend */}
-      <div className="flex items-center justify-center flex-wrap gap-x-5 gap-y-1.5 mt-3">
-        <span className="flex items-center gap-1.5 text-[11px]">
-          <svg width="18" height="4"><line x1="0" y1="2" x2="18" y2="2" stroke="#10b981" strokeWidth="2.5" /></svg>
-          <span className="text-emerald-400">體重</span>
-        </span>
-        {hasMuscle && (
-          <span className="flex items-center gap-1.5 text-[11px]">
-            <svg width="18" height="4"><line x1="0" y1="2" x2="18" y2="2" stroke="#06b6d4" strokeWidth="2" strokeDasharray="5 2" /></svg>
-            <span className="text-cyan-400">肌肉量</span>
+      {/* Current value display */}
+      {hasData && (
+        <div className="mt-3 flex items-center justify-between">
+          <span className={`text-xs font-bold ${currentMetric.textColor}`}>
+            {currentMetric.label}
           </span>
-        )}
-        {hasBodyFat && (
-          <span className="flex items-center gap-1.5 text-[11px]">
-            <svg width="18" height="4"><line x1="0" y1="2" x2="18" y2="2" stroke="#f59e0b" strokeWidth="2" strokeDasharray="5 2" /></svg>
-            <span className="text-amber-400">體脂率</span>
+          <span className="text-white font-black text-base">
+            {vals.at(-1)}{currentMetric.unit}
+            {vals.length >= 2 && (
+              <span className={`ml-2 text-xs font-bold ${
+                (vals.at(-1)! - vals[0]) < 0 ? 'text-emerald-400' : 'text-rose-400'
+              }`}>
+                {(vals.at(-1)! - vals[0]) > 0 ? '+' : ''}{(vals.at(-1)! - vals[0]).toFixed(1)}{currentMetric.unit}
+              </span>
+            )}
           </span>
-        )}
-        {hasBodyFat && (
-          <span className="text-[10px] text-slate-500">｜ 左軸: kg　右軸: %</span>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   )
 }

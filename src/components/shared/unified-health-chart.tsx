@@ -53,9 +53,12 @@ export default function UnifiedHealthChart({
   const cutoff = new Date()
   cutoff.setDate(cutoff.getDate() - cutoffDays)
 
-  const filtered = [...records]
+  const filteredInRange = [...records]
     .filter(r => timeRange === 'all' || new Date(r.date) >= cutoff)
     .sort((a, b) => a.date.localeCompare(b.date))
+
+  // 當選取範圍內不足 2 筆時，自動退回全部資料（避免誤顯示「需要至少 2 筆」）
+  const filtered = filteredInRange.length >= 2 ? filteredInRange : [...records].sort((a, b) => a.date.localeCompare(b.date))
 
   const chartData = filtered.map(r => ({
     date: r.date.slice(5),

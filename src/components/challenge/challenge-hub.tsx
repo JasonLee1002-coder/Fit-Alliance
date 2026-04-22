@@ -60,11 +60,16 @@ const DEFAULT_STYLE = {
 const CACHE_KEY = 'fa_arena_ranking_v2'  // v2: 含 weightLostPct 欄位
 const CACHE_TTL_MS = 5 * 60 * 1000 // 5 分鐘才強制重算
 
-export default function ChallengeHub() {
+export default function ChallengeHub({ refreshKey }: { refreshKey?: number }) {
   const [participants, setParticipants] = useState<Participant[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    // refreshKey 變化時（打卡後）強制清快取重 fetch
+    if (refreshKey) {
+      try { sessionStorage.removeItem(CACHE_KEY) } catch { /* ignore */ }
+    }
+
     // 先讀快取，有就立即顯示（不用等）
     try {
       const raw = sessionStorage.getItem(CACHE_KEY)
@@ -78,7 +83,7 @@ export default function ChallengeHub() {
       }
     } catch { /* ignore */ }
 
-    // 無快取或快取過期 → fetch（已有快取時 loading 已是 false，不會 spinner）
+    // 無快取或快取過期 → fetch
     fetch('/api/arena/ranking')
       .then(r => r.json())
       .then(data => {
@@ -90,7 +95,7 @@ export default function ChallengeHub() {
         } catch { /* ignore */ }
       })
       .catch(() => setLoading(false))
-  }, [])
+  }, [refreshKey])
 
   return (
     <div className="space-y-5">

@@ -7,8 +7,7 @@ import { cn } from '@/lib/utils'
 import type { User } from '@/types'
 
 const navItems = [
-  { href: '/', label: '每日打卡首頁', img: '/nav-pikmin-home.png', description: '體重紀錄＆趨勢' },
-  { href: '/challenge', label: '體重競技場', img: '/nav-pikmin-challenge.png', description: '⚔️ 競技排行' },
+  { href: '/', label: '每日打卡首頁', img: '/nav-pikmin-home.png', description: '體重紀錄＆競技場' },
   { href: '/invite', label: '個人邀請朋友', img: '/nav-pikmin-invite.png', description: '分享連結' },
   { href: '/report', label: '問題回報', img: '/nav-pikmin-report.png', description: '回報問題' },
 ]

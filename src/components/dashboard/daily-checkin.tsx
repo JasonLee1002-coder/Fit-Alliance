@@ -6,7 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { formatDateWithWeekday, calculateBMI, getStandardWeight, getBodyFatRange } from '@/lib/utils'
 import type { User, HealthRecord, DailyLog } from '@/types'
-import ArenaWidget from './arena-widget'
+import ChallengeHub from '@/components/challenge/challenge-hub'
 import UnifiedHealthChart from '@/components/shared/unified-health-chart'
 import AnimatedWeightPct from '@/components/shared/animated-weight-pct'
 import { ScaleMascot, CoachMascot, TrophyMascot, CameraMascot } from '@/components/shared/mascots'
@@ -737,12 +737,6 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
               })}
             </div>
 
-            {/* Integrated Trend Chart */}
-            {records.length >= 2 && (
-              <div className="mt-5 pt-4 border-t border-slate-700/50">
-                <UnifiedHealthChart records={records} defaultRange="week" showRangeSelector={false} className="!bg-transparent !p-0" />
-              </div>
-            )}
           </div>
         )
       })()}
@@ -827,8 +821,8 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
         )
       })()}
 
-      {/* 體重競技場 迷你排名 */}
-      <ArenaWidget refreshKey={arenaRefreshKey} />
+      {/* 體重競技場 — 完整畫面直接嵌入 */}
+      <ChallengeHub refreshKey={arenaRefreshKey} />
     </div>
   )
 }

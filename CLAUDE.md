@@ -41,3 +41,22 @@
 
 ## 待處理回報
 每次開始工作時，請先檢查 `REPORTS.md`（如果存在），裡面是 Jason 透過 LINE Yuzu-san 回報的問題，請優先處理。
+
+---
+
+## LINE 通知指令
+本專案已安裝 Yuzu-san LINE 通知系統：
+- `/notify {訊息}` — 即時通知 Jason
+- `/report` — 工作進度報告
+- `/ask-boss {問題}` — 需要 Jason 決策時提問
+
+---
+
+## 可用技能（Skills）
+
+| 技能 | 用途 | 觸發時機 |
+|------|------|---------|
+| `pwa-install` | PWA 安裝引導 | 實作 PWA 安裝流程時 |
+| `frontend-design` | 有設計感的 UI | 設計新頁面時 |
+| `survey` | 問卷模組 | 會員回饋功能時 |
+| `customer-success` | 客戶成功流程 | 設計會員留存機制時 |

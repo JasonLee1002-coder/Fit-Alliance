@@ -93,17 +93,25 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
   const weightInputRef = useRef<HTMLInputElement>(null)
   const submitBtnRef = useRef<HTMLButtonElement>(null)
 
+  const [localRecordOverride, setLocalRecordOverride] = useState<HealthRecord | null>(null)
+
+  // Merge local override into records for immediate display after check-in
+  const effectiveRecords = (() => {
+    if (!localRecordOverride) return records
+    const filtered = records.filter(r => r.date !== localRecordOverride.date)
+    return [localRecordOverride, ...filtered]
+  })()
+
   // Get comparison record based on selected range
   const getCompareRecord = () => {
     const today = new Date(form.date)
-    if (compareRange === 'prev') return records.find(r => r.date !== form.date) ?? records[1]
+    if (compareRange === 'prev') return effectiveRecords.find(r => r.date !== form.date) ?? effectiveRecords[1]
     const offsets: Record<string, number> = { week: 7, month: 30, quarter: 90, year: 365, '3year': 1095 }
     const targetDate = new Date(today)
     targetDate.setDate(targetDate.getDate() - (offsets[compareRange] || 1))
-    // Find closest record to target date
     let closest: HealthRecord | undefined
     let closestDiff = Infinity
-    for (const r of records) {
+    for (const r of effectiveRecords) {
       const diff = Math.abs(new Date(r.date).getTime() - targetDate.getTime())
       if (diff < closestDiff) { closestDiff = diff; closest = r }
     }
@@ -284,6 +292,22 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
         .update({ current_value: parseFloat(form.weight) })
         .eq('user_id', authUser.id)
 
+      // Immediately update local records for instant comparison display
+      setLocalRecordOverride({
+        id: todayRecord?.id ?? 'temp',
+        user_id: authUser.id,
+        date: form.date,
+        weight: parseFloat(form.weight),
+        body_fat: form.body_fat ? parseFloat(form.body_fat) : null,
+        muscle_mass: form.muscle_mass ? parseFloat(form.muscle_mass) : null,
+        visceral_fat: form.visceral_fat ? parseFloat(form.visceral_fat) : null,
+        bone_mass: form.bone_mass ? parseFloat(form.bone_mass) : null,
+        bmr: form.bmr ? parseFloat(form.bmr) : null,
+        bmi: form.bmi ? parseFloat(form.bmi) : null,
+        screenshot_url: screenshotUrl,
+        ai_ocr_result: null,
+        created_at: new Date().toISOString(),
+      } as HealthRecord)
 
       // Get AI encouragement
       try {
@@ -836,10 +860,10 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
             </div>
 
             {/* 統一暗黑圖表 */}
-            <UnifiedHealthChart records={records} defaultRange={hasCheckedIn ? 'month' : 'week'} showRangeSelector />
+            <UnifiedHealthChart records={effectiveRecords} defaultRange={hasCheckedIn ? 'month' : 'week'} showRangeSelector />
 
             {/* 紀錄清單（收合） */}
-            <RecordsList records={records} />
+            <RecordsList records={effectiveRecords} />
           </>
         )
       })()}

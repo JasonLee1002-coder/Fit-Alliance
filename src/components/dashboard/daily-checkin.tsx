@@ -10,6 +10,7 @@ import ChallengeHub from '@/components/challenge/challenge-hub'
 import UnifiedHealthChart from '@/components/shared/unified-health-chart'
 import AnimatedWeightPct from '@/components/shared/animated-weight-pct'
 import { ScaleMascot, CoachMascot, TrophyMascot, CameraMascot } from '@/components/shared/mascots'
+import { playRandomPikminCall } from '@/lib/pikmin-sounds'
 
 // ── 紀錄清單（收合式）──
 function RecordsList({ records }: { records: HealthRecord[] }) {
@@ -94,6 +95,19 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
   const submitBtnRef = useRef<HTMLButtonElement>(null)
 
   const [localRecordOverride, setLocalRecordOverride] = useState<HealthRecord | null>(null)
+
+  // 隨機皮克敏叫聲：每 15–30 秒偶爾叫一次
+  useEffect(() => {
+    let timer: ReturnType<typeof setTimeout>
+    function scheduleNext() {
+      timer = setTimeout(() => {
+        playRandomPikminCall()
+        scheduleNext()
+      }, 15000 + Math.random() * 15000)
+    }
+    scheduleNext()
+    return () => clearTimeout(timer)
+  }, [])
 
   // Merge local override into records for immediate display after check-in
   const effectiveRecords = (() => {

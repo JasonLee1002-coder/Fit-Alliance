@@ -34,8 +34,9 @@ export default function PwaInstallPrompt() {
 
   useEffect(() => {
     if (isStandalone()) return
+    // 永久記住已安裝或已關閉，不再重複顯示
     const dismissed = localStorage.getItem('pwa-install-dismissed')
-    if (dismissed && Date.now() - parseInt(dismissed, 10) < 7 * 24 * 60 * 60 * 1000) return
+    if (dismissed) return
 
     const plat = detectPlatform()
     if (!plat) return
@@ -58,14 +59,17 @@ export default function PwaInstallPrompt() {
 
   function handleDismiss() {
     setShow(false)
-    localStorage.setItem('pwa-install-dismissed', Date.now().toString())
+    localStorage.setItem('pwa-install-dismissed', '1')
   }
 
   async function handleAndroidInstall() {
     if (deferredPrompt) {
       deferredPrompt.prompt()
       const result = await deferredPrompt.userChoice
-      if (result.outcome === 'accepted') setShow(false)
+      if (result.outcome === 'accepted') {
+        setShow(false)
+        localStorage.setItem('pwa-install-dismissed', '1')
+      }
       setDeferredPrompt(null)
     } else {
       setStep(1)

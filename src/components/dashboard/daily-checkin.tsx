@@ -352,11 +352,13 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
     <div className="space-y-6">
       {/* Hero Banner */}
       <div className="relative rounded-3xl overflow-hidden shadow-xl bg-gradient-to-br from-sky-400 via-emerald-400 to-teal-500 min-h-[140px] flex items-end">
+        {/* 文字區左側遮罩，防止與右側插圖重疊 */}
+        <div className="absolute inset-0 bg-gradient-to-r from-black/30 via-black/10 to-transparent z-[1] pointer-events-none" />
         {/* 問候文字 */}
-        <div className="flex-1 p-5 pb-6 z-10">
-          <p className="text-emerald-100 text-xs font-medium mb-1 tracking-wide">{formatDateWithWeekday(new Date())}</p>
-          <h1 className="text-2xl font-black text-white drop-shadow-lg leading-tight">嗨，{user.name} 👋</h1>
-          <p className="text-white/80 text-sm mt-1.5">今天也要加油！💪</p>
+        <div className="flex-1 p-5 pb-6 z-10 relative">
+          <p className="text-emerald-100 text-xs font-medium mb-1 tracking-wide drop-shadow">{formatDateWithWeekday(new Date())}</p>
+          <h1 className="text-2xl font-black text-white leading-tight" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.4)' }}>嗨，{user.name} 👋</h1>
+          <p className="text-white text-sm mt-1.5 drop-shadow">今天也要加油！💪</p>
         </div>
         {/* 親子圖 + 皮克敏 — 上下輕飄動畫 */}
         <motion.div

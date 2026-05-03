@@ -1,9 +1,10 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import AnimatedWeightPct from '@/components/shared/animated-weight-pct'
+import { playRandomPikminCall } from '@/lib/pikmin-sounds'
 
 interface Participant {
   userId: string
@@ -63,6 +64,20 @@ const CACHE_TTL_MS = 5 * 60 * 1000 // 5 分鐘才強制重算
 export default function ChallengeHub({ refreshKey }: { refreshKey?: number }) {
   const [participants, setParticipants] = useState<Participant[]>([])
   const [loading, setLoading] = useState(true)
+  const soundTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  // 隨機皮克敏叫聲：每 8–18 秒偶爾發出一次
+  useEffect(() => {
+    function scheduleNext() {
+      const delay = 8000 + Math.random() * 10000
+      soundTimerRef.current = setTimeout(() => {
+        playRandomPikminCall()
+        scheduleNext()
+      }, delay)
+    }
+    scheduleNext()
+    return () => { if (soundTimerRef.current) clearTimeout(soundTimerRef.current) }
+  }, [])
 
   useEffect(() => {
     // refreshKey 變化時（打卡後）強制清快取重 fetch

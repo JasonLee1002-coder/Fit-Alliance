@@ -419,7 +419,7 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
                 src="/pikmin-gallery.png"
                 alt=""
                 className="w-20 h-20 object-contain drop-shadow-lg relative pointer-events-none"
-                style={{ mixBlendMode: 'multiply' }}
+                style={{  }}
                 animate={{ y: [0, -6, 0], rotate: [-2, 2, -2] }}
                 transition={{ duration: 2.2, repeat: Infinity, ease: 'easeInOut' }}
               />
@@ -446,7 +446,7 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
                 src="/pikmin-camera.png"
                 alt=""
                 className="w-20 h-20 object-contain drop-shadow-lg relative pointer-events-none"
-                style={{ mixBlendMode: 'multiply' }}
+                style={{  }}
                 animate={{ y: [0, -5, 0], rotate: [3, -3, 3] }}
                 transition={{ duration: 1.9, repeat: Infinity, ease: 'easeInOut' }}
               />

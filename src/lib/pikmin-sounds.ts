@@ -94,3 +94,17 @@ export function playRandomPikminCall() {
   const fn = CALLS[Math.floor(Math.random() * CALLS.length)]
   fn()
 }
+
+/** 慶祝連音：三連叫 + 歡呼上揚 */
+export function playPikminCelebration() {
+  const ctx = getCtx()
+  if (!ctx) return
+  const t = ctx.currentTime
+  // 三連快叫
+  playNote(ctx, 700, 1000, 0.1, t,       0.16)
+  playNote(ctx, 800, 1100, 0.1, t + 0.12, 0.16)
+  playNote(ctx, 900, 1300, 0.1, t + 0.24, 0.18)
+  // 最後長揚音
+  playNote(ctx, 600, 1400, 0.4, t + 0.4,  0.15)
+  playNote(ctx, 600, 1400, 0.4, t + 0.41, 0.08, 'triangle')
+}

@@ -1,9 +1,11 @@
 'use client'
 
 import { useState, useRef } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import type { MealRecord, FoodItem } from '@/types'
+import { playPikminCelebration } from '@/lib/pikmin-sounds'
 
 const cameraInputId = 'meal-camera-input'
 const galleryInputId = 'meal-gallery-input'
@@ -34,6 +36,7 @@ export default function MealTracker({ userId, todayMeals, recentMeals }: Props) 
   const [saving, setSaving] = useState(false)
   const [showResult, setShowResult] = useState(false)
   const [showHistory, setShowHistory] = useState(false)
+  const [celebrate, setCelebrate] = useState(false)
 
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -140,6 +143,11 @@ export default function MealTracker({ userId, todayMeals, recentMeals }: Props) 
         ai_feedback: aiFeedback,
       })
 
+      // 慶祝！
+      setCelebrate(true)
+      playPikminCelebration()
+      setTimeout(() => setCelebrate(false), 2800)
+
       // Reset
       setRecognizedItems([])
       setEditingItems([])
@@ -155,7 +163,64 @@ export default function MealTracker({ userId, todayMeals, recentMeals }: Props) 
   const totalCalories = (items: FoodItem[]) =>
     items.reduce((sum, i) => sum + (i.calories ?? 0), 0)
 
+  // 煙火粒子資料
+  const FIREWORKS = Array.from({ length: 18 }, (_, i) => ({
+    id: i,
+    emoji: ['🎉','✨','🎊','⭐','💥','🌟','🎈'][i % 7],
+    x: 10 + Math.random() * 80,
+    delay: Math.random() * 0.4,
+    dur: 0.9 + Math.random() * 0.6,
+  }))
+
   return (
+    <>
+    {/* 慶祝 Overlay */}
+    <AnimatePresence>
+      {celebrate && (
+        <motion.div
+          className="fixed inset-0 z-[9990] pointer-events-none flex items-center justify-center"
+          initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+        >
+          {/* 煙火粒子 */}
+          {FIREWORKS.map(p => (
+            <motion.span
+              key={p.id}
+              className="absolute text-2xl"
+              style={{ left: `${p.x}%`, bottom: '20%' }}
+              initial={{ y: 0, opacity: 1, scale: 0.5 }}
+              animate={{ y: -320 - Math.random() * 160, opacity: 0, scale: 1.6 }}
+              transition={{ duration: p.dur, delay: p.delay, ease: 'easeOut' }}
+            >
+              {p.emoji}
+            </motion.span>
+          ))}
+          {/* 皮克敏歡呼 */}
+          <motion.div
+            className="flex flex-col items-center"
+            initial={{ scale: 0, y: 60 }}
+            animate={{ scale: 1, y: 0 }}
+            exit={{ scale: 0, y: 60 }}
+            transition={{ type: 'spring', stiffness: 280, damping: 18 }}
+          >
+            <motion.img
+              src="/pikmin-cheer.png"
+              alt="皮克敏歡呼"
+              className="w-36 h-36 object-contain drop-shadow-2xl"
+              animate={{ y: [0, -12, 0], rotate: [-4, 4, -4] }}
+              transition={{ duration: 1.6, repeat: Infinity, ease: 'easeInOut' }}
+            />
+            <motion.p
+              className="mt-2 text-white font-black text-lg drop-shadow-lg"
+              style={{ textShadow: '0 2px 8px rgba(0,0,0,0.5)' }}
+              initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
+            >
+              記錄成功！🎉
+            </motion.p>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+
     <div className="space-y-6">
       {/* Header with back button */}
       <div className="flex items-center gap-3">
@@ -467,5 +532,6 @@ export default function MealTracker({ userId, todayMeals, recentMeals }: Props) 
       )}
       </>)}
     </div>
+    </>
   )
 }

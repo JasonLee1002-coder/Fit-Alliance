@@ -4,7 +4,6 @@ import { redirect } from 'next/navigation'
 import RecordsView from '@/components/dashboard/records-view'
 import type { HealthRecord } from '@/types'
 import BackToArenaButton from '@/components/arena/back-to-arena-button'
-import PikminArenaSounds from '@/components/arena/pikmin-arena-sounds'
 
 export const dynamic = 'force-dynamic'
 
@@ -45,7 +44,6 @@ export default async function MemberRecordsPage({ params }: Props) {
 
   return (
     <div className="space-y-4">
-      <PikminArenaSounds />
       {/* 立體回競技場按鈕 */}
       <BackToArenaButton />
 

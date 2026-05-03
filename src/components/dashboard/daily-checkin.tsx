@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { createClient } from '@/lib/supabase/client'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { formatDateWithWeekday, calculateBMI, getStandardWeight, getBodyFatRange } from '@/lib/utils'
 import type { User, HealthRecord, DailyLog } from '@/types'
 import ChallengeHub from '@/components/challenge/challenge-hub'
@@ -97,19 +97,6 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
   const submitBtnRef = useRef<HTMLButtonElement>(null)
 
   const [localRecordOverride, setLocalRecordOverride] = useState<HealthRecord | null>(null)
-
-  // 登入慶祝：偵測 ?new_login=1
-  useEffect(() => {
-    if (searchParams.get('new_login') === '1') {
-      setTimeout(() => {
-        setCelebrate(true)
-        playPikminCelebration()
-        setTimeout(() => setCelebrate(false), 2800)
-      }, 600)
-      // 清除 query param，避免 refresh 重複觸發
-      router.replace('/', { scroll: false })
-    }
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Merge local override into records for immediate display after check-in
   const effectiveRecords = (() => {

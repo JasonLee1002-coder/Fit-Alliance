@@ -5,7 +5,6 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import type { MealRecord, FoodItem } from '@/types'
-import { playPikminCelebration } from '@/lib/pikmin-sounds'
 
 const cameraInputId = 'meal-camera-input'
 const galleryInputId = 'meal-gallery-input'
@@ -143,9 +142,8 @@ export default function MealTracker({ userId, todayMeals, recentMeals }: Props) 
         ai_feedback: aiFeedback,
       })
 
-      // 慶祝！
+      // 慶祝動畫（無聲）
       setCelebrate(true)
-      playPikminCelebration()
       setTimeout(() => setCelebrate(false), 2800)
 
       // Reset

@@ -36,8 +36,7 @@ export async function GET(request: Request) {
         }
       }
 
-      const dest = next === '/' ? `${origin}/?new_login=1` : `${origin}${next}`
-      return NextResponse.redirect(dest)
+      return NextResponse.redirect(`${origin}${next}`)
     }
   }
 

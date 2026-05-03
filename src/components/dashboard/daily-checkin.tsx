@@ -1,16 +1,16 @@
 'use client'
 
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { createClient } from '@/lib/supabase/client'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { formatDateWithWeekday, calculateBMI, getStandardWeight, getBodyFatRange } from '@/lib/utils'
 import type { User, HealthRecord, DailyLog } from '@/types'
 import ChallengeHub from '@/components/challenge/challenge-hub'
 import UnifiedHealthChart from '@/components/shared/unified-health-chart'
 import AnimatedWeightPct from '@/components/shared/animated-weight-pct'
 import { ScaleMascot, CoachMascot, TrophyMascot, CameraMascot } from '@/components/shared/mascots'
-import { playRandomPikminCall } from '@/lib/pikmin-sounds'
+import { playPikminCelebration } from '@/lib/pikmin-sounds'
 
 // ── 紀錄清單（收合式）──
 function RecordsList({ records }: { records: HealthRecord[] }) {
@@ -56,9 +56,11 @@ interface Props {
 
 export default function DailyCheckIn({ user, records, todayRecord, dailyLog, streak }: Props) {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const cameraInputRef = useRef<HTMLInputElement>(null)
   const galleryInputRef = useRef<HTMLInputElement>(null)
   const [loading, setLoading] = useState(false)
+  const [celebrate, setCelebrate] = useState(false)
   const [showMore, setShowMore] = useState(!!(todayRecord?.body_fat || todayRecord?.muscle_mass || todayRecord?.visceral_fat))
   const [encouragement, setEncouragement] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -96,18 +98,18 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
 
   const [localRecordOverride, setLocalRecordOverride] = useState<HealthRecord | null>(null)
 
-  // 隨機皮克敏叫聲：每 15–30 秒偶爾叫一次
+  // 登入慶祝：偵測 ?new_login=1
   useEffect(() => {
-    let timer: ReturnType<typeof setTimeout>
-    function scheduleNext() {
-      timer = setTimeout(() => {
-        playRandomPikminCall()
-        scheduleNext()
-      }, 15000 + Math.random() * 15000)
+    if (searchParams.get('new_login') === '1') {
+      setTimeout(() => {
+        setCelebrate(true)
+        playPikminCelebration()
+        setTimeout(() => setCelebrate(false), 2800)
+      }, 600)
+      // 清除 query param，避免 refresh 重複觸發
+      router.replace('/', { scroll: false })
     }
-    scheduleNext()
-    return () => clearTimeout(timer)
-  }, [])
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Merge local override into records for immediate display after check-in
   const effectiveRecords = (() => {
@@ -350,6 +352,10 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
 
       setJustCheckedIn(true)
       setArenaRefreshKey(k => k + 1)
+      // 打卡慶祝
+      setCelebrate(true)
+      playPikminCelebration()
+      setTimeout(() => setCelebrate(false), 2800)
       router.refresh()
     } finally {
       setLoading(false)
@@ -362,7 +368,46 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
 
   const hasCheckedIn = !!todayRecord || justCheckedIn
 
+  const FIREWORKS = Array.from({ length: 20 }, (_, i) => ({
+    id: i,
+    emoji: ['🎉','✨','🎊','⭐','💥','🌟','🎈','🥳'][i % 8],
+    x: 5 + Math.random() * 90,
+    delay: Math.random() * 0.5,
+    dur: 0.8 + Math.random() * 0.7,
+  }))
+
   return (
+    <>
+    <AnimatePresence>
+      {celebrate && (
+        <motion.div
+          className="fixed inset-0 z-[9990] pointer-events-none flex items-center justify-center"
+          initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+        >
+          {FIREWORKS.map(p => (
+            <motion.span key={p.id} className="absolute text-2xl"
+              style={{ left: `${p.x}%`, bottom: '25%' }}
+              initial={{ y: 0, opacity: 1, scale: 0.5 }}
+              animate={{ y: -300 - Math.random() * 150, opacity: 0, scale: 1.8 }}
+              transition={{ duration: p.dur, delay: p.delay, ease: 'easeOut' }}>
+              {p.emoji}
+            </motion.span>
+          ))}
+          <motion.div className="flex flex-col items-center"
+            initial={{ scale: 0, y: 60 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0, y: 60 }}
+            transition={{ type: 'spring', stiffness: 280, damping: 18 }}>
+            <motion.img src="/pikmin-cheer.png" alt="" className="w-36 h-36 object-contain drop-shadow-2xl"
+              animate={{ y: [0, -12, 0], rotate: [-4, 4, -4] }}
+              transition={{ duration: 1.6, repeat: Infinity, ease: 'easeInOut' }} />
+            <motion.p className="mt-2 text-white font-black text-lg"
+              style={{ textShadow: '0 2px 8px rgba(0,0,0,0.6)' }}
+              initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+              打卡成功！💪
+            </motion.p>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
     <div className="space-y-6">
       {/* Hero Banner */}
       <div className="relative rounded-3xl overflow-hidden shadow-xl bg-gradient-to-br from-sky-400 via-emerald-400 to-teal-500 min-h-[140px] flex items-end">
@@ -887,6 +932,7 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
       {/* 體重競技場 — 完整畫面直接嵌入 */}
       <ChallengeHub refreshKey={arenaRefreshKey} />
     </div>
+    </>
   )
 }
 

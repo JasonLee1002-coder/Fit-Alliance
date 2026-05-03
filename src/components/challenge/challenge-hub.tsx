@@ -204,7 +204,7 @@ export default function ChallengeHub({ refreshKey }: { refreshKey?: number }) {
                           src={style.pikmin}
                           alt=""
                           className="absolute -top-4 pointer-events-none w-7 h-7 object-contain"
-                          style={{ left: `calc(${Math.max(p.progress, 2)}% - 14px)` }}
+                          style={{ left: `calc(${Math.max(p.progress, 2)}% - 14px)`, mixBlendMode: 'multiply' }}
                           animate={{ y: [0, -3, 0] }}
                           transition={{ duration: 1.5 + i * 0.3, repeat: Infinity, ease: 'easeInOut' }}
                         />

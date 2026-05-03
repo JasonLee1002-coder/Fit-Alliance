@@ -5,7 +5,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import type { HealthRecord } from '@/types'
 
 type TimeRange = 'week' | 'month' | 'quarter' | 'year' | 'all'
-type Metric = 'weight' | 'bodyFat' | 'muscle'
+type Metric = 'weight' | 'bodyFat'
 
 const TIME_RANGES: { key: TimeRange; label: string; days: number }[] = [
   { key: 'week',    label: '週',  days: 7 },
@@ -18,7 +18,6 @@ const TIME_RANGES: { key: TimeRange; label: string; days: number }[] = [
 const METRICS: { key: Metric; label: string; unit: string; color: string; textColor: string }[] = [
   { key: 'weight',  label: '體重',  unit: 'kg', color: '#10b981', textColor: 'text-emerald-400' },
   { key: 'bodyFat', label: '體脂率', unit: '%',  color: '#f59e0b', textColor: 'text-amber-400' },
-  { key: 'muscle',  label: '肌肉量', unit: 'kg', color: '#06b6d4', textColor: 'text-cyan-400' },
 ]
 
 interface Props {
@@ -64,7 +63,6 @@ export default function UnifiedHealthChart({
     date: r.date.slice(5),
     weight:  r.weight     ?? null,
     bodyFat: r.body_fat   ?? null,
-    muscle:  r.muscle_mass ?? null,
   }))
 
   const currentMetric = METRICS.find(m => m.key === metric)!
@@ -83,9 +81,8 @@ export default function UnifiedHealthChart({
   // Check which metrics actually have data
   const availableMetrics = METRICS.filter(m =>
     records.some(r =>
-      m.key === 'weight'  ? r.weight      != null :
-      m.key === 'bodyFat' ? r.body_fat    != null :
-                            r.muscle_mass != null
+      m.key === 'weight'  ? r.weight   != null :
+                            r.body_fat != null
     )
   )
 

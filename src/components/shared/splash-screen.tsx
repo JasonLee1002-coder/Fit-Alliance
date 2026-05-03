@@ -7,7 +7,6 @@ const FADE_MS    = 700   // 淡出時長
 
 const PHRASES = [
   { text: 'AI 教練每天陪你訓練', emoji: '🤖' },
-  { text: '食物辨識，輕鬆記錄飲食', emoji: '🥗' },
   { text: '聯盟夥伴一起督促加油', emoji: '🏆' },
   { text: '今天也要堅持，你做得到', emoji: '💪' },
 ]

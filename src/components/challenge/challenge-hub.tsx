@@ -108,7 +108,6 @@ export default function ChallengeHub({ refreshKey }: { refreshKey?: number }) {
           src="/nav3d-challenge-sm.png"
           alt=""
           className="absolute right-0 bottom-0 w-48 h-48 object-contain object-bottom drop-shadow-2xl pointer-events-none"
-          style={{ mixBlendMode: 'multiply' }}
           animate={{ y: [0, -8, 0], rotate: [-1, 1, -1] }}
           transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
         />
@@ -205,7 +204,7 @@ export default function ChallengeHub({ refreshKey }: { refreshKey?: number }) {
                           src={style.pikmin}
                           alt=""
                           className="absolute -top-4 pointer-events-none w-7 h-7 object-contain"
-                          style={{ left: `calc(${Math.max(p.progress, 2)}% - 14px)`, mixBlendMode: 'multiply' }}
+                          style={{ left: `calc(${Math.max(p.progress, 2)}% - 14px)` }}
                           animate={{ y: [0, -3, 0] }}
                           transition={{ duration: 1.5 + i * 0.3, repeat: Infinity, ease: 'easeInOut' }}
                         />

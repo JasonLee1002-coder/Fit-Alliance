@@ -78,21 +78,12 @@ export default function UnifiedHealthChart({
     parseFloat((max + pad).toFixed(1)),
   ]
 
-  // Check which metrics actually have data
-  const availableMetrics = METRICS.filter(m =>
-    records.some(r =>
-      m.key === 'weight'  ? r.weight   != null :
-                            r.body_fat != null
-    )
-  )
-
   return (
     <div className={`bg-gradient-to-b from-slate-800 to-slate-900 rounded-3xl p-5 ${className ?? ''}`}>
 
-      {/* Metric selector */}
-      {availableMetrics.length > 1 && (
-        <div className="flex gap-2 mb-4 flex-wrap">
-          {availableMetrics.map(m => (
+      {/* Metric selector — always show both tabs */}
+      <div className="flex gap-2 mb-4 flex-wrap">
+          {METRICS.map(m => (
             <button
               key={m.key}
               onClick={() => setMetric(m.key)}
@@ -107,7 +98,6 @@ export default function UnifiedHealthChart({
             </button>
           ))}
         </div>
-      )}
 
       {/* Time range selector */}
       {showRangeSelector && (

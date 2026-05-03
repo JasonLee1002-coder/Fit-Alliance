@@ -56,7 +56,6 @@ interface Props {
 
 export default function DailyCheckIn({ user, records, todayRecord, dailyLog, streak }: Props) {
   const router = useRouter()
-  const searchParams = useSearchParams()
   const cameraInputRef = useRef<HTMLInputElement>(null)
   const galleryInputRef = useRef<HTMLInputElement>(null)
   const [loading, setLoading] = useState(false)

@@ -28,6 +28,7 @@ export default function CoachChat({ userId, userName }: Props) {
   const scrollRef = useRef<HTMLDivElement>(null)
   const [input, setInput] = useState('')
   const mountTimeRef = useRef(new Date())
+  const [msgTimes, setMsgTimes] = useState<Record<string, Date>>({ welcome: mountTimeRef.current })
 
   const { messages, sendMessage, status } = useChat({
     transport: new DefaultChatTransport({
@@ -36,10 +37,23 @@ export default function CoachChat({ userId, userName }: Props) {
     }),
   })
 
+  // 每次有新訊息出現，記錄當下時間
+  useEffect(() => {
+    const now = new Date()
+    setMsgTimes(prev => {
+      const next = { ...prev }
+      let changed = false
+      messages.forEach(msg => {
+        if (!next[msg.id]) { next[msg.id] = now; changed = true }
+      })
+      return changed ? next : prev
+    })
+  }, [messages])
+
   const welcomeMessage = `嗨 ${userName}！我是你的 AI 教練「小聯」🤖\n\n你可以問我任何關於飲食、體重管理的問題，像是：\n- 「我今天可以吃火鍋嗎？」\n- 「為什麼我體重突然上升？」\n- 「幫我分析最近的飲食狀況」\n\n也可以拍食物照片上傳到飲食紀錄頁，我會幫你分析營養搭配 📸`
 
   const allMessages = [
-    { id: 'welcome', role: 'assistant' as const, content: welcomeMessage, parts: [{ type: 'text' as const, text: welcomeMessage }], createdAt: mountTimeRef.current },
+    { id: 'welcome', role: 'assistant' as const, content: welcomeMessage, parts: [{ type: 'text' as const, text: welcomeMessage }] },
     ...messages,
   ]
 
@@ -93,9 +107,9 @@ export default function CoachChat({ userId, userName }: Props) {
                 })}
               </div>
             </div>
-            {message.createdAt && (
+            {msgTimes[message.id] && (
               <span className={`text-[10px] text-gray-400 mt-0.5 ${message.role === 'user' ? 'mr-1' : 'ml-9'}`}>
-                {formatMsgTime(new Date(message.createdAt))}
+                {formatMsgTime(msgTimes[message.id])}
               </span>
             )}
           </div>

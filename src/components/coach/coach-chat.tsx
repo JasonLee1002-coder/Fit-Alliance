@@ -10,9 +10,24 @@ interface Props {
   userName: string
 }
 
+function formatMsgTime(date: Date): string {
+  const now = new Date()
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+  const msgDay = new Date(date.getFullYear(), date.getMonth(), date.getDate())
+  const diffDays = Math.round((today.getTime() - msgDay.getTime()) / 86400000)
+
+  if (diffDays === 0) {
+    return date.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit', hour12: false })
+  }
+  if (diffDays === 1) return '昨天'
+  if (diffDays === 2) return '前天'
+  return `${date.getMonth() + 1}/${date.getDate()}`
+}
+
 export default function CoachChat({ userId, userName }: Props) {
   const scrollRef = useRef<HTMLDivElement>(null)
   const [input, setInput] = useState('')
+  const mountTimeRef = useRef(new Date())
 
   const { messages, sendMessage, status } = useChat({
     transport: new DefaultChatTransport({
@@ -24,7 +39,7 @@ export default function CoachChat({ userId, userName }: Props) {
   const welcomeMessage = `嗨 ${userName}！我是你的 AI 教練「小聯」🤖\n\n你可以問我任何關於飲食、體重管理的問題，像是：\n- 「我今天可以吃火鍋嗎？」\n- 「為什麼我體重突然上升？」\n- 「幫我分析最近的飲食狀況」\n\n也可以拍食物照片上傳到飲食紀錄頁，我會幫你分析營養搭配 📸`
 
   const allMessages = [
-    { id: 'welcome', role: 'assistant' as const, content: welcomeMessage, parts: [{ type: 'text' as const, text: welcomeMessage }] },
+    { id: 'welcome', role: 'assistant' as const, content: welcomeMessage, parts: [{ type: 'text' as const, text: welcomeMessage }], createdAt: mountTimeRef.current },
     ...messages,
   ]
 
@@ -59,23 +74,30 @@ export default function CoachChat({ userId, userName }: Props) {
         {allMessages.map(message => (
           <div
             key={message.id}
-            className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+            className={`flex flex-col ${message.role === 'user' ? 'items-end' : 'items-start'}`}
           >
-            {message.role === 'assistant' && (
-              <img src="/char-coaches.png" alt="" className="w-8 h-8 mr-1 flex-shrink-0 mt-1 drop-shadow" />
-            )}
-            <div
-              className={`max-w-[80%] px-4 py-3 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap ${
-                message.role === 'user'
-                  ? 'bg-emerald-500 text-white rounded-br-md'
-                  : 'bg-white border border-gray-100 text-gray-700 shadow-sm rounded-bl-md'
-              }`}
-            >
-              {(message.parts ?? []).map((part, i) => {
-                if (part.type === 'text') return <span key={i}>{part.text}</span>
-                return null
-              })}
+            <div className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+              {message.role === 'assistant' && (
+                <img src="/char-coaches.png" alt="" className="w-8 h-8 mr-1 flex-shrink-0 mt-1 drop-shadow" />
+              )}
+              <div
+                className={`max-w-[80%] px-4 py-3 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap ${
+                  message.role === 'user'
+                    ? 'bg-emerald-500 text-white rounded-br-md'
+                    : 'bg-white border border-gray-100 text-gray-700 shadow-sm rounded-bl-md'
+                }`}
+              >
+                {(message.parts ?? []).map((part, i) => {
+                  if (part.type === 'text') return <span key={i}>{part.text}</span>
+                  return null
+                })}
+              </div>
             </div>
+            {message.createdAt && (
+              <span className={`text-[10px] text-gray-400 mt-0.5 ${message.role === 'user' ? 'mr-1' : 'ml-9'}`}>
+                {formatMsgTime(new Date(message.createdAt))}
+              </span>
+            )}
           </div>
         ))}
 

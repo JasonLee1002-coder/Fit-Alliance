@@ -689,7 +689,7 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
               <div className="flex items-center gap-2 mb-1">
                 <p className="text-sm font-bold text-emerald-700">AI 教練說：</p>
                 {encouragementTime && (
-                  <span className="text-xs text-gray-400">{encouragementTime}</span>
+                  <span className="text-sm text-gray-400 font-medium">{encouragementTime}</span>
                 )}
               </div>
               <p className="text-gray-700 leading-relaxed">{encouragement}</p>

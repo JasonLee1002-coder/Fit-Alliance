@@ -27,8 +27,16 @@ function formatMsgTime(date: Date): string {
 export default function CoachChat({ userId, userName }: Props) {
   const scrollRef = useRef<HTMLDivElement>(null)
   const [input, setInput] = useState('')
-  const mountTimeRef = useRef(new Date())
-  const [msgTimes, setMsgTimes] = useState<Record<string, Date>>({ welcome: mountTimeRef.current })
+  const mountTimeRef = useRef<Date | null>(null)
+  const [msgTimes, setMsgTimes] = useState<Record<string, Date>>({})
+  const [isMounted, setIsMounted] = useState(false)
+
+  useEffect(() => {
+    const now = new Date()
+    mountTimeRef.current = now
+    setMsgTimes({ welcome: now })
+    setIsMounted(true)
+  }, [])
 
   const { messages, sendMessage, status } = useChat({
     transport: new DefaultChatTransport({
@@ -107,8 +115,8 @@ export default function CoachChat({ userId, userName }: Props) {
                 })}
               </div>
             </div>
-            {msgTimes[message.id] && (
-              <span className={`text-[10px] text-gray-400 mt-0.5 ${message.role === 'user' ? 'mr-1' : 'ml-9'}`}>
+            {isMounted && msgTimes[message.id] && (
+              <span className={`text-[11px] text-gray-400 mt-1 ${message.role === 'user' ? 'mr-1' : 'ml-9'}`}>
                 {formatMsgTime(msgTimes[message.id])}
               </span>
             )}

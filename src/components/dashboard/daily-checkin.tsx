@@ -73,6 +73,18 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
     }
     return ''
   })
+  const [encouragementTime, setEncouragementTime] = useState<string>(() => {
+    if (typeof window !== 'undefined') {
+      const cached = localStorage.getItem('fa_coach_msg')
+      if (cached) {
+        try {
+          const { date, time } = JSON.parse(cached)
+          if (date === new Date().toISOString().split('T')[0]) return time ?? ''
+        } catch { /* ignore */ }
+      }
+    }
+    return ''
+  })
   const [justCheckedIn, setJustCheckedIn] = useState(false)
   const [arenaRefreshKey, setArenaRefreshKey] = useState(0)
   const [screenshotPreview, setScreenshotPreview] = useState<string | null>(null)
@@ -124,10 +136,14 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
   // Persist coach message to localStorage
   useEffect(() => {
     if (encouragement) {
+      const now = new Date()
+      const timeStr = now.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit', hour12: false })
       localStorage.setItem('fa_coach_msg', JSON.stringify({
-        date: new Date().toISOString().split('T')[0],
+        date: now.toISOString().split('T')[0],
+        time: timeStr,
         message: encouragement,
       }))
+      setEncouragementTime(timeStr)
     }
   }, [encouragement])
 
@@ -669,8 +685,13 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
               animate={{ rotate: [-3, 3, -3] }}
               transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
             />
-            <div>
-              <p className="text-sm font-bold text-emerald-700 mb-1">AI 教練說：</p>
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-1">
+                <p className="text-sm font-bold text-emerald-700">AI 教練說：</p>
+                {encouragementTime && (
+                  <span className="text-xs text-gray-400">{encouragementTime}</span>
+                )}
+              </div>
               <p className="text-gray-700 leading-relaxed">{encouragement}</p>
             </div>
           </div>

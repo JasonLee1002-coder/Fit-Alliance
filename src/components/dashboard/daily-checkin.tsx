@@ -634,49 +634,7 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
               </div>
             )}
           </div>
-        ) : (
-          /* Normal expand/collapse for manual input */
-          <>
-            <button
-              onClick={() => setShowMore(!showMore)}
-              className="w-full text-left text-sm text-gray-500 hover:text-gray-700 mb-3"
-            >
-              {showMore ? '▼ 收起更多數據' : '➕ 輸入更多數據（體脂率、BMI、肌肉量）'}
-            </button>
-
-            {showMore && (
-              <div className="grid grid-cols-2 gap-3 mb-4 p-4 bg-gray-50 rounded-2xl">
-                {[
-                  { key: 'body_fat', label: '🔥 體脂率', unit: '%', placeholder: '例：25.0', color: 'text-orange-600', infoLink: '/body-fat-info' },
-                  { key: 'bmi', label: '📊 BMI', unit: '', placeholder: '例：24.5', color: 'text-blue-600', infoLink: '/bmi-info' },
-                  { key: 'muscle_mass', label: '💪 肌肉量', unit: 'kg', placeholder: '例：45.0', color: 'text-cyan-600', infoLink: '/muscle-info' },
-                  { key: 'visceral_fat', label: '🫀 內臟脂肪', unit: '', placeholder: '例：8', color: 'text-rose-600', infoLink: '/visceral-fat-info' },
-                  { key: 'bone_mass', label: '🦴 骨質量', unit: 'kg', placeholder: '例：3.0', color: 'text-violet-600', infoLink: '/bone-mass-info' },
-                  { key: 'bmr', label: '⚡ 代謝率', unit: 'kcal', placeholder: '例：1500', color: 'text-amber-600', infoLink: '/bmr-info' },
-                ].map(field => (
-                  <div key={field.key}>
-                    <div className="flex items-center justify-between mb-1">
-                      <label className={`text-sm font-black ${field.color}`}>{field.label}{field.unit ? <span className="text-xs font-medium text-gray-400 ml-1">({field.unit})</span> : null}</label>
-                      {(field as any).infoLink && (
-                        <a href={(field as any).infoLink} className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-lg bg-gray-200 text-gray-600 text-[10px] font-bold hover:bg-gray-300 active:scale-95 transition">
-                          說明 →
-                        </a>
-                      )}
-                    </div>
-                    <input
-                      type="number"
-                      step="0.1"
-                      value={form[field.key as keyof typeof form]}
-                      onChange={e => setForm(f => ({ ...f, [field.key]: e.target.value }))}
-                      placeholder={field.placeholder}
-                      className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm text-gray-900 focus:border-emerald-400 outline-none transition"
-                    />
-                  </div>
-                ))}
-              </div>
-            )}
-          </>
-        )}
+        ) : null}
 
         {/* Date */}
         <div className="mb-5">

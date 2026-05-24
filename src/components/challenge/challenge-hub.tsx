@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import AnimatedWeightPct from '@/components/shared/animated-weight-pct'
+import { RankBadge } from '@/components/arena/rank-badge'
 
 interface Participant {
   userId: string
@@ -13,6 +14,7 @@ interface Participant {
   isMe: boolean
   weightLostKg: number | null
   weightLostPct: number | null
+  rankChange?: number
 }
 
 const RANK_STYLES = [
@@ -57,7 +59,7 @@ const DEFAULT_STYLE = {
   animate: '',
 }
 
-const CACHE_KEY = 'fa_arena_ranking_v2'  // v2: 含 weightLostPct 欄位
+const CACHE_KEY = 'fa_arena_ranking_v3'  // v3: 含 rankChange 欄位
 const CACHE_TTL_MS = 5 * 60 * 1000 // 5 分鐘才強制重算
 
 export default function ChallengeHub({ refreshKey }: { refreshKey?: number }) {
@@ -176,6 +178,7 @@ export default function ChallengeHub({ refreshKey }: { refreshKey?: number }) {
                     <div className="flex items-center justify-between mb-1">
                       <span className={`text-sm font-bold truncate ${i === 0 ? 'text-amber-800' : 'text-gray-800'}`}>
                         {p.name}{p.isMe ? ' 👈' : ''}
+                        <RankBadge rankChange={p.rankChange ?? 0} />
                         {i === 0 && <span className="ml-1 text-xs">✨</span>}
                       </span>
                       {/* 目標達成率 */}

@@ -164,5 +164,48 @@ async function fetchParticipants(
     }
   }).sort((a: any, b: any) => b.progress - a.progress)
 
-  return NextResponse.json({ participants })
+  // Add rank numbers and rank change (compare with last week)
+  const now = new Date()
+  const lastWeekDate = new Date(now)
+  lastWeekDate.setDate(lastWeekDate.getDate() - 7)
+  const lastWeekStr = lastWeekDate.toISOString().split('T')[0]
+
+  // Get last week's weights for rank change calculation
+  const { data: lastWeekRecords } = await supabase
+    .from('fa_health_records')
+    .select('user_id, weight, date')
+    .in('user_id', userIds)
+    .not('weight', 'is', null)
+    .lte('date', lastWeekStr)
+    .order('date', { ascending: false })
+
+  const lastWeekWeightMap: Record<string, number> = {}
+  for (const r of lastWeekRecords ?? []) {
+    if (!lastWeekWeightMap[r.user_id]) lastWeekWeightMap[r.user_id] = r.weight
+  }
+
+  // Calculate last week's progress ranking
+  const lastWeekParticipants = [...participants]
+    .map(p => {
+      const lw = lastWeekWeightMap[p.userId] ?? p.currentWeight
+      const cb = challengeBaseMap[p.userId]
+      let prevProgress = 0
+      if (cb && lw !== null) {
+        const reduced = cb.start - lw
+        const needed = cb.start - cb.target
+        if (needed > 0) prevProgress = Math.min(100, Math.max(0, Math.round((reduced / needed) * 100)))
+      }
+      return { userId: p.userId, prevProgress }
+    })
+    .sort((a, b) => b.prevProgress - a.prevProgress)
+
+  const prevRankMap = new Map(lastWeekParticipants.map((p, i) => [p.userId, i + 1]))
+
+  const participantsWithRank = participants.map((p, i) => ({
+    ...p,
+    rank: i + 1,
+    rankChange: (prevRankMap.get(p.userId) ?? i + 1) - (i + 1),
+  }))
+
+  return NextResponse.json({ participants: participantsWithRank })
 }

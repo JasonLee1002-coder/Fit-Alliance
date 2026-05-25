@@ -91,6 +91,7 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
   const [screenshotPreview, setScreenshotPreview] = useState<string | null>(null)
   const [screenshotFile, setScreenshotFile] = useState<File | null>(null)
   const [ocrDone, setOcrDone] = useState(false)
+  const [ocrError, setOcrError] = useState(false)
 
   const [form, setForm] = useState({
     weight: todayRecord?.weight?.toString() ?? '',
@@ -223,10 +224,8 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
     setScreenshotPreview(URL.createObjectURL(file))
     setScreenshotFile(file)
     setOcrDone(false)
+    setOcrError(false)
     setOcrLoading(true)
-
-    // Auto-expand more fields since OCR may fill them
-    setShowMore(true)
 
     try {
       const formData = new FormData()
@@ -246,18 +245,25 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
         if (data.bmi) setForm(f => ({ ...f, bmi: data.bmi.toString() }))
         if (data.bmr) setForm(f => ({ ...f, bmr: data.bmr.toString() }))
         if (data.bone_mass) setForm(f => ({ ...f, bone_mass: data.bone_mass.toString() }))
-        setOcrDone(true)
-        setShowEditMode(false)
 
-        // Scroll to weight field and flash it
-        setTimeout(() => {
-          weightInputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
-          weightInputRef.current?.classList.add('yuzu-flash-border')
-          setTimeout(() => weightInputRef.current?.classList.remove('yuzu-flash-border'), 2000)
-        }, 300)
+        if (data.weight) {
+          setOcrDone(true)
+          setShowEditMode(false)
+          setTimeout(() => {
+            weightInputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+          }, 300)
+        } else {
+          // OCR succeeded but couldn't find weight — prompt manual input
+          setOcrError(true)
+          setTimeout(() => weightInputRef.current?.focus(), 300)
+        }
+      } else {
+        setOcrError(true)
+        setTimeout(() => weightInputRef.current?.focus(), 300)
       }
     } catch {
-      // OCR failed, user can input manually
+      setOcrError(true)
+      setTimeout(() => weightInputRef.current?.focus(), 300)
     } finally {
       setOcrLoading(false)
     }
@@ -562,6 +568,21 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
               className="text-xs text-emerald-600 font-medium underline"
             >
               重拍
+            </button>
+          </div>
+        )}
+        {ocrError && !ocrLoading && (
+          <div className="mb-4 p-3 bg-amber-50 rounded-xl border border-amber-200 yuzu-pop-in">
+            <p className="text-sm text-amber-700 font-medium">⚠️ 無法自動辨識，請手動輸入體重</p>
+            <button
+              onClick={() => {
+                setOcrError(false)
+                setScreenshotPreview(null)
+                setScreenshotFile(null)
+              }}
+              className="text-xs text-amber-600 underline mt-1"
+            >
+              重新上傳
             </button>
           </div>
         )}

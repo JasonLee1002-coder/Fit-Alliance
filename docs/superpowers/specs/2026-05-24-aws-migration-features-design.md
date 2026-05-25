@@ -94,11 +94,11 @@ GOOGLE_CLIENT_SECRET=<現有 Google OAuth Client Secret>
 DATABASE_URL=postgresql://postgres:<密碼>@localhost:5432/fitalliance
 
 # AWS S3（不變）
-AWS_ACCESS_KEY_ID=AKIA4M4I3DP56YHMQZK6
+AWS_ACCESS_KEY_ID=<your-aws-access-key-id>
 AWS_SECRET_ACCESS_KEY=<現有>
 
 # AI
-GEMINI_API_KEY=AIzaSyCwjpRH53rNAbrOn7Lt2cAn_jc4CDn5sf4
+GEMINI_API_KEY=<your-gemini-api-key>
 
 # Redis（共用）
 REDIS_URL=redis://localhost:6379

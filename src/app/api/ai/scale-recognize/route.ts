@@ -6,7 +6,6 @@ export async function POST(request: Request) {
   try {
     const formData = await request.formData()
     const image = formData.get('image') as File | null
-    const mode = formData.get('mode') as string | null // 'scale' for weight scale, 'food' for food photo
 
     if (!image) {
       return NextResponse.json({ error: '請上傳圖片' }, { status: 400 })
@@ -16,53 +15,6 @@ export async function POST(request: Request) {
     const base64 = buffer.toString('base64')
     const mimeType = image.type || 'image/jpeg'
 
-    if (mode === 'food') {
-      // Food recognition mode
-      const { text } = await generateText({
-        model: google('gemini-1.5-flash'),
-        messages: [
-          {
-            role: 'user',
-            content: [
-              {
-                type: 'image',
-                image: `data:${mimeType};base64,${base64}`,
-              },
-              {
-                type: 'text',
-                text: `分析這張食物照片。辨識所有可見的食物項目。
-
-請用以下 JSON 格式回覆（只回覆 JSON，不要其他文字）：
-{
-  "items": [
-    {
-      "name": "食物名稱（繁體中文）",
-      "calories": 估算熱量(kcal),
-      "protein": 估算蛋白質(g),
-      "carbs": 估算碳水化合物(g),
-      "fat": 估算脂肪(g),
-      "confidence": 0.0-1.0 辨識信心度
-    }
-  ],
-  "overall_assessment": "整體飲食評價（一句話，繁體中文）"
-}`,
-              },
-            ],
-          },
-        ],
-      })
-
-      try {
-        const cleaned = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim()
-        const result = JSON.parse(cleaned)
-        return NextResponse.json(result)
-      } catch {
-        console.warn('[Food-recognize] JSON parse failed, raw text:', text?.slice(0, 200))
-        return NextResponse.json({ items: [], overall_assessment: '無法辨識食物' })
-      }
-    }
-
-    // Default: Scale OCR mode
     const { text } = await generateText({
       model: google('gemini-1.5-flash'),
       messages: [
@@ -103,7 +55,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: '無法辨識圖片中的數值' }, { status: 422 })
     }
   } catch (error) {
-    console.error('Food recognize error:', error)
+    console.error('Scale recognize error:', error)
     return NextResponse.json({ error: '辨識失敗' }, { status: 500 })
   }
 }

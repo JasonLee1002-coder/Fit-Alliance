@@ -1,6 +1,5 @@
 import { generateText } from 'ai'
-import { createGoogleGenerativeAI } from '@ai-sdk/google'
-const google = createGoogleGenerativeAI({ apiKey: process.env.GEMINI_API_KEY! })
+import { google } from '@ai-sdk/google'
 import { NextResponse } from 'next/server'
 
 export async function POST(request: Request) {
@@ -33,7 +32,7 @@ export async function POST(request: Request) {
     if (targetWeight)         lines.push(`距離目標 ${targetWeight} kg：還差 ${(currentWeight - targetWeight).toFixed(1)} kg`)
 
     const { text } = await generateText({
-      model: google('gemini-2.5-flash'),
+      model: google('gemini-1.5-flash'),
       system: `你是台灣減肥聯盟的 AI 教練，風格幽默接地氣、有溫度，像台灣綜藝節目主持人。
 
 規則：

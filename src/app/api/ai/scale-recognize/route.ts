@@ -1,4 +1,6 @@
 import { generateText } from 'ai'
+import { createGoogleGenerativeAI } from '@ai-sdk/google'
+const google = createGoogleGenerativeAI({ apiKey: process.env.GEMINI_API_KEY! })
 import { NextResponse } from 'next/server'
 
 export async function POST(request: Request) {
@@ -18,7 +20,7 @@ export async function POST(request: Request) {
     if (mode === 'food') {
       // Food recognition mode
       const { text } = await generateText({
-        model: 'google/gemini-2.5-flash',
+        model: google('gemini-2.5-flash'),
         messages: [
           {
             role: 'user',
@@ -63,7 +65,7 @@ export async function POST(request: Request) {
 
     // Default: Scale OCR mode
     const { text } = await generateText({
-      model: 'google/gemini-2.5-flash',
+      model: google('gemini-2.5-flash'),
       messages: [
         {
           role: 'user',

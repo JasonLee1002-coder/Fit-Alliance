@@ -1,4 +1,6 @@
 import { streamText, generateText, convertToModelMessages } from 'ai'
+import { createGoogleGenerativeAI } from '@ai-sdk/google'
+const google = createGoogleGenerativeAI({ apiKey: process.env.GEMINI_API_KEY! })
 import { createServiceRoleSupabase } from '@/lib/supabase/server'
 
 export async function POST(request: Request) {
@@ -14,7 +16,7 @@ export async function POST(request: Request) {
       }
 
       const { text } = await generateText({
-        model: 'google/gemini-2.5-flash',
+        model: google('gemini-2.5-flash'),
         system: `你是一位專業的減脂教練，風格溫暖親切但專業。
 用繁體中文回覆，一段話 2-3 句。
 根據食物項目分析這餐的營養搭配，指出問題並給具體建議。

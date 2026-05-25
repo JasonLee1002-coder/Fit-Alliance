@@ -11,9 +11,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: '請上傳圖片' }, { status: 400 })
     }
 
-    const buffer = Buffer.from(await image.arrayBuffer())
-    const base64 = buffer.toString('base64')
-    const mimeType = image.type || 'image/jpeg'
+    const arrayBuffer = await image.arrayBuffer()
+    const uint8Array = new Uint8Array(arrayBuffer)
+    const mimeType = (image.type || 'image/jpeg') as 'image/jpeg' | 'image/png' | 'image/webp' | 'image/gif'
 
     const { text } = await generateText({
       model: google('gemini-2.5-flash'),
@@ -23,7 +23,7 @@ export async function POST(request: Request) {
           content: [
             {
               type: 'image',
-              image: `data:${mimeType};base64,${base64}`,
+              image: uint8Array,
             },
             {
               type: 'text',
@@ -56,6 +56,6 @@ export async function POST(request: Request) {
     }
   } catch (error) {
     console.error('Scale recognize error:', error)
-    return NextResponse.json({ error: '辨識失敗' }, { status: 500 })
+    return NextResponse.json({ error: '辨識失敗', detail: String(error) }, { status: 500 })
   }
 }

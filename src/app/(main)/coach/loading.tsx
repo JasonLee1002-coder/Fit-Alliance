@@ -1,6 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
+import { pub } from '@/lib/pub'
 
 export default function CoachLoading() {
   return (
@@ -11,7 +12,7 @@ export default function CoachLoading() {
         className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-3xl p-6 border border-emerald-100 text-center"
       >
         <motion.img
-          src="/char-coaches.png"
+          src={pub("/char-coaches.png")}
           alt=""
           className="w-20 h-20 mx-auto mb-3 drop-shadow-lg"
           animate={{ y: [0, -6, 0] }}

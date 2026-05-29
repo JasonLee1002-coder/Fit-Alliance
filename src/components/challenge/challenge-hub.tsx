@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
+import { pub } from '@/lib/pub'
 import AnimatedWeightPct from '@/components/shared/animated-weight-pct'
 import { RankBadge } from '@/components/arena/rank-badge'
 
@@ -107,7 +108,7 @@ export default function ChallengeHub({ refreshKey }: { refreshKey?: number }) {
         <div className="absolute -bottom-10 -left-10 w-56 h-56 rounded-full bg-rose-400/40 blur-3xl" />
         {/* 3D 教練＋皮克敏 — 右側大圖浮出 */}
         <motion.img
-          src="/nav3d-challenge-sm.png"
+          src={pub("/nav3d-challenge-sm.png")}
           alt=""
           className="absolute right-0 bottom-0 w-48 h-48 object-contain object-bottom drop-shadow-2xl pointer-events-none"
           animate={{ y: [0, -8, 0], rotate: [-1, 1, -1] }}
@@ -128,7 +129,7 @@ export default function ChallengeHub({ refreshKey }: { refreshKey?: number }) {
         ) : participants.length === 0 ? (
           <div className="text-center py-10 px-6">
             <motion.img
-              src="/pikmin-empty.png"
+              src={pub("/pikmin-empty.png")}
               alt="皮克敏探頭"
               className="w-24 h-24 object-contain mx-auto mb-3"
               animate={{ y: [0, -8, 0] }}

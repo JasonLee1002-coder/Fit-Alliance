@@ -1,6 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
+import { pub } from '@/lib/pub'
 
 export default function ChallengeLoading() {
   return (
@@ -18,7 +19,7 @@ export default function ChallengeLoading() {
         className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-3xl p-6 border border-orange-100 text-center"
       >
         <motion.img
-          src="/nav3d-challenge-sm.png"
+          src={pub("/nav3d-challenge-sm.png")}
           alt=""
           className="w-20 h-20 mx-auto mb-3 drop-shadow-lg"
           animate={{ y: [0, -8, 0], rotate: [0, 3, -3, 0] }}

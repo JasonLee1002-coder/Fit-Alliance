@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/client'
 import { useState } from 'react'
 import WebViewWarning, { isInAppWebView } from '@/components/shared/webview-warning'
+import { pub } from '@/lib/pub'
 
 export default function LoginPage() {
   const [loading, setLoading] = useState(false)
@@ -34,7 +35,7 @@ export default function LoginPage() {
         {/* Logo & Title */}
         <div className="text-center mb-8 yuzu-slide-up">
           <div className="mb-5 yuzu-float">
-            <img src="/char-coaches.png" alt="Fit Alliance" className="w-56 h-56 drop-shadow-2xl" />
+            <img src={pub('/char-coaches.png')} alt="Fit Alliance" className="w-56 h-56 drop-shadow-2xl" />
           </div>
           <h1 className="text-4xl font-black text-gray-900 mb-2 tracking-tight">
             瘦身減肥競技場
@@ -77,9 +78,9 @@ export default function LoginPage() {
         {/* Features Preview */}
         <div className="mt-8 grid grid-cols-3 gap-3 text-center">
           {[
-            { img: '/char-coaches.png', label: 'AI 教練', delay: '0.1s' },
-            { img: '/pikmin-scale.png', label: '體重追蹤', delay: '0.2s' },
-            { img: '/nav3d-challenge-sm.png', label: '聯盟挑戰', delay: '0.3s' },
+            { img: pub('/char-coaches.png'), label: 'AI 教練', delay: '0.1s' },
+            { img: pub('/pikmin-scale.png'), label: '體重追蹤', delay: '0.2s' },
+            { img: pub('/nav3d-challenge-sm.png'), label: '聯盟挑戰', delay: '0.3s' },
           ].map(item => (
             <div
               key={item.label}

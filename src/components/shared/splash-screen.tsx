@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState } from 'react'
 
+import { pub } from '@/lib/pub'
+
 const DISPLAY_MS = 3800  // 圖片載入後顯示時長
 const FADE_MS    = 700   // 淡出時長
 
@@ -68,7 +70,7 @@ export default function SplashScreen({ onDone }: { onDone?: () => void } = {}) {
     >
       {/* 主圖 */}
       <img
-        src="/splash-screen.png"
+        src={pub("/splash-screen.png")}
         alt=""
         className="flex-1 w-full object-contain min-h-0"
         onLoad={startFade}

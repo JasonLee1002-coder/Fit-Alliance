@@ -5,11 +5,12 @@ import { usePathname } from 'next/navigation'
 import { useState } from 'react'
 import { cn } from '@/lib/utils'
 import type { User } from '@/types'
+import { pub } from '@/lib/pub'
 
 const navItems = [
-  { href: '/', label: '每日打卡首頁', img: '/nav-pikmin-home.png', description: '體重紀錄＆競技場' },
-  { href: '/invite', label: '個人邀請朋友', img: '/nav-pikmin-invite.png', description: '分享連結' },
-  { href: '/report', label: '問題回報', img: '/nav-pikmin-report.png', description: '回報問題' },
+  { href: '/', label: '每日打卡首頁', img: pub('/nav-pikmin-home.png'), description: '體重紀錄＆競技場' },
+  { href: '/invite', label: '個人邀請朋友', img: pub('/nav-pikmin-invite.png'), description: '分享連結' },
+  { href: '/report', label: '問題回報', img: pub('/nav-pikmin-report.png'), description: '回報問題' },
 ]
 
 export default function Sidebar({ user }: { user: User | null }) {
@@ -48,7 +49,7 @@ export default function Sidebar({ user }: { user: User | null }) {
         {/* Logo */}
         <div className="p-5 border-b border-gray-50">
           <div className="flex items-center gap-3">
-            <img src="/char-coaches.png" alt="Fit Alliance" className="w-12 h-12 rounded-xl" />
+            <img src={pub('/char-coaches.png')} alt="Fit Alliance" className="w-12 h-12 rounded-xl" />
             <div>
               <h1 className="font-bold text-gray-900 text-sm">瘦身減肥競技場</h1>
               <p className="text-[10px] text-gray-400">Fit Alliance</p>

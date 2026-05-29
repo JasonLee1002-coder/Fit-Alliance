@@ -8,6 +8,7 @@ import { formatDateWithWeekday, calculateBMI, getStandardWeight, getBodyFatRange
 import type { User, HealthRecord, DailyLog } from '@/types'
 import ChallengeHub from '@/components/challenge/challenge-hub'
 import WeightTrendChart from '@/components/dashboard/weight-trend-chart'
+import { pub } from '@/lib/pub'
 import UnifiedHealthChart from '@/components/shared/unified-health-chart'
 import AnimatedWeightPct from '@/components/shared/animated-weight-pct'
 import { ScaleMascot, CoachMascot, TrophyMascot, CameraMascot } from '@/components/shared/mascots'
@@ -412,7 +413,7 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
           <motion.div className="flex flex-col items-center"
             initial={{ scale: 0, y: 60 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0, y: 60 }}
             transition={{ type: 'spring', stiffness: 280, damping: 18 }}>
-            <motion.img src="/pikmin-cheer.png" alt="" className="w-36 h-36 object-contain drop-shadow-2xl"
+            <motion.img src={pub("/pikmin-cheer.png")} alt="" className="w-36 h-36 object-contain drop-shadow-2xl"
               animate={{ y: [0, -12, 0], rotate: [-4, 4, -4] }}
               transition={{ duration: 1.6, repeat: Infinity, ease: 'easeInOut' }} />
             <motion.p className="mt-2 text-white font-black text-lg"
@@ -442,7 +443,7 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
           transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
         >
           <img
-            src="/hero-family.png"
+            src={pub("/hero-family.png")}
             alt=""
             className="w-full h-full object-contain object-bottom drop-shadow-2xl"
           />
@@ -491,7 +492,7 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full animate-[shimmer_2.5s_infinite]" />
               <div className="absolute inset-0 bg-white/0 group-active:bg-white/10 transition-colors duration-100" />
               <motion.img
-                src="/pikmin-gallery.png"
+                src={pub("/pikmin-gallery.png")}
                 alt=""
                 className="w-20 h-20 object-contain drop-shadow-lg relative pointer-events-none"
                 style={{  }}
@@ -518,7 +519,7 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full animate-[shimmer_2.5s_infinite_0.6s]" />
               <div className="absolute inset-0 bg-white/0 group-active:bg-white/10 transition-colors duration-100" />
               <motion.img
-                src="/pikmin-camera.png"
+                src={pub("/pikmin-camera.png")}
                 alt=""
                 className="w-20 h-20 object-contain drop-shadow-lg relative pointer-events-none"
                 style={{  }}
@@ -706,7 +707,7 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
           transition={{ type: 'spring', stiffness: 300, damping: 20 }}
         >
           <motion.img
-            src="/pikmin-cheer.png"
+            src={pub("/pikmin-cheer.png")}
             alt="皮克敏慶祝"
             className="w-28 h-28 object-contain drop-shadow-lg"
             animate={{ y: [0, -10, 0], rotate: [-3, 3, -3] }}
@@ -721,7 +722,7 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
         <div className="bg-gradient-to-r from-emerald-50 to-orange-50 rounded-3xl border border-emerald-100 p-5 yuzu-pop-in">
           <div className="flex items-start gap-3">
             <motion.img
-              src="/char-coaches.png"
+              src={pub("/char-coaches.png")}
               alt="AI教練"
               className="w-11 h-11 rounded-full shadow flex-shrink-0"
               animate={{ rotate: [-3, 3, -3] }}
@@ -804,7 +805,7 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-lg font-bold text-emerald-400">📊 核心數據比較</h3>
               <motion.img
-                src="/pikmin-chart.png"
+                src={pub("/pikmin-chart.png")}
                 alt=""
                 className="w-16 h-16 object-contain pointer-events-none drop-shadow-lg"
                 animate={{ y: [0, -5, 0], rotate: [-3, 3, -3] }}

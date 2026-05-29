@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import type { HealthRecord } from '@/types'
+import { pub } from '@/lib/pub'
 import AnimatedWeightPct from '@/components/shared/animated-weight-pct'
 import UnifiedHealthChart from '@/components/shared/unified-health-chart'
 
@@ -83,7 +84,7 @@ export default function RecordsView({ records, readOnly = false }: { records: He
           {records.length === 0 ? (
             <div className="p-8 text-center">
               <motion.img
-                src="/pikmin-scale.png"
+                src={pub("/pikmin-scale.png")}
                 alt="皮克敏量體重"
                 className="w-28 h-28 object-contain mx-auto mb-3"
                 animate={{ y: [0, -6, 0] }}

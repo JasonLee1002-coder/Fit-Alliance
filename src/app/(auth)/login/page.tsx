@@ -78,7 +78,7 @@ export default function LoginPage() {
         <div className="mt-8 grid grid-cols-3 gap-3 text-center">
           {[
             { img: '/char-coaches.png', label: 'AI 教練', delay: '0.1s' },
-            { img: '/nav3d-meals-sm.png', label: '食物辨識', delay: '0.2s' },
+            { img: '/pikmin-scale.png', label: '體重追蹤', delay: '0.2s' },
             { img: '/nav3d-challenge-sm.png', label: '聯盟挑戰', delay: '0.3s' },
           ].map(item => (
             <div

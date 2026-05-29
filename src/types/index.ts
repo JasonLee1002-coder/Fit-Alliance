@@ -43,26 +43,6 @@ export interface DailyLog {
   created_at: string
 }
 
-export interface MealRecord {
-  id: string
-  user_id: string
-  date: string
-  meal_type: 'breakfast' | 'lunch' | 'dinner' | 'snack'
-  photo_url: string | null
-  ai_recognized_items: FoodItem[] | null
-  user_corrected_items: FoodItem[] | null
-  ai_feedback: string | null
-  created_at: string
-}
-
-export interface FoodItem {
-  name: string
-  calories: number | null
-  protein: number | null
-  carbs: number | null
-  fat: number | null
-  confidence: number | null
-}
 
 export interface CoachConversation {
   id: string

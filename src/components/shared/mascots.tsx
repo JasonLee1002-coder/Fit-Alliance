@@ -145,7 +145,7 @@ export function ScaleMascot({ size = 60, className = '' }: { size?: number; clas
   )
 }
 
-// ─── 相機角色（飲食紀錄） ───
+// ─── 相機角色（截圖上傳） ───
 export function CameraMascot({ size = 60, className = '' }: { size?: number; className?: string }) {
   return (
     <svg width={size} height={size} viewBox="0 0 100 100" className={`yuzu-float ${className}`}>
@@ -178,11 +178,10 @@ export function CameraMascot({ size = 60, className = '' }: { size?: number; cla
 }
 
 // ─── 空狀態圖示 ───
-export function EmptyMascot({ type, size = 80 }: { type: 'no-data' | 'no-challenge' | 'no-meals' | 'success'; size?: number }) {
+export function EmptyMascot({ type, size = 80 }: { type: 'no-data' | 'no-challenge' | 'success'; size?: number }) {
   const config = {
     'no-data': { emoji: '📊', text: '等你來記錄', bg: '#ecfdf5' },
     'no-challenge': { emoji: '🏆', text: '建立第一個挑戰', bg: '#fef3c7' },
-    'no-meals': { emoji: '🍽️', text: '拍張食物照吧', bg: '#faf5ff' },
     'success': { emoji: '🎉', text: '太棒了！', bg: '#ecfdf5' },
   }[type]
 

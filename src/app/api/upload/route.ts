@@ -2,7 +2,7 @@ import { createServerSupabase } from '@/lib/supabase/server'
 import { NextRequest } from 'next/server'
 import { uploadToS3 } from '@/lib/s3'
 
-const ALLOWED_BUCKETS = ['meal-photos', 'report-screenshots', 'weight-screenshots']
+const ALLOWED_BUCKETS = ['report-screenshots', 'weight-screenshots']
 const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
 
 export async function POST(request: NextRequest) {

@@ -58,7 +58,7 @@ export default function CoachChat({ userId, userName }: Props) {
     })
   }, [messages])
 
-  const welcomeMessage = `嗨 ${userName}！我是你的 AI 教練「小聯」🤖\n\n你可以問我任何關於飲食、體重管理的問題，像是：\n- 「我今天可以吃火鍋嗎？」\n- 「為什麼我體重突然上升？」\n- 「幫我分析最近的飲食狀況」\n\n也可以拍食物照片上傳到飲食紀錄頁，我會幫你分析營養搭配 📸`
+  const welcomeMessage = `嗨 ${userName}！我是你的 AI 教練「小聯」🤖\n\n你可以問我任何關於體重管理的問題，像是：\n- 「為什麼我體重突然上升？」\n- 「停滯期怎麼辦？」\n- 「幫我分析最近的體重趨勢」\n\n每天打卡記錄體重，我會根據你的數據給出最適合的建議 💪`
 
   const allMessages = [
     { id: 'welcome', role: 'assistant' as const, content: welcomeMessage, parts: [{ type: 'text' as const, text: welcomeMessage }] },
@@ -142,10 +142,10 @@ export default function CoachChat({ userId, userName }: Props) {
       {messages.length === 0 && (
         <div className="pt-2 pb-1 flex gap-2 flex-wrap">
           {[
-            '我該怎麼開始減肥？',
-            '每天要吃幾大卡？',
-            '運動還是節食比較有效？',
+            '我該怎麼開始減重？',
             '停滯期怎麼辦？',
+            '為什麼體重會波動？',
+            '怎麼維持體重不復胖？',
           ].map(q => (
             <button
               key={q}

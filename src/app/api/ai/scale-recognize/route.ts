@@ -24,6 +24,7 @@ export async function POST(request: Request) {
             {
               type: 'image',
               image: uint8Array,
+              mimeType,
             },
             {
               type: 'text',

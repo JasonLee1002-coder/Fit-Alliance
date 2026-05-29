@@ -106,6 +106,7 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
 
   const [showEditMode, setShowEditMode] = useState(false)
   const [ocrLoading, setOcrLoading] = useState(false)
+  const [ocrDebug, setOcrDebug] = useState<string | null>(null)
   const [compareRange, setCompareRange] = useState<'prev' | 'week' | 'month' | 'quarter' | 'year' | '3year'>('prev')
   const weightInputRef = useRef<HTMLInputElement>(null)
   const submitBtnRef = useRef<HTMLButtonElement>(null)
@@ -225,6 +226,7 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
     setScreenshotFile(file)
     setOcrDone(false)
     setOcrError(false)
+    setOcrDebug(null)
     setOcrLoading(true)
 
     try {
@@ -236,8 +238,9 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
         body: formData,
       })
 
+      const data = await res.json()
+
       if (res.ok) {
-        const data = await res.json()
         if (data.weight) setForm(f => ({ ...f, weight: data.weight.toString() }))
         if (data.body_fat) setForm(f => ({ ...f, body_fat: data.body_fat.toString() }))
         if (data.muscle_mass) setForm(f => ({ ...f, muscle_mass: data.muscle_mass.toString() }))
@@ -253,16 +256,18 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
             weightInputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
           }, 300)
         } else {
-          // OCR succeeded but couldn't find weight — prompt manual input
           setOcrError(true)
+          setOcrDebug(data.error ? `API: ${data.error}` : '圖片中未偵測到體重數值')
           setTimeout(() => weightInputRef.current?.focus(), 300)
         }
       } else {
         setOcrError(true)
+        setOcrDebug(`${res.status}: ${data.error || ''}${data.detail ? ` — ${data.detail}` : ''}`)
         setTimeout(() => weightInputRef.current?.focus(), 300)
       }
-    } catch {
+    } catch (e) {
       setOcrError(true)
+      setOcrDebug(String(e))
       setTimeout(() => weightInputRef.current?.focus(), 300)
     } finally {
       setOcrLoading(false)
@@ -574,9 +579,11 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
         {ocrError && !ocrLoading && (
           <div className="mb-4 p-3 bg-amber-50 rounded-xl border border-amber-200 yuzu-pop-in">
             <p className="text-sm text-amber-700 font-medium">⚠️ 無法自動辨識，請手動輸入體重</p>
+            {ocrDebug && <p className="text-xs text-amber-500 mt-1 break-all">{ocrDebug}</p>}
             <button
               onClick={() => {
                 setOcrError(false)
+                setOcrDebug(null)
                 setScreenshotPreview(null)
                 setScreenshotFile(null)
               }}

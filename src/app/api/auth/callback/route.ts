@@ -4,9 +4,14 @@ import { createServerSupabase } from '@/lib/supabase/server'
 const BASE = process.env.NEXT_PUBLIC_BASE_PATH ?? ''
 
 export async function GET(request: Request) {
-  const { searchParams, origin } = new URL(request.url)
+  const { searchParams } = new URL(request.url)
   const code = searchParams.get('code')
   const next = searchParams.get('next') ?? '/'
+
+  // Behind Nginx proxy: use forwarded headers to build the public origin
+  const proto = request.headers.get('x-forwarded-proto') ?? 'https'
+  const host = request.headers.get('host') ?? 'poc.mcstation.ai'
+  const origin = `${proto}://${host}`
 
   if (code) {
     const supabase = await createServerSupabase()

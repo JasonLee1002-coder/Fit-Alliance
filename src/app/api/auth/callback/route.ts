@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server'
 import { createServerSupabase } from '@/lib/supabase/server'
 
+const BASE = process.env.NEXT_PUBLIC_BASE_PATH ?? ''
+
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url)
   const code = searchParams.get('code')
@@ -28,18 +30,18 @@ export async function GET(request: Request) {
             name: user.user_metadata?.full_name ?? user.email?.split('@')[0] ?? '',
             avatar_url: user.user_metadata?.avatar_url ?? null,
           })
-          return NextResponse.redirect(`${origin}/profile-setup`)
+          return NextResponse.redirect(`${origin}${BASE}/profile-setup`)
         }
 
         if (!profile.profile_completed) {
-          return NextResponse.redirect(`${origin}/profile-setup`)
+          return NextResponse.redirect(`${origin}${BASE}/profile-setup`)
         }
       }
 
-      return NextResponse.redirect(`${origin}${next}`)
+      return NextResponse.redirect(`${origin}${BASE}${next}`)
     }
   }
 
   // Auth error, redirect to login
-  return NextResponse.redirect(`${origin}/login?error=auth_callback_failed`)
+  return NextResponse.redirect(`${origin}${BASE}/login?error=auth_callback_failed`)
 }

@@ -1,5 +1,3 @@
-import { generateText } from 'ai'
-import { googleAI } from '@/lib/google-ai'
 import { NextResponse } from 'next/server'
 
 export async function POST(request: Request) {
@@ -12,23 +10,20 @@ export async function POST(request: Request) {
     }
 
     const arrayBuffer = await image.arrayBuffer()
-    const uint8Array = new Uint8Array(arrayBuffer)
-    const mimeType = (image.type || 'image/jpeg') as 'image/jpeg' | 'image/png' | 'image/webp' | 'image/gif'
+    const base64 = Buffer.from(arrayBuffer).toString('base64')
+    const mimeType = image.type || 'image/jpeg'
 
-    const { text } = await generateText({
-      model: googleAI('gemini-2.5-flash'),
-      messages: [
-        {
-          role: 'user',
-          content: [
-            {
-              type: 'image',
-              image: uint8Array,
-              mimeType,
-            },
-            {
-              type: 'text',
-              text: `這是一張體重計或體脂計的螢幕截圖/照片。請識別畫面中的所有數值。
+    const apiKey = process.env.GEMINI_API_KEY
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{
+            parts: [
+              { inlineData: { mimeType, data: base64 } },
+              { text: `這是一張體重計或體脂計的螢幕截圖/照片。請識別畫面中的所有數值。
 
 請用以下 JSON 格式回覆（只回覆 JSON，不要其他文字）：
 {
@@ -41,12 +36,21 @@ export async function POST(request: Request) {
   "bmr": 基礎代謝率(kcal) 或 null
 }
 
-只填入你能確定識別的數值，其他填 null。`,
-            },
-          ],
-        },
-      ],
-    })
+只填入你能確定識別的數值，其他填 null。` }
+            ]
+          }]
+        }),
+      }
+    )
+
+    if (!res.ok) {
+      const err = await res.json()
+      console.error('Gemini API error:', err)
+      return NextResponse.json({ error: '辨識失敗', detail: err?.error?.message }, { status: 500 })
+    }
+
+    const geminiData = await res.json()
+    const text = geminiData.candidates?.[0]?.content?.parts?.[0]?.text ?? ''
 
     try {
       const cleaned = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim()

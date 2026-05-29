@@ -1,5 +1,5 @@
 import { generateText } from 'ai'
-import { google } from '@ai-sdk/google'
+import { googleAI } from '@/lib/google-ai'
 import { NextResponse } from 'next/server'
 import { createServiceRoleSupabase } from '@/lib/supabase/server'
 
@@ -72,7 +72,7 @@ export async function POST(request: Request) {
     const daysLeft = Math.max(0, Math.ceil((new Date(challenge.end_date).getTime() - Date.now()) / 86400000))
 
     const { text } = await generateText({
-      model: google('gemini-2.5-flash'),
+      model: googleAI('gemini-2.5-flash'),
       system: `你是「瘦身減肥競技場」的 AI 播報員 🎙️，負責報導挑戰賽的戰況。
 
 風格：體育播報員 + 台灣綜藝節目主持人混合。

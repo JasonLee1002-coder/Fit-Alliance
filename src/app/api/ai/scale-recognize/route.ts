@@ -1,5 +1,5 @@
 import { generateText } from 'ai'
-import { google } from '@ai-sdk/google'
+import { googleAI } from '@/lib/google-ai'
 import { NextResponse } from 'next/server'
 
 export async function POST(request: Request) {
@@ -16,7 +16,7 @@ export async function POST(request: Request) {
     const mimeType = (image.type || 'image/jpeg') as 'image/jpeg' | 'image/png' | 'image/webp' | 'image/gif'
 
     const { text } = await generateText({
-      model: google('gemini-2.5-flash'),
+      model: googleAI('gemini-2.5-flash'),
       messages: [
         {
           role: 'user',

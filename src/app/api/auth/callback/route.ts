@@ -14,39 +14,42 @@ export async function GET(request: Request) {
   const origin = `${proto}://${host}`
 
   if (code) {
-    const supabase = await createServerSupabase()
-    const { error } = await supabase.auth.exchangeCodeForSession(code)
+    try {
+      const supabase = await createServerSupabase()
+      const { error } = await supabase.auth.exchangeCodeForSession(code)
 
-    if (!error) {
-      // Check if user has profile, if not redirect to profile setup
-      const { data: { user } } = await supabase.auth.getUser()
-      if (user) {
-        const { data: profile } = await supabase
-          .from('fa_users')
-          .select('profile_completed')
-          .eq('id', user.id)
-          .single()
+      if (!error) {
+        const { data: { user } } = await supabase.auth.getUser()
+        if (user) {
+          const { data: profile } = await supabase
+            .from('fa_users')
+            .select('profile_completed')
+            .eq('id', user.id)
+            .single()
 
-        if (!profile) {
-          // Create initial profile
-          await supabase.from('fa_users').insert({
-            id: user.id,
-            email: user.email ?? '',
-            name: user.user_metadata?.full_name ?? user.email?.split('@')[0] ?? '',
-            avatar_url: user.user_metadata?.avatar_url ?? null,
-          })
-          return NextResponse.redirect(`${origin}${BASE}/profile-setup`)
+          if (!profile) {
+            await supabase.from('fa_users').insert({
+              id: user.id,
+              email: user.email ?? '',
+              name: user.user_metadata?.full_name ?? user.email?.split('@')[0] ?? '',
+              avatar_url: user.user_metadata?.avatar_url ?? null,
+            })
+            return NextResponse.redirect(`${origin}${BASE}/profile-setup`)
+          }
+
+          if (!profile.profile_completed) {
+            return NextResponse.redirect(`${origin}${BASE}/profile-setup`)
+          }
         }
 
-        if (!profile.profile_completed) {
-          return NextResponse.redirect(`${origin}${BASE}/profile-setup`)
-        }
+        return NextResponse.redirect(`${origin}${BASE}${next}`)
       }
 
-      return NextResponse.redirect(`${origin}${BASE}${next}`)
+      console.error('Auth callback error:', error)
+    } catch (e) {
+      console.error('Auth callback exception:', e)
     }
   }
 
-  // Auth error, redirect to login
   return NextResponse.redirect(`${origin}${BASE}/login?error=auth_callback_failed`)
 }

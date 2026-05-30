@@ -30,7 +30,7 @@ export default function ArenaWidget({ refreshKey }: { refreshKey?: number }) {
 
   useEffect(() => {
     setLoaded(false)
-    fetch('/api/arena/ranking')
+    fetch(`${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/api/arena/ranking`)
       .then(r => r.ok ? r.json() : null)
       .then(data => {
         if (data?.participants?.length) {

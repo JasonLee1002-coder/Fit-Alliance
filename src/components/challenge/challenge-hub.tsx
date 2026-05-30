@@ -87,7 +87,7 @@ export default function ChallengeHub({ refreshKey }: { refreshKey?: number }) {
     } catch { /* ignore */ }
 
     // 無快取或快取過期 → fetch
-    fetch('/api/arena/ranking')
+    fetch(`${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/api/arena/ranking`)
       .then(r => r.json())
       .then(data => {
         const list = data.participants ?? []

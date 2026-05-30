@@ -174,7 +174,7 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
     const fetchGreeting = async () => {
       try {
         const now = new Date()
-        const res = await fetch('/api/ai/greeting', {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/api/ai/greeting`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -234,7 +234,7 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
       const formData = new FormData()
       formData.append('image', file)
 
-      const res = await fetch('/api/ai/scale-recognize', {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/api/ai/scale-recognize`, {
         method: 'POST',
         body: formData,
       })
@@ -293,7 +293,7 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
         const uploadForm = new FormData()
         uploadForm.append('file', screenshotFile)
         uploadForm.append('bucket', 'weight-screenshots')
-        const uploadRes = await fetch('/api/upload', { method: 'POST', body: uploadForm })
+        const uploadRes = await fetch(`${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/api/upload`, { method: 'POST', body: uploadForm })
         if (uploadRes.ok) {
           const { url } = await uploadRes.json()
           screenshotUrl = url
@@ -344,7 +344,7 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
 
       // Get AI encouragement
       try {
-        const aiRes = await fetch('/api/ai/encourage', {
+        const aiRes = await fetch(`${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/api/ai/encourage`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({

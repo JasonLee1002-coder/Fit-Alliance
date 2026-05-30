@@ -536,7 +536,7 @@ export default function ReportPage() {
         const form = new FormData()
         form.append('file', file)
         form.append('bucket', 'report-screenshots')
-        const res = await fetch('/api/upload', { method: 'POST', body: form })
+        const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/api/upload`, { method: 'POST', body: form })
         if (res.ok) {
           const { url } = await res.json()
           uploadedUrls.push(url)

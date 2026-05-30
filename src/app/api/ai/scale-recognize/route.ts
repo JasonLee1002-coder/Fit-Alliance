@@ -53,11 +53,14 @@ export async function POST(request: Request) {
     const text = geminiData.candidates?.[0]?.content?.parts?.[0]?.text ?? ''
 
     try {
-      const cleaned = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim()
-      const result = JSON.parse(cleaned)
+      const jsonMatch = text.match(/\{[\s\S]*\}/)
+      if (!jsonMatch) {
+        return NextResponse.json({ error: '無法辨識圖片中的數值', detail: text.substring(0, 200) }, { status: 422 })
+      }
+      const result = JSON.parse(jsonMatch[0])
       return NextResponse.json(result)
-    } catch {
-      return NextResponse.json({ error: '無法辨識圖片中的數值' }, { status: 422 })
+    } catch (parseErr) {
+      return NextResponse.json({ error: '無法辨識圖片中的數值', detail: String(parseErr) }, { status: 422 })
     }
   } catch (error) {
     console.error('Scale recognize error:', error)

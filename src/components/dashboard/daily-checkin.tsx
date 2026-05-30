@@ -239,7 +239,17 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
         body: formData,
       })
 
-      const data = await res.json()
+      const rawText = await res.text()
+      let data: any
+      try {
+        data = JSON.parse(rawText)
+      } catch {
+        setOcrError(true)
+        setOcrDebug(`HTTP ${res.status} — ${rawText.substring(0, 200)}`)
+        setOcrLoading(false)
+        e.target.value = ''
+        return
+      }
 
       if (res.ok) {
         if (data.weight) setForm(f => ({ ...f, weight: data.weight.toString() }))

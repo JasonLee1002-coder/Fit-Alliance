@@ -44,9 +44,11 @@ export async function POST(request: Request) {
     )
 
     if (!res.ok) {
-      const err = await res.json()
-      console.error('Gemini API error:', err)
-      return NextResponse.json({ error: '辨識失敗', detail: err?.error?.message }, { status: 500 })
+      const errText = await res.text()
+      let errMsg = errText.substring(0, 200)
+      try { errMsg = JSON.parse(errText)?.error?.message ?? errMsg } catch { /* ignore */ }
+      console.error('Gemini API error:', errText)
+      return NextResponse.json({ error: '辨識失敗', detail: errMsg }, { status: 500 })
     }
 
     const geminiData = await res.json()

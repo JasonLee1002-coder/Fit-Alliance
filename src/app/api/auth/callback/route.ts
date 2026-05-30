@@ -23,7 +23,7 @@ export async function GET(request: Request) {
         if (user) {
           const { data: profile } = await supabase
             .from('fa_users')
-            .select('profile_completed')
+            .select('id')
             .eq('id', user.id)
             .single()
 
@@ -33,12 +33,8 @@ export async function GET(request: Request) {
               email: user.email ?? '',
               name: user.user_metadata?.full_name ?? user.email?.split('@')[0] ?? '',
               avatar_url: user.user_metadata?.avatar_url ?? null,
+              profile_completed: true,
             })
-            return NextResponse.redirect(`${origin}${BASE}/profile-setup`)
-          }
-
-          if (!profile.profile_completed) {
-            return NextResponse.redirect(`${origin}${BASE}/profile-setup`)
           }
         }
 

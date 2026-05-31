@@ -28,11 +28,31 @@ function AuthCallbackInner() {
       }
 
       const user = data.session.user
-      const { data: profile } = await supabase
+
+      // First try to find by auth user ID
+      let { data: profile } = await supabase
         .from('fa_users')
         .select('profile_completed')
         .eq('id', user.id)
         .single()
+
+      // If no match by ID, check if this email already has a profile (e.g. re-auth or provider switch)
+      if (!profile && user.email) {
+        const { data: existing } = await supabase
+          .from('fa_users')
+          .select('id, profile_completed')
+          .eq('email', user.email)
+          .single()
+
+        if (existing) {
+          // Re-link: update the row's id to the current auth user id so future lookups work
+          await supabase
+            .from('fa_users')
+            .update({ id: user.id })
+            .eq('email', user.email)
+          profile = { profile_completed: existing.profile_completed }
+        }
+      }
 
       if (!profile) {
         await supabase.from('fa_users').insert({

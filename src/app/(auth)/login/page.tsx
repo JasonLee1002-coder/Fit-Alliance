@@ -8,6 +8,7 @@ import { pub } from '@/lib/pub'
 export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [showWebViewWarning] = useState(() => isInAppWebView())
+  const wrongAccount = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('error') === 'wrong_account'
 
   const handleGoogleLogin = async () => {
     setLoading(true)
@@ -52,6 +53,11 @@ export default function LoginPage() {
               <h2 className="text-xl font-bold text-gray-800">歡迎加入</h2>
               <p className="text-gray-400 text-sm mt-1">用 Google 帳號快速開始</p>
             </div>
+            {wrongAccount && (
+              <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm text-red-700 mb-2">
+                ⚠️ 請選擇 <strong>leechishen@gmail.com</strong>，不是工作帳號 lcs@transtep.com
+              </div>
+            )}
 
             <button
               onClick={handleGoogleLogin}

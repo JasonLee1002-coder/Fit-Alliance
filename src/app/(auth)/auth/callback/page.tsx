@@ -55,6 +55,13 @@ function AuthCallbackInner() {
       }
 
       if (!profile) {
+        // Block emails that should never have an account here (e.g. work accounts accidentally used)
+        const BLOCKED_EMAILS = ['lcs@transtep.com', 'monique@transtep.com']
+        if (BLOCKED_EMAILS.includes((user.email ?? '').toLowerCase())) {
+          await supabase.auth.signOut()
+          router.replace('/login?error=wrong_account')
+          return
+        }
         await supabase.from('fa_users').insert({
           id: user.id,
           email: user.email ?? '',

@@ -18,7 +18,13 @@ export default async function MainLayout({ children }: { children: React.ReactNo
     .eq('id', authUser.id)
     .single()
 
-  if (!profile?.profile_completed) {
+  // No fa_users row at all = unknown/blocked account; boot them back to login
+  if (!profile) {
+    await supabase.auth.signOut()
+    redirect('/login?error=wrong_account')
+  }
+
+  if (!profile.profile_completed) {
     redirect('/profile-setup')
   }
 

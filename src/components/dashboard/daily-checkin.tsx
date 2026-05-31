@@ -218,19 +218,44 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
 
 
 
-  const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
+  // Convert any image (HEIC, WebP, PNG, etc.) to JPEG via canvas
+  const convertToJpeg = (file: File): Promise<File> => {
+    return new Promise((resolve) => {
+      const img = new Image()
+      const url = URL.createObjectURL(file)
+      img.onload = () => {
+        const canvas = document.createElement('canvas')
+        canvas.width = img.naturalWidth
+        canvas.height = img.naturalHeight
+        const ctx = canvas.getContext('2d')!
+        ctx.drawImage(img, 0, 0)
+        URL.revokeObjectURL(url)
+        canvas.toBlob((blob) => {
+          if (blob) resolve(new File([blob], 'scale.jpg', { type: 'image/jpeg' }))
+          else resolve(file)
+        }, 'image/jpeg', 0.92)
+      }
+      img.onerror = () => { URL.revokeObjectURL(url); resolve(file) }
+      img.src = url
+    })
+  }
 
-    // Show preview
-    setScreenshotPreview(URL.createObjectURL(file))
-    setScreenshotFile(file)
+  const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const rawFile = e.target.files?.[0]
+    if (!rawFile) return
+
+    // Show preview with original file
+    setScreenshotPreview(URL.createObjectURL(rawFile))
+    setScreenshotFile(rawFile)
     setOcrDone(false)
     setOcrError(false)
     setOcrDebug(null)
     setOcrLoading(true)
 
     try {
+      // Convert to JPEG so Gemini can process HEIC, WebP, etc.
+      const file = await convertToJpeg(rawFile)
+
       const formData = new FormData()
       formData.append('image', file)
 

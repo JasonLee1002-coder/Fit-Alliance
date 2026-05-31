@@ -1,5 +1,6 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, ReferenceLine
@@ -12,12 +13,15 @@ interface Props {
 }
 
 export default function WeightTrendChart({ records, targetWeight }: Props) {
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => setMounted(true), [])
   const weightRecords = records
     .filter(r => r.weight != null)
     .map(r => ({ date: r.date, weight: r.weight as number }))
     .sort((a, b) => a.date.localeCompare(b.date))
 
   if (weightRecords.length < 2) return null
+  if (!mounted) return <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-5 h-[240px] animate-pulse" />
 
   const data = weightRecords.map(r => {
     const mo = r.date.slice(5, 7)

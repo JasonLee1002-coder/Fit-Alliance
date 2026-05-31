@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import type { HealthRecord } from '@/types'
 
@@ -8,6 +8,8 @@ type Metric = 'weight' | 'bodyFat'
 
 export default function TrendChart({ records }: { records: HealthRecord[] }) {
   const [metric, setMetric] = useState<Metric>('weight')
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => setMounted(true), [])
 
   const hasBodyFat = records.some(r => r.body_fat !== null)
 
@@ -68,7 +70,7 @@ export default function TrendChart({ records }: { records: HealthRecord[] }) {
 
       {/* Chart */}
       <div className="h-48">
-        <ResponsiveContainer width="100%" height="100%">
+        {!mounted ? <div className="h-full bg-gray-50 rounded-xl animate-pulse" /> : <ResponsiveContainer width="100%" height="100%">
           <LineChart data={data} margin={{ top: 5, right: 5, bottom: 5, left: -15 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
             <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#999' }} axisLine={{ stroke: '#eee' }} />
@@ -93,7 +95,7 @@ export default function TrendChart({ records }: { records: HealthRecord[] }) {
               connectNulls
             />
           </LineChart>
-        </ResponsiveContainer>
+        </ResponsiveContainer>}
       </div>
     </div>
   )

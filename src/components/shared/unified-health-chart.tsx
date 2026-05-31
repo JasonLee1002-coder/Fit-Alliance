@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import type { HealthRecord } from '@/types'
 
@@ -47,6 +47,8 @@ export default function UnifiedHealthChart({
 }: Props) {
   const [timeRange, setTimeRange] = useState<TimeRange>(defaultRange)
   const [metric, setMetric] = useState<Metric>('weight')
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => setMounted(true), [])
 
   const cutoffDays = TIME_RANGES.find(t => t.key === timeRange)?.days ?? 30
   const cutoff = new Date()
@@ -123,6 +125,8 @@ export default function UnifiedHealthChart({
         <div className="h-44 flex items-center justify-center text-slate-400 text-sm">
           {chartData.length < 2 ? '需要至少 2 筆紀錄' : `尚無${currentMetric.label}數據`}
         </div>
+      ) : !mounted ? (
+        <div className="h-52 bg-slate-700/30 rounded-xl animate-pulse" />
       ) : (
         <div className="h-52">
           <ResponsiveContainer width="100%" height="100%">

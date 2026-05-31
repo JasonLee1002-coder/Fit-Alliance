@@ -101,7 +101,7 @@ export default function Sidebar({ user }: { user: User | null }) {
             </div>
             <div className="flex-1 min-w-0">
               <div className="text-sm font-medium text-gray-900 truncate">{user?.name || '設定名稱'}</div>
-              <div className="text-[10px] text-gray-400 truncate">{user?.email}</div>
+              <div className="text-[10px] text-gray-400 truncate">個人資料設定</div>
             </div>
           </Link>
         </div>

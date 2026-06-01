@@ -256,12 +256,14 @@ export default function DailyCheckIn({ user, records, todayRecord, dailyLog, str
       // Convert to JPEG so Gemini can process HEIC, WebP, etc.
       const file = await convertToJpeg(rawFile)
 
-      const formData = new FormData()
-      formData.append('image', file)
+      // Use base64 JSON to avoid multipart/form-data Content-Type issues on Android/WebView
+      const arrayBuffer = await file.arrayBuffer()
+      const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)))
 
       const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/api/ai/scale-recognize`, {
         method: 'POST',
-        body: formData,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ base64, mimeType: file.type || 'image/jpeg' }),
       })
 
       const rawText = await res.text()

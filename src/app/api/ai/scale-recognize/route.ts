@@ -2,16 +2,24 @@ import { NextResponse } from 'next/server'
 
 export async function POST(request: Request) {
   try {
-    const formData = await request.formData()
-    const image = formData.get('image') as File | null
+    // Accept either JSON {base64, mimeType} or multipart/form-data for backwards compat
+    let base64: string
+    let mimeType: string = 'image/jpeg'
 
-    if (!image) {
-      return NextResponse.json({ error: '請上傳圖片' }, { status: 400 })
+    const contentType = request.headers.get('content-type') ?? ''
+    if (contentType.includes('application/json')) {
+      const body = await request.json()
+      base64 = body.base64
+      mimeType = body.mimeType || 'image/jpeg'
+      if (!base64) return NextResponse.json({ error: '請上傳圖片' }, { status: 400 })
+    } else {
+      const formData = await request.formData()
+      const image = formData.get('image') as File | null
+      if (!image) return NextResponse.json({ error: '請上傳圖片' }, { status: 400 })
+      const arrayBuffer = await image.arrayBuffer()
+      base64 = Buffer.from(arrayBuffer).toString('base64')
+      mimeType = image.type || 'image/jpeg'
     }
-
-    const arrayBuffer = await image.arrayBuffer()
-    const base64 = Buffer.from(arrayBuffer).toString('base64')
-    const mimeType = image.type || 'image/jpeg'
 
     const apiKey = process.env.GEMINI_API_KEY
     const res = await fetch(

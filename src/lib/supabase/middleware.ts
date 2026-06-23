@@ -29,9 +29,15 @@ export async function updateSession(request: NextRequest) {
     }
   )
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  let user = null
+  try {
+    const { data } = await supabase.auth.getUser()
+    user = data.user
+  } catch {
+    // Supabase temporarily unreachable — fail open on protected routes
+    // to avoid locking out users during a brief outage
+    return supabaseResponse
+  }
 
   // Protected routes - redirect to login if not authenticated
   const protectedPaths = ['/', '/coach', '/records', '/challenge', '/invite', '/report', '/profile', '/admin']
@@ -51,7 +57,7 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
-  // Redirect logged-in users away from auth pages
+  // Redirect logged-in users away from auth pages — they're already in
   if (user && (request.nextUrl.pathname === '/login' || request.nextUrl.pathname === '/register')) {
     const url = request.nextUrl.clone()
     url.pathname = '/'

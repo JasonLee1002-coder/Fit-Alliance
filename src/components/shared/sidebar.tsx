@@ -8,8 +8,10 @@ import type { User } from '@/types'
 import { pub } from '@/lib/pub'
 
 const navItems = [
-  { href: '/', label: '每日打卡首頁', img: pub('/nav-pikmin-home.png'), description: '體重紀錄＆競技場' },
-  { href: '/invite', label: '個人邀請朋友', img: pub('/nav-pikmin-invite.png'), description: '分享連結' },
+  { href: '/', label: '每日打卡', img: pub('/nav-pikmin-home.png'), description: '體重紀錄＆競技場' },
+  { href: '/challenge', label: '聯盟挑戰', img: pub('/nav-pikmin-challenge.png'), description: '挑戰＆排行榜' },
+  { href: '/coach', label: 'AI 教練', img: pub('/char-coach-sm.png'), description: '個人化諮詢' },
+  { href: '/invite', label: '邀請朋友', img: pub('/nav-pikmin-invite.png'), description: '分享連結' },
   { href: '/report', label: '問題回報', img: pub('/nav-pikmin-report.png'), description: '回報問題' },
 ]
 
